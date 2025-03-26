@@ -16,7 +16,10 @@ export default function Page() {
           <div className="text-4xl mb-2">Password</div>
           <InputBox type="password" />
           <div className="mt-1">
-            <Link href="#" className="text-lg hover:underline">
+            <Link
+              href="/login/forgot-password"
+              className="text-lg hover:underline"
+            >
               Forgot password?
             </Link>
           </div>
