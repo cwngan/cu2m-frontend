@@ -1,8 +1,10 @@
 "use client";
 import InputBox from "../components/InputBox";
 import Button from "../components/Button";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+  const router = useRouter();
   return (
     <div className="container mx-auto h-screen flex flex-col items-center justify-center gap-8 pb-20">
       <h2 className="text-6xl">Forgot your password?</h2>
@@ -21,7 +23,7 @@ export default function Page() {
           <Button
             text="Submit"
             action={() => {
-              alert("hi");
+              router.push("forgot-password/verification");
             }}
           />
         </div>
