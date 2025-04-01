@@ -1,4 +1,5 @@
 import CoursePlanGrid from "./components/CoursePlanGrid";
+import SortDropdown from "./components/SortDropdown";
 import TopBar from "./components/TopBar";
 
 export default async function Page({
@@ -16,7 +17,10 @@ export default async function Page({
     <div className="container mx-auto">
       <TopBar />
       <div className="mt-12 w-full p-4">
-        <div className="mb-3 text-3xl">Course Plans</div>
+        <div className="mb-3 flex items-center justify-between text-3xl">
+          <span>Course Plans</span>
+          <SortDropdown sortBy={sort_by} />
+        </div>
         <CoursePlanGrid sortBy={sort_by} />
       </div>
     </div>
