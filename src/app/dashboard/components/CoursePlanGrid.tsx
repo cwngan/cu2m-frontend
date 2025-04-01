@@ -71,7 +71,6 @@ export default async function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
       };
     })
     .sort(compFunc);
-  console.log(sortBy);
   return (
     <div className="flex flex-row flex-wrap gap-4">
       {coursePlans.map((plan) => {
