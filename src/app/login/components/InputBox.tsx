@@ -12,7 +12,7 @@ export default function InputBox(props: InputBoxProps) {
       {...{
         ...props,
         className: clsx(
-          "border leading-none p-2 w-96 text-2xl",
+          "border leading-none p-2 w-96",
           props.className
         ),
       }}
