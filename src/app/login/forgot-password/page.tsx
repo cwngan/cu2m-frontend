@@ -1,10 +1,7 @@
-"use client";
 import InputBox from "../components/InputBox";
-import Button from "../components/Button";
-import { useRouter } from "next/navigation";
+import Button from "../components/SubmitButton";
 
 export default function Page() {
-  const router = useRouter();
   return (
     <div className="container mx-auto flex h-screen flex-col items-center justify-center gap-8 pb-20">
       <h2 className="text-6xl">Forgot your password?</h2>
@@ -20,12 +17,9 @@ export default function Page() {
           />
         </div>
         <div className="flex w-full justify-center">
-          <Button
-            text="Submit"
-            action={() => {
-              router.push("forgot-password/verification");
-            }}
-          />
+          <form action="forgot-password/verification">
+            <Button text="Submit" />
+          </form>
         </div>
       </div>
     </div>
