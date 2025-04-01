@@ -3,7 +3,6 @@ import SortDropdown from "./components/SortDropdown";
 import TopBar from "./components/TopBar";
 
 export default async function Page({
-  params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
