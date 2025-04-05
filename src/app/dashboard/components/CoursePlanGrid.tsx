@@ -41,7 +41,7 @@ const template: { data: RawCoursePlan[] } = {
 };
 
 interface CoursePlanGridProps {
-  sortBy: "last_edit" | "name";
+  sortBy: string;
 }
 
 const compByName = (a: CoursePlan, b: CoursePlan) => {
@@ -52,7 +52,7 @@ const compByLastEdit = (a: CoursePlan, b: CoursePlan) => {
   return a.updated_at > b.updated_at ? -1 : a.updated_at < b.updated_at ? 1 : 0;
 };
 
-export default async function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
+export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
   const compFunc =
     sortBy === "name"
       ? compByName
@@ -77,7 +77,7 @@ export default async function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
         return (
           <div
             key={plan._id}
-            className="group relative flex h-52 w-42 flex-col items-center justify-center overflow-hidden rounded-2xl border p-4"
+            className="group relative flex h-52 w-42 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border p-4"
           >
             <div className="mb-4 text-2xl">{plan.name}</div>
             <div>{plan.updated_at.format("HH:mm")}</div>

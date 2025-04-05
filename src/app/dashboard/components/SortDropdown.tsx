@@ -1,27 +1,29 @@
-"use client";
-import React, { useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Dispatch, SetStateAction } from "react";
 
 interface SortDropdownProps {
-  sortBy: "name" | "last_edit";
+  sortBy: string;
+  setSortBy: Dispatch<SetStateAction<string>>;
 }
 
-const SortDropdown = ({ sortBy }: SortDropdownProps) => {
-  const form = useRef<HTMLFormElement>(null);
+const SortDropdown = ({ sortBy, setSortBy }: SortDropdownProps) => {
+  const router = useRouter();
   return (
-    <form method="get" className="flex items-center text-lg" ref={form}>
+    <div className="flex items-center text-lg">
       <div className="mr-2">Sort by:</div>
       <select
         name="sort_by"
         defaultValue={sortBy}
-        onChange={() => {
-          form.current?.submit();
+        onChange={(e) => {
+          setSortBy(e.target.value);
+          router.push(`?sort_by=${e.target.value}`);
         }}
         className="border p-1"
       >
         <option value="name">Name</option>
         <option value="last_edit">Last edit</option>
       </select>
-    </form>
+    </div>
   );
 };
 
