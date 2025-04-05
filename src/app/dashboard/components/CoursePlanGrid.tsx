@@ -1,6 +1,7 @@
 import moment from "moment";
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
+import clsx from "clsx";
 import { CoursePlan } from "../types/CoursePlan";
 import { RawCoursePlan } from "../types/RawCoursePlan";
 import CoursePlanBlock from "./CoursePlanBlock";
@@ -52,9 +53,11 @@ export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
         : compByName;
   const rawData = template;
   const [coursePlans, setCoursePlans] = useState<CoursePlan[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate an API call
+      setIsUpdating(true);
       const response = await new Promise<{ data: RawCoursePlan[] }>((resolve) =>
         setTimeout(() => resolve(rawData), 1000),
       );
@@ -69,11 +72,18 @@ export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
         })
         .sort(compFunc);
       setCoursePlans(coursePlans);
+      setIsUpdating(false);
     };
     fetchData();
   }, [compFunc, rawData]);
+
   return (
-    <div className="flex flex-row flex-wrap gap-4">
+    <div
+      className={clsx(
+        "flex flex-row flex-wrap gap-4",
+        coursePlans.length > 0 && isUpdating ? "opacity-25" : "opacity-100",
+      )}
+    >
       {coursePlans.length > 0
         ? coursePlans.map((plan) => (
             <CoursePlanBlock key={plan._id} plan={plan} />
