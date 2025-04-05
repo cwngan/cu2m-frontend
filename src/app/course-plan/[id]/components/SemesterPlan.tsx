@@ -4,6 +4,7 @@ import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
 import { CourseBasicInfo } from "../types/Course";
+import clsx from "clsx";
 
 interface SemesterPlanProps {
   plan: SemesterPlanData;
@@ -58,12 +59,13 @@ export default function SemesterPlan({
   return (
     <div
       ref={drop}
-      className={`relative flex w-44 flex-col items-center justify-center border-r ${
-        isOver ? "bg-blue-100" : ""
-      }`}
+      className={clsx(
+        "relative flex w-44 flex-col items-center justify-center border-r",
+        isOver && "bg-blue-100",
+      )}
     >
       <SemesterPlanTitle plan={semesterPlan} />
-      <div className="flex h-128 w-full flex-col gap-3 p-3">
+      <div className="flex h-128 w-full flex-col gap-3 overflow-auto p-3">
         {semesterPlan.courses.map((course) => (
           <CourseBlock
             course={course}
