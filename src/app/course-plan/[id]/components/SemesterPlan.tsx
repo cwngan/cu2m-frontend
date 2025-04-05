@@ -28,7 +28,10 @@ export default function SemesterPlan({
   const drop = useRef<HTMLDivElement>(null);
   const [{ isOver }, dropConnector] = useDrop(() => ({
     accept: "COURSE",
-    drop: (item: { course: CourseBasicInfo; semesterPlanId: string }) => {
+    drop: (item: {
+      course: CourseBasicInfo;
+      semesterPlanId: string | null;
+    }) => {
       // Prevent dropping on the same semester plan
       if (item.semesterPlanId === semesterPlan._id) {
         return;
@@ -48,6 +51,7 @@ export default function SemesterPlan({
         }
         return updatedPlan;
       });
+      if (item.semesterPlanId === null) return;
       handleRemoveCourseFromSemsterPlan(item.course._id, item.semesterPlanId);
     },
     collect: (monitor) => ({

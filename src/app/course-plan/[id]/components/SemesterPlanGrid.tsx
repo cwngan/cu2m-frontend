@@ -5,6 +5,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { SemesterPlanData } from "../types/SemesterPlan";
 import { RawSemesterPlanData } from "../types/RawSemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
+import SearchBlock from "./SearchBlock";
 
 const template: { data: RawSemesterPlanData[] } = {
   data: [
@@ -234,6 +235,7 @@ export default function SemesterPlanGrid({
           )}
         </div>
       </div>
+      <SearchBlock />
     </DndProvider>
   );
 }
