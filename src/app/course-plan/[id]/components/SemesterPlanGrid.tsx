@@ -214,7 +214,7 @@ export default function SemesterPlanGrid({
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="mt-12 flex w-full justify-center">
-        <div className="flex max-w-full items-start justify-start gap-3 overflow-auto px-4 py-8 md:px-8 lg:px-12">
+        <div className="flex max-w-full items-start justify-start gap-3 overflow-auto px-4 py-8 md:px-8 lg:px-12 xl:px-16">
           {Object.keys(semesterPlansByYear).length > 0 ? (
             Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
               return (
