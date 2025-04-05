@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { CourseBasicInfo } from "../types/Course";
 import { useDrag } from "react-dnd";
+import clsx from "clsx";
 
 interface CourseBlockProps {
   semesterPlanId: string;
@@ -24,9 +25,10 @@ export default function CourseBlock({
   return (
     <div
       ref={drag}
-      className={`flex flex-col items-center justify-center bg-neutral-200 p-2 ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      className={clsx(
+        "flex flex-col items-center justify-center bg-neutral-200 p-2",
+        isDragging ? "opacity-50" : "",
+      )}
     >
       <div>{course.code}</div>
       <div>
