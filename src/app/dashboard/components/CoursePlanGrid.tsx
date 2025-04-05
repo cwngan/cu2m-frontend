@@ -1,4 +1,5 @@
 import moment, { Moment } from "moment";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 
@@ -55,6 +56,7 @@ const compByLastEdit = (a: CoursePlan, b: CoursePlan) => {
 };
 
 export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
+  const router = useRouter();
   const compFunc =
     sortBy === "name"
       ? compByName
@@ -91,6 +93,9 @@ export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
               <div
                 key={plan._id}
                 className="group relative flex h-52 w-42 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border p-4"
+                onClick={() => {
+                  router.push(`/course-plan/${plan._id}`);
+                }}
               >
                 <div className="mb-4 text-2xl">{plan.name}</div>
                 <div>{plan.updated_at.format("HH:mm")}</div>
