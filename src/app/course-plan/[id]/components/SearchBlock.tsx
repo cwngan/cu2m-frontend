@@ -48,41 +48,43 @@ export default function SearchBlock() {
   const [resultBlockOpen, setResultBlockOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<CourseBasicInfo[]>([]);
   return (
-    <div className="fixed bottom-0 left-0 z-50 flex w-full flex-col items-start justify-start border-b px-4 md:px-8 lg:px-12 xl:px-16">
-      <form
-        ref={formRef}
-        onSubmit={(e) => {
-          e.preventDefault();
-          // Simulate a search action
-          // To be replaced by an API call
-          const query = queryRef.current?.value;
-          if (query) {
-            console.log(`Searching for ${query}`);
-            setSearchResults(sampleSearchResults);
-            setResultBlockOpen(true);
-          }
-        }}
-      >
-        <div className="flex items-center gap-2 border border-b-0 bg-white p-3">
-          <input
-            type="text"
-            placeholder="ENGG1110"
-            className="h-8 w-32 border p-2"
-            required
-            ref={queryRef}
-          />
-          <button type="submit" className="cursor-pointer">
-            Go
-          </button>
-        </div>
-      </form>
-      {resultBlockOpen && (
-        <div className="flex max-h-64 w-full flex-row flex-wrap gap-3 overflow-auto border border-b-0 bg-white p-3">
-          {searchResults.map((res) => (
-            <SearchResultBlock key={res._id} res={res} />
-          ))}
-        </div>
-      )}
+    <div className="fixed bottom-0 left-0 z-50 w-full">
+      <div className="container mx-auto flex items-start justify-start px-4">
+        <form
+          ref={formRef}
+          onSubmit={(e) => {
+            e.preventDefault();
+            // Simulate a search action
+            // To be replaced by an API call
+            const query = queryRef.current?.value;
+            if (query) {
+              console.log(`Searching for ${query}`);
+              setSearchResults(sampleSearchResults);
+              setResultBlockOpen(true);
+            }
+          }}
+        >
+          <div className="flex items-center gap-2 border border-b-0 bg-white p-3">
+            <input
+              type="text"
+              placeholder="ENGG1110"
+              className="h-8 w-32 border p-2"
+              required
+              ref={queryRef}
+            />
+            <button type="submit" className="cursor-pointer">
+              Go
+            </button>
+          </div>
+        </form>
+        {resultBlockOpen && (
+          <div className="flex max-h-64 w-full flex-row flex-wrap gap-3 overflow-auto border border-b-0 bg-white p-3">
+            {searchResults.map((res) => (
+              <SearchResultBlock key={res._id} res={res} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
