@@ -49,7 +49,7 @@ export default function SearchBlock() {
   const [searchResults, setSearchResults] = useState<CourseBasicInfo[]>([]);
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full">
-      <div className="container mx-auto flex items-start justify-start px-4">
+      <div className="container mx-auto flex flex-col items-start justify-start px-4">
         <form
           ref={formRef}
           onSubmit={(e) => {
