@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { SemesterPlanData } from "../types/SemesterPlan";
@@ -164,6 +164,34 @@ export default function SemesterPlanGrid({
   const [semesterPlansByYear, setSemesterPlansByYear] = useState<{
     [year: number]: SemesterPlanData[];
   }>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const actualWidth = containerRef.current.clientWidth;
+        const containerSize =
+          actualWidth >= 1536
+            ? 1536
+            : actualWidth >= 1280
+              ? 1280
+              : actualWidth >= 1024
+                ? 1024
+                : actualWidth >= 768
+                  ? 768
+                  : actualWidth >= 640
+                    ? 640
+                    : actualWidth;
+        const padding = 16 + (actualWidth - containerSize) / 2;
+        containerRef.current.style.paddingLeft = `${padding}px`;
+        containerRef.current.style.paddingRight = `${padding}px`;
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const handleRemoveCourseFromSemsterPlan = useCallback(
     (courseId: string, semesterPlanId: string) => {
       // Simulate removing the course from the semester plan
@@ -214,7 +242,10 @@ export default function SemesterPlanGrid({
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="mt-12 flex w-full justify-center">
-        <div className="flex max-w-full items-start justify-start gap-3 overflow-auto px-4 py-8 md:px-8 lg:px-12 xl:px-16">
+        <div
+          ref={containerRef}
+          className="flex w-full items-start justify-start gap-3 overflow-auto px-4 py-8"
+        >
           {Object.keys(semesterPlansByYear).length > 0 ? (
             Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
               return (
