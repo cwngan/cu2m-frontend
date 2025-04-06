@@ -215,10 +215,10 @@ export default function SemesterPlanGrid({
   }, [semesterPlans]);
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="mt-12 flex w-full items-start justify-center">
+      <div className="mt-12 flex w-full items-start justify-center overflow-auto pb-18">
         <div
           ref={containerRef}
-          className="semester-plan-grid-horizontal-scrollbar container-px-4 flex items-start justify-start gap-3 overflow-auto py-8"
+          className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8"
         >
           {Object.keys(semesterPlansByYear).length > 0 ? (
             Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
@@ -238,6 +238,8 @@ export default function SemesterPlanGrid({
               <div className="text-2xl">Loading...</div>
             </div>
           )}
+          <div className="container-padding-block-px-4 fixed top-0 left-0 h-full bg-gradient-to-l from-transparent to-white to-25%"></div>
+          <div className="container-padding-block-px-4 fixed top-0 right-0 h-full bg-gradient-to-r from-transparent to-white to-25%"></div>
         </div>
       </div>
       <SearchBlock />

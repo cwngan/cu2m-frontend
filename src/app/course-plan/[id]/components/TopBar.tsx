@@ -22,7 +22,7 @@ export default function TopBar({ coursePlanId }: TopBarProps) {
     }
   }, [coursePlanId]);
   return (
-    <div className="fixed top-0 left-0 h-12 w-full border-b">
+    <div className="fixed top-0 left-0 z-30 h-12 w-full border-b bg-white">
       <div className="container mx-auto flex h-full items-center justify-between gap-4 px-4">
         <Link href={"/dashboard"}>Back</Link>
         <div>
