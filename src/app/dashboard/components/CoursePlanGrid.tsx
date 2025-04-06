@@ -14,6 +14,7 @@ const template: { data: RawCoursePlan[] } = {
       updated_at: "2025-03-30T12:00:00Z",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam feugiat eros ut volutpat sollicitudin. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean id enim nisi. Suspendisse posuere convallis vehicula. Quisque ultricies interdum mollis. Proin faucibus lacus a massa accumsan volutpat. Vivamus vitae nibh eu diam fringilla imperdiet. Phasellus hendrerit sagittis nibh, egestas fermentum diam viverra a. Sed vestibulum feugiat finibus. Integer magna sapien, auctor vitae tincidunt eu, viverra non nisl. Pellentesque vulputate massa nec venenatis iaculis.",
+      favourite: false,
     },
     {
       _id: "125",
@@ -21,6 +22,7 @@ const template: { data: RawCoursePlan[] } = {
       updated_at: "2025-04-01T08:00:00Z",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam feugiat eros ut volutpat sollicitudin. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean id enim nisi. Suspendisse posuere convallis vehicula. Quisque ultricies interdum mollis. Proin faucibus lacus a massa accumsan volutpat. Vivamus vitae nibh eu diam fringilla imperdiet. Phasellus hendrerit sagittis nibh, egestas fermentum diam viverra a. Sed vestibulum feugiat finibus. Integer magna sapien, auctor vitae tincidunt eu, viverra non nisl. Pellentesque vulputate massa nec venenatis iaculis.",
+      favourite: true,
     },
     {
       _id: "126",
@@ -28,12 +30,14 @@ const template: { data: RawCoursePlan[] } = {
       updated_at: "2025-03-31T08:00:00Z",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam feugiat eros ut volutpat sollicitudin. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean id enim nisi. Suspendisse posuere convallis vehicula. Quisque ultricies interdum mollis. Proin faucibus lacus a massa accumsan volutpat. Vivamus vitae nibh eu diam fringilla imperdiet. Phasellus hendrerit sagittis nibh, egestas fermentum diam viverra a. Sed vestibulum feugiat finibus. Integer magna sapien, auctor vitae tincidunt eu, viverra non nisl. Pellentesque vulputate massa nec venenatis iaculis.",
+      favourite: false,
     },
   ],
 };
 
 interface CoursePlanGridProps {
   sortBy: string;
+  starredFilter: boolean;
 }
 
 const compByName = (a: CoursePlan, b: CoursePlan) => {
@@ -44,7 +48,10 @@ const compByLastEdit = (a: CoursePlan, b: CoursePlan) => {
   return a.updated_at > b.updated_at ? -1 : a.updated_at < b.updated_at ? 1 : 0;
 };
 
-export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
+export default function CoursePlanGrid({
+  sortBy,
+  starredFilter,
+}: CoursePlanGridProps) {
   const compFunc =
     sortBy === "name"
       ? compByName
@@ -59,7 +66,7 @@ export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
     const fetchData = async () => {
       setIsUpdating(true);
       const response = await new Promise<{ data: RawCoursePlan[] }>((resolve) =>
-        setTimeout(() => resolve(rawData), 1000),
+        setTimeout(() => resolve(rawData), 500),
       );
       const coursePlans: CoursePlan[] = response.data
         .map((plan) => {
@@ -68,6 +75,7 @@ export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
             name: plan.name,
             updated_at: moment(plan.updated_at),
             description: plan.description,
+            favourite: plan.favourite,
           };
         })
         .sort(compFunc);
@@ -77,16 +85,41 @@ export default function CoursePlanGrid({ sortBy }: CoursePlanGridProps) {
     fetchData();
   }, [compFunc, rawData]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsUpdating(true);
+      const response = await new Promise<{ data: RawCoursePlan[] }>((resolve) =>
+        setTimeout(() => resolve(rawData), 500),
+      );
+      let coursePlans: CoursePlan[] = response.data
+        .map((plan) => {
+          return {
+            _id: plan._id,
+            name: plan.name,
+            updated_at: moment(plan.updated_at),
+            description: plan.description,
+            favourite: plan.favourite,
+          };
+        })
+        .sort(compFunc);
+      if (starredFilter) {
+        coursePlans = coursePlans.filter((plan) => plan.favourite);
+      }
+      setCoursePlans(coursePlans);
+      setIsUpdating(false);
+    };
+    fetchData();
+  }, [compFunc, rawData, starredFilter]);
+
   return (
-    <div
-      className={clsx(
-        "flex flex-row flex-wrap gap-4",
-        coursePlans.length > 0 && isUpdating ? "opacity-25" : "opacity-100",
-      )}
-    >
+    <div className={clsx("flex flex-row flex-wrap gap-4")}>
       {coursePlans.length > 0
         ? coursePlans.map((plan) => (
-            <CoursePlanBlock key={plan._id} plan={plan} />
+            <CoursePlanBlock
+              key={plan._id}
+              plan={plan}
+              isUpdating={isUpdating}
+            />
           ))
         : [...Array(3)].map((_, idx) => (
             <div

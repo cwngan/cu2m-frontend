@@ -5,4 +5,5 @@ export interface CoursePlan {
   name: string;
   updated_at: Moment;
   description: string;
+  favourite: boolean;
 }

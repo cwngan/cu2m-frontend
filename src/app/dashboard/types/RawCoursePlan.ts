@@ -3,4 +3,5 @@ export interface RawCoursePlan {
   name: string;
   updated_at: string;
   description: string;
+  favourite: boolean;
 }
