@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Abel } from "next/font/google";
 import "./globals.css";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const abel = Abel({
   weight: "400",
