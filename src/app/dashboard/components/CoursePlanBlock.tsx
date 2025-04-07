@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { CoursePlan } from "../types/CoursePlan";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CoursePlanBlock({
   plan: orgiPlan,
@@ -9,6 +10,7 @@ export default function CoursePlanBlock({
   plan: CoursePlan;
   isUpdating: boolean;
 }) {
+  const router = useRouter();
   const [isUpdating, setIsUpdating] = useState<boolean>(allUpdating);
   const [plan, setPlan] = useState<CoursePlan>(orgiPlan);
   useEffect(() => {
@@ -25,6 +27,9 @@ export default function CoursePlanBlock({
           ? "cursor-not-allowed opacity-25 select-none"
           : "cursor-pointer opacity-100",
       )}
+      onClick={() => {
+        router.push(`/course-plan/${plan._id}`);
+      }}
     >
       <div className="mb-4 text-2xl">{plan.name}</div>
       <div>{plan.updated_at.format("HH:mm")}</div>
@@ -33,8 +38,9 @@ export default function CoursePlanBlock({
         <div className="relative z-50 flex items-center justify-between">
           <div className="text-2xl font-bold">{plan.name}</div>
           <div
-            className="cursor-default"
-            onClick={async () => {
+            className="cursor-default select-none"
+            onClick={async (e) => {
+              e.stopPropagation();
               // Simulate an API call to update the favourite status
               setIsUpdating(true);
               setTimeout(() => {
