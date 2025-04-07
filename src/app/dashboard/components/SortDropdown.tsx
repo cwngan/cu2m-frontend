@@ -9,7 +9,7 @@ interface SortDropdownProps {
 const SortDropdown = ({ sortBy, setSortBy }: SortDropdownProps) => {
   const router = useRouter();
   return (
-    <div className="flex items-center text-lg">
+    <div className="ml-auto flex items-center text-lg">
       <div className="mr-2">Sort by:</div>
       <select
         name="sort_by"
