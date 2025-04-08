@@ -5,6 +5,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 const abel = Abel({
   weight: "400",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
