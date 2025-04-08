@@ -1,0 +1,14 @@
+services:
+  cu2m-frontend:
+    build:
+      context: .
+    container_name: next
+    ports:
+      - "3000:3000"
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "8080:8080"
