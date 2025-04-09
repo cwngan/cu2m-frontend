@@ -5,8 +5,8 @@ import TopBar from "./components/TopBar";
 export default async function Page() {
   return (
     <div className="container mx-auto">
-      <TopBar />
       <Suspense>
+        <TopBar />
         <CoursePlanGridContainer />
       </Suspense>
     </div>
