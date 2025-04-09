@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import InputBox from "./components/InputBox";
-import Button from "./components/SubmitButton";
 import axios from "axios";
+import InputBox from "../components/InputBox";
+import Button from "../components/SubmitButton";
 
 export default function Page() {
   return (
@@ -48,7 +48,7 @@ export default function Page() {
             <InputBox type="password" name="password" required />
             <div className="mt-1">
               <Link
-                href="/login/forgot-password"
+                href="login/forgot-password"
                 className="text-gray-500 hover:underline"
               >
                 Forgot password?

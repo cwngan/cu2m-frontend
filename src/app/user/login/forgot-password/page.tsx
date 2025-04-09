@@ -1,5 +1,5 @@
-import InputBox from "../components/InputBox";
-import Button from "../components/SubmitButton";
+import InputBox from "../../components/InputBox";
+import Button from "../../components/SubmitButton";
 
 export default function Page() {
   return (
