@@ -14,10 +14,7 @@ export default function Page() {
         onSubmit={(e) => {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
-          const data = {
-            username: formData.get("username"),
-            password: formData.get("password"),
-          };
+          const data = Object.fromEntries(formData.entries());
           axios
             .post("/api/user/login", data)
             .then((res) => {
