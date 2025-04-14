@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { CoursePlan } from "../types/CoursePlan";
 import { RawCoursePlan } from "../types/RawCoursePlan";
 import CoursePlanBlock from "./CoursePlanBlock";
+import AddCoursePlanBlock from "./AddCoursePlanBlock";
 
 const template: { data: RawCoursePlan[] } = {
   data: [
@@ -113,6 +114,7 @@ export default function CoursePlanGrid({
 
   return (
     <div className={clsx("flex flex-row flex-wrap gap-4")}>
+      <AddCoursePlanBlock isUpdating={isUpdating} />
       {coursePlans.length > 0
         ? coursePlans.map((plan) => (
             <CoursePlanBlock
