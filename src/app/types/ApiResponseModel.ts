@@ -1,4 +1,4 @@
-import { UserRead } from "./Models";
+import { CoursePlanRead, UserRead } from "./Models";
 
 export interface ApiResponseModel {
   status: "OK" | "ERROR";
@@ -6,5 +6,9 @@ export interface ApiResponseModel {
 }
 
 export interface UserResponseModel extends ApiResponseModel {
-  data: UserRead;
+  data: UserRead | null;
+}
+
+export interface CoursePlanResponseModel extends ApiResponseModel {
+  data: CoursePlanRead | CoursePlanRead[] | null;
 }
