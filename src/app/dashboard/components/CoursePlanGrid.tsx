@@ -5,8 +5,9 @@ import clsx from "clsx";
 import { CoursePlan } from "../types/CoursePlan";
 import { RawCoursePlan } from "../types/RawCoursePlan";
 import CoursePlanBlock from "./CoursePlanBlock";
-import AddCoursePlanBlock from "./AddCoursePlanBlock";
+import CreateCoursePlan from "./CreateCoursePlan";
 
+// data structure simulation for course plan(receicing RawCoursePlan typed objects as data)
 const template: { data: RawCoursePlan[] } = {
   data: [
     {
@@ -36,11 +37,13 @@ const template: { data: RawCoursePlan[] } = {
   ],
 };
 
+// The display filter setting of dashboard page
 interface CoursePlanGridProps {
   sortBy: string;
   starredFilter: boolean;
 }
 
+// filter function for sorting course plans
 const compByName = (a: CoursePlan, b: CoursePlan) => {
   return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
 };
@@ -53,13 +56,14 @@ export default function CoursePlanGrid({
   sortBy,
   starredFilter,
 }: CoursePlanGridProps) {
+  // determine the display filter type
   const compFunc =
     sortBy === "name"
       ? compByName
       : sortBy === "last_edit"
         ? compByLastEdit
         : compByName;
-  const rawData = template;
+  const rawData = template; //should call API to get data in actual implementation
   const [coursePlans, setCoursePlans] = useState<CoursePlan[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -69,6 +73,7 @@ export default function CoursePlanGrid({
       const response = await new Promise<{ data: RawCoursePlan[] }>((resolve) =>
         setTimeout(() => resolve(rawData), 500),
       );
+      //store the data fetched from API
       const coursePlans: CoursePlan[] = response.data
         .map((plan) => {
           return {
@@ -87,6 +92,7 @@ export default function CoursePlanGrid({
   }, [compFunc, rawData]);
 
   useEffect(() => {
+    // data fetching performed by API call simulation
     const fetchData = async () => {
       setIsUpdating(true);
       const response = await new Promise<{ data: RawCoursePlan[] }>((resolve) =>
@@ -103,6 +109,7 @@ export default function CoursePlanGrid({
           };
         })
         .sort(compFunc);
+      // Filter starred plans out
       if (starredFilter) {
         coursePlans = coursePlans.filter((plan) => plan.favourite);
       }
@@ -112,9 +119,14 @@ export default function CoursePlanGrid({
     fetchData();
   }, [compFunc, rawData, starredFilter]);
 
+  // Find the maximum ID, to be replaced by API call in actual implementation
+  const maxID = Number(coursePlans[coursePlans.length - 1]?._id) || 0;
+
   return (
     <div className={clsx("flex flex-row flex-wrap gap-4")}>
-      <AddCoursePlanBlock isUpdating={isUpdating} />
+      {/* Always place the CreateCoursePlan block before all existing plans */}
+      <CreateCoursePlan ID={maxID} />
+      {/* Display coursePlanBlocks from array "plan" */}
       {coursePlans.length > 0
         ? coursePlans.map((plan) => (
             <CoursePlanBlock
@@ -123,26 +135,29 @@ export default function CoursePlanGrid({
               isUpdating={isUpdating}
             />
           ))
-        : [...Array(3)].map((_, idx) => (
-            <div
-              key={idx}
-              className="flex h-52 w-42 flex-col items-center justify-center rounded-2xl bg-neutral-50 p-4"
-            >
-              <Skeleton
-                count={1}
-                className="h-6"
-                containerClassName="w-24 mb-4"
-              />
-              <Skeleton
-                containerClassName="w-12 gap-2 flex items-center flex-col mb-2"
-                inline
-              />
-              <Skeleton
-                containerClassName="w-24 gap-2 flex items-center flex-col"
-                inline
-              />
-            </div>
-          ))}
+        : null}
+      {/* if the course plan aren't loaded yet, display skeleton*/}
+      {coursePlans.length === 0 &&
+        [...Array(3)].map((_, idx) => (
+          <div
+            key={idx}
+            className="flex h-52 w-42 flex-col items-center justify-center rounded-2xl bg-neutral-50 p-4"
+          >
+            <Skeleton
+              count={1}
+              className="h-6"
+              containerClassName="w-24 mb-4"
+            />
+            <Skeleton
+              containerClassName="w-12 gap-2 flex items-center flex-col mb-2"
+              inline
+            />
+            <Skeleton
+              containerClassName="w-24 gap-2 flex items-center flex-col"
+              inline
+            />
+          </div>
+        ))}
     </div>
   );
 }
