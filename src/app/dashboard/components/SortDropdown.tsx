@@ -18,7 +18,7 @@ const SortDropdown = ({ sortBy, setSortBy }: SortDropdownProps) => {
           setSortBy(e.target.value);
           router.push(`?sort_by=${e.target.value}`);
         }}
-        className="border p-1"
+        className="rounded-lg border p-1"
       >
         <option value="name">Name</option>
         <option value="last_edit">Last edit</option>

@@ -61,15 +61,17 @@ export default function SemesterPlan({
   dropConnector(drop);
 
   return (
+    // block that contains each column of semester plan
     <div
       ref={drop}
       className={clsx(
-        "relative flex w-44 flex-col items-center justify-center border-r",
-        isOver && "bg-blue-100",
+        "from-stone-60 relative flex w-44 flex-col items-center justify-center gap-3 rounded-lg border-1 border-neutral-300 bg-gradient-to-br via-neutral-100 to-stone-100 ring-3 inset-ring ring-white inset-ring-white",
+        isOver &&
+          "bg-linear-to-t from-neutral-200 to-neutral-300 transition duration-300",
       )}
     >
       <SemesterPlanTitle plan={semesterPlan} />
-      <div className="flex h-128 w-full flex-col gap-3 overflow-auto p-3">
+      <div className="flex h-128 w-full flex-col gap-5 overflow-auto rounded-xl p-4">
         {semesterPlan.courses.map((course) => (
           <CourseBlock
             course={course}
@@ -78,6 +80,7 @@ export default function SemesterPlan({
           />
         ))}
       </div>
+      {/* add summer session button */}
       {addSummerSession && handleAddSummerSession && (
         <div className="absolute -right-3 flex h-full w-6 items-center justify-center overflow-visible opacity-0 hover:opacity-100">
           <div
