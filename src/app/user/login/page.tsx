@@ -1,7 +1,7 @@
 import Link from "next/link";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
-import "../components/page.css";
+import '../../page.css';
 
 export default function Page() {
   return (
@@ -19,7 +19,7 @@ export default function Page() {
               <div className="mb-2 text-xl">Username</div>
               <InputBox
                 className="rounded-md border-neutral-400 ring-slate-400 hover:ring-2"
-                type="email"
+                type="text"
                 placeholder="user123"
                 required
               />

@@ -27,29 +27,18 @@ export default function CourseBlock({
   //set the color of course block base on number of semester
   const [color, setColor] = useState<string>("bg-neutral-200");
 
-  function colorFilter(input: string) {
-    if (input.length < 5) return;
-    let semNum: number = Number(input[4]);
+  const levelColors: { [key: number]: string } = {
+    1: "bg-green-800/30 text-gray-80",
+    2: "bg-zinc-500/40",
+    3: "bg-teal-700/30",
+    4: "bg-stone-600/40 text-stone-800",
+  };
 
-    switch (semNum) {
-      case 1:
-        setColor("bg-green-800/30 text-gray-80");
-        break;
-      case 2:
-        setColor("bg-zinc-500/40");
-        break;
-      case 3:
-        setColor("bg-teal-700/30");
-        break;
-      case 4:
-        setColor("bg-stone-600/40 text-stone-800");
-        break;
-      default:
-        setColor("bg-neutral-200");
-    }
-  }
   useEffect(() => {
-    colorFilter(course.code);
+    // Extract the first digit from the numeric part of the course code (e.g., CSCI2100 -> 2)
+    const match = course.code.match(/\d/);
+    const level = match ? parseInt(match[0]) : undefined;
+    setColor(levelColors[level!] || "bg-neutral-200");
   }, [course.code]);
 
   return (
