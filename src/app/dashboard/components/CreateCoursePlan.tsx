@@ -1,7 +1,7 @@
 import { useState } from "react";
 import InputFrom from "./InputFrom";
 
-export default function CreateCoursePlan({ ID }: { ID: number }) {
+export default function CreateCoursePlan() {
   const [showForm, setShowForm] = useState(false);
 
   const InputInfo = () => {
@@ -38,7 +38,7 @@ export default function CreateCoursePlan({ ID }: { ID: number }) {
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
           >
             {/* Pass the handleCloseForm function as a prop */}
-            <InputFrom onClose={handleCloseForm} maxID={ID} />
+            <InputFrom onClose={handleCloseForm} />
           </div>
         </div>
       )}

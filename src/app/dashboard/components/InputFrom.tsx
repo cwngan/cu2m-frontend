@@ -2,13 +2,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CoursePlan } from "../types/CoursePlan";
 import moment from "moment";
+import { ObjectId } from "bson";
 
 export default function InputFrom({
   onClose,
-  maxID,
 }: {
   onClose: () => void;
-  maxID: number;
 }) {
   const router = useRouter();
   const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
@@ -17,7 +16,7 @@ export default function InputFrom({
 
   //the created plan object that could be passed to the backend
   const newPlan: CoursePlan = {
-    _id: (maxID + 1).toString(),
+    _id: new ObjectId().toHexString(),
     name: name,
     updated_at: moment(),
     description: description,

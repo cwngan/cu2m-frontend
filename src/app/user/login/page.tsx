@@ -11,7 +11,7 @@ export default function Page() {
         <div className="flex flex-col items-start gap-3 rounded-4xl border p-8">
           <div>
             <div className="mb-2 text-xl">Username</div>
-            <InputBox type="email" placeholder="user123" required />
+            <InputBox type="text" placeholder="user123" required />
           </div>
           <div>
             <div className="mb-2 text-xl">Password</div>
