@@ -1,7 +1,7 @@
 "use client";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
-import "../components/page.css";
+import "../../dashboard/components/page.css";
 
 export default function Page() {
   return (
