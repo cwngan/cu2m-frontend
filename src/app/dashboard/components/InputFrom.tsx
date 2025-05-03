@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CoursePlan } from "../types/CoursePlan";
