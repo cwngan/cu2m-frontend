@@ -119,9 +119,6 @@ export default function CoursePlanGrid({
     fetchData();
   }, [compFunc, rawData, starredFilter]);
 
-  // Find the maximum ID, to be replaced by API call in actual implementation
-  const maxID = Number(coursePlans[coursePlans.length - 1]?._id) || 0;
-
   return (
     <div className={clsx("flex flex-row flex-wrap gap-4")}>
       {/* Always place the CreateCoursePlan block before all existing plans */}
