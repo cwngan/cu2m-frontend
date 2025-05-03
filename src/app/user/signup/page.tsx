@@ -16,7 +16,9 @@ export default function Page() {
           const formData = new FormData(e.currentTarget);
           const data = Object.fromEntries(formData.entries());
           axios
-            .post("/api/user/signup", data)
+            .post("/api/user/signup", data, {
+              baseURL: process.env.NEXT_PUBLIC_API_URL,
+            })
             .then((res) => {
               if (res.status >= 200 && res.status < 300) {
                 router.push("/dashboard");

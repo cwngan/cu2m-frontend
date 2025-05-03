@@ -16,7 +16,9 @@ export default function Page() {
           const formData = new FormData(e.currentTarget);
           const data = Object.fromEntries(formData.entries());
           axios
-            .post("/api/user/login", data)
+            .post("/api/user/login", data, {
+              baseURL: process.env.NEXT_PUBLIC_API_URL,
+            })
             .then((res) => {
               if (res.status === 200) {
                 window.location.href = "/dashboard";
