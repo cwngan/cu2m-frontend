@@ -4,11 +4,7 @@ import { CoursePlan } from "../types/CoursePlan";
 import moment from "moment";
 import { ObjectId } from "bson";
 
-export default function InputFrom({
-  onClose,
-}: {
-  onClose: () => void;
-}) {
+export default function InputFrom({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
   const [description, setDescription] = useState("");
@@ -30,11 +26,11 @@ export default function InputFrom({
   };
 
   const plus = () => {
-    if (numOfYears < 8) setNumOfYears(numOfYears + 1); //maximum 8 years
+    if (numOfYears < 8) setNumOfYears(numOfYears + 1); // maximum 8 years
   };
 
   const minus = () => {
-    if (numOfYears > 2) setNumOfYears(numOfYears - 1); //minimum 2 years
+    if (numOfYears > 2) setNumOfYears(numOfYears - 1); // minimum 2 years
   };
 
   return (
