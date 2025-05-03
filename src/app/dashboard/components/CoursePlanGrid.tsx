@@ -125,7 +125,7 @@ export default function CoursePlanGrid({
   return (
     <div className={clsx("flex flex-row flex-wrap gap-4")}>
       {/* Always place the CreateCoursePlan block before all existing plans */}
-      <CreateCoursePlan ID={maxID} />
+      <CreateCoursePlan />
       {/* Display coursePlanBlocks from array "plan" */}
       {coursePlans.length > 0
         ? coursePlans.map((plan) => (
