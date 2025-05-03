@@ -11,11 +11,13 @@ interface SemesterPlanOfYearProps {
     semesterPlanId: string,
   ) => void;
 }
+
 export default function SemesterPlanOfYear({
   yearNumber,
   plans,
   handleRemoveCourseFromSemsterPlan,
 }: SemesterPlanOfYearProps) {
+  //state controller of the array of plans in the year
   const [semesterPlans, setSemesterPlans] = useState<SemesterPlanData[]>(plans);
   const handleAddSummerSession = useCallback(() => {
     // Simulate adding a summer session to the semester plans

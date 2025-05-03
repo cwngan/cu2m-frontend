@@ -203,6 +203,7 @@ export default function SemesterPlanGrid({
     };
     fetchData();
   }, [coursePlanId]);
+
   useEffect(() => {
     const plansByYear: { [year: number]: SemesterPlanData[] } = {};
     semesterPlans.forEach((plan) => {
