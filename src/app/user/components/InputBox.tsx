@@ -11,10 +11,7 @@ export default function InputBox(props: InputBoxProps) {
     <input
       {...{
         ...props,
-        className: clsx(
-          "border leading-none p-2 w-96",
-          props.className
-        ),
+        className: clsx("border leading-none p-2 w-96", props.className),
       }}
     />
   );

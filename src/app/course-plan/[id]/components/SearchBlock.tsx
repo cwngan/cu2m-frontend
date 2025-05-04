@@ -40,6 +40,24 @@ const sampleSearchResults = [
     title: "Data Structures",
     units: 3,
   },
+  {
+    _id: crypto.randomUUID(),
+    code: "CSCI3100",
+    title: "Software Engineering",
+    units: 3,
+  },
+  {
+    _id: crypto.randomUUID(),
+    code: "CSCI3160",
+    title: "Design and Analysis of Algorithms",
+    units: 3,
+  },
+  {
+    _id: crypto.randomUUID(),
+    code: "CHEM2870",
+    title: "Integrated Chemistry Laboratory II",
+    units: 4,
+  },
 ];
 
 export default function SearchBlock() {
@@ -78,7 +96,7 @@ export default function SearchBlock() {
           </div>
         </form>
         {resultBlockOpen && (
-          <div className="flex max-h-64 w-full flex-row flex-wrap gap-3 overflow-auto border border-b-0 bg-white p-3">
+          <div className="flex max-h-64 w-full flex-row gap-3 overflow-x-auto border border-b-0 bg-white p-3 whitespace-nowrap">
             {searchResults.map((res) => (
               <SearchResultBlock key={res._id} res={res} />
             ))}
