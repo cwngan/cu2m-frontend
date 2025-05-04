@@ -26,11 +26,11 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
   };
 
   const plus = () => {
-    if (numOfYears < 8) setNumOfYears(numOfYears + 1); //maximum 8 years
+    if (numOfYears < 8) setNumOfYears(numOfYears + 1); // maximum 8 years
   };
 
   const minus = () => {
-    if (numOfYears > 2) setNumOfYears(numOfYears - 1); //minimum 2 years
+    if (numOfYears > 2) setNumOfYears(numOfYears - 1); // minimum 2 years
   };
 
   return (
