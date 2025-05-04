@@ -38,10 +38,10 @@ export default function SemesterPlanOfYear({
     setSemesterPlans(plans);
   }, [plans]);
   return (
-    <div className="flex h-auto flex-col items-center border border-r-0">
+    <div className="flex h-auto flex-col items-center">
       <div
         className={clsx(
-          "w-full border-r border-b p-2 text-center text-2xl font-bold",
+          "w-full rounded-xl border-4 border-white bg-gradient-to-r from-neutral-700 via-stone-700 to-zinc-700 p-3 text-center text-2xl font-bold text-neutral-200 inset-ring inset-ring-stone-800",
         )}
       >{`Year ${yearNumber}`}</div>
       <div className={clsx("flex items-center justify-center")}>

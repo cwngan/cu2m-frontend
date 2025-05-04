@@ -120,7 +120,7 @@ export default function CoursePlanGrid({
   }, [compFunc, rawData, starredFilter]);
 
   return (
-    <div className={clsx("flex flex-row flex-wrap gap-4")}>
+    <div className={clsx("flex flex-row flex-wrap gap-6")}>
       {/* Always place the CreateCoursePlan block before all existing plans */}
       <CreateCoursePlan />
       {/* Display coursePlanBlocks from array "plan" */}
