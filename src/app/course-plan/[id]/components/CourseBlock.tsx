@@ -38,7 +38,11 @@ export default function CourseBlock({
     // Extract the first digit from the numeric part of the course code (e.g., CSCI2100 -> 2)
     const match = course.code.match(/\d/);
     const level = match ? parseInt(match[0]) : undefined;
-    setColor(level !== undefined ? levelColors[level] || "bg-neutral-200" : "bg-neutral-200");
+    setColor(
+      level !== undefined
+        ? levelColors[level] || "bg-neutral-200"
+        : "bg-neutral-200",
+    );
   }, [course.code]);
 
   return (

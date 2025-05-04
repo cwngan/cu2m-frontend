@@ -1,7 +1,7 @@
 import Link from "next/link";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
-import '../../dashboard/components/page.css';
+import "../../dashboard/components/page.css";
 
 export default function Page() {
   return (
@@ -17,18 +17,11 @@ export default function Page() {
           <div className="flex flex-col items-start gap-3 rounded-4xl bg-white p-8 shadow-lg">
             <div>
               <div className="mb-2 text-xl">Username</div>
-              <InputBox
-                type="text"
-                placeholder="user123"
-                required
-              />
+              <InputBox type="text" placeholder="user123" required />
             </div>
             <div>
               <div className="mb-2 text-xl">Password</div>
-              <InputBox
-                type="password"
-                required
-              />
+              <InputBox type="password" required />
               <div className="mt-1">
                 <Link
                   href="login/forgot-password"

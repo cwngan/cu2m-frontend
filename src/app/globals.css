@@ -2,13 +2,13 @@
 
 @layer utilities {
   .semester-plan-grid-horizontal-scrollbar::-webkit-scrollbar {
-    @apply absolute left-10 h-1
+    @apply absolute left-10 h-1;
   }
   .semester-plan-grid-horizontal-scrollbar::-webkit-scrollbar-track-piece {
-    @apply bg-neutral-200
+    @apply bg-neutral-200;
   }
   .semester-plan-grid-horizontal-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-neutral-400
+    @apply bg-neutral-400;
   }
   .semester-plan-grid-horizontal-scrollbar::-webkit-scrollbar-button:start:decrement {
     width: 1rem;
