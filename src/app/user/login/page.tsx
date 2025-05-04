@@ -22,17 +22,14 @@ export default function Page() {
             <div>
               <div className="mb-2 text-xl">Password</div>
               <InputBox type="password" required />
-              <div className="flex justify-between mt-1">
+              <div className="mt-1 flex justify-between">
                 <Link
                   href="login/forgot-password"
                   className="text-gray-500 hover:underline"
                 >
                   Forgot password?
                 </Link>
-                <Link
-                  href="signup"
-                  className="text-gray-500 hover:underline"
-                >
+                <Link href="signup" className="text-gray-500 hover:underline">
                   New user?
                 </Link>
               </div>
