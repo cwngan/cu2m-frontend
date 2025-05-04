@@ -203,6 +203,7 @@ export default function SemesterPlanGrid({
     };
     fetchData();
   }, [coursePlanId]);
+
   useEffect(() => {
     const plansByYear: { [year: number]: SemesterPlanData[] } = {};
     semesterPlans.forEach((plan) => {
@@ -215,7 +216,7 @@ export default function SemesterPlanGrid({
   }, [semesterPlans]);
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="mt-12 flex w-full items-start justify-center overflow-auto pb-18">
+      <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
         <div
           ref={containerRef}
           className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8"
