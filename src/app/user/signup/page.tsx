@@ -1,16 +1,42 @@
 "use client";
+import axios from "axios";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
+import { useRouter } from "next/navigation";
 import "@/app/background.css";
 
 export default function Page() {
+  const router = useRouter();
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-radial-[at_50%_50%] from-white via-zinc-100 to-zinc-300">
       <div className="animated-lines z-0"></div>
-      <div className="z-40 container mx-auto flex h-screen flex-col items-center justify-center gap-8 pb-20">
+      <div className="relative z-40 container mx-auto flex h-screen flex-col items-center justify-center gap-8">
         <h2 className="z-40 text-4xl">Sign up</h2>
         {/* Directly redirect to dashboard for development use */}
-        <form className="z-40" action="/dashboard">
+        <form
+          className="z-40"
+          action="/dashboard"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const data = Object.fromEntries(formData.entries());
+            axios
+              .post("/api/user/signup", data, {
+                baseURL: process.env.NEXT_PUBLIC_API_URL,
+              })
+              .then((res) => {
+                if (res.status >= 200 && res.status < 300) {
+                  router.push("/dashboard");
+                } else {
+                  alert("Signup failed");
+                }
+              })
+              .catch((err) => {
+                console.error(err);
+                alert("Signup failed");
+              });
+          }}
+        >
           <div className="flex flex-col items-start gap-3 rounded-4xl bg-white p-8 shadow-xl">
             <div>
               <div className="mb-2 text-xl">Email</div>
@@ -53,6 +79,16 @@ export default function Page() {
               />
             </div>
             <div>
+              <div className="mb-2 text-xl">Major</div>
+              <InputBox
+                type="text"
+                placeholder="CSCI"
+                className="rounded-md border-neutral-400 ring-slate-400 hover:ring-2"
+                name="major"
+                required
+              />
+            </div>
+            <div>
               <div className="mb-2 text-xl">Username</div>
               <InputBox
                 type="text"
@@ -72,7 +108,7 @@ export default function Page() {
               />
             </div>
             <div className="mt-2 flex w-full justify-center">
-              <Button text="Login" />
+              <Button text="Signup" />
             </div>
           </div>
         </form>
