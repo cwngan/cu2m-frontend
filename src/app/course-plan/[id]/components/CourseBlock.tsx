@@ -4,6 +4,7 @@ import { useDrag } from "react-dnd";
 import clsx from "clsx";
 import { useState } from "react";
 import { useEffect } from "react";
+import DraggableBlock from "@/app/components/DraggableBlock";
 
 const levelColors: { [key: number]: string } = {
   1: "bg-green-800/30 text-gray-80",
@@ -46,18 +47,15 @@ export default function CourseBlock({
   }, [course.code]);
 
   return (
-    <div
-      ref={drag}
-      className={clsx(
-        "flex transform flex-col items-center justify-center rounded-xl p-2 transition-transform duration-150 duration-200 hover:scale-110 hover:transition active:scale-90",
-        color,
-        isDragging ? "opacity-50" : "",
-      )}
+    <DraggableBlock
+      blockType="COURSE"
+      dragItem={{ semesterPlanId, course }}
+      className={clsx("flex flex-col items-center justify-center p-2", color)}
     >
       <div>{course.code}</div>
       <div>
         {course.units} Unit{course.units != 1 && "s"}
       </div>
-    </div>
+    </DraggableBlock>
   );
 }
