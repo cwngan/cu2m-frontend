@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, WheelEvent } from "react";
 import { CourseBasicInfo } from "../types/Course";
 import SearchResultBlock from "./SearchResultBlock";
 
@@ -61,10 +61,19 @@ const sampleSearchResults = [
 ];
 
 export default function SearchBlock() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const queryRef = useRef<HTMLInputElement>(null);
   const [resultBlockOpen, setResultBlockOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<CourseBasicInfo[]>([]);
+
+  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft += event.deltaY; // Scroll horizontally
+      event.preventDefault(); // Prevent default vertical scroll
+    }
+  };
+
   return (
     // the whole search block
     <div className="fixed bottom-0 left-0 z-50 w-full">
@@ -125,7 +134,11 @@ export default function SearchBlock() {
         {/* searchbox after opening up */}
 
         {resultBlockOpen && (
-          <div className="z-10 flex max-h-64 w-full flex-row gap-5 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-3 shadow-lg whitespace-nowrap">
+          <div
+            ref={scrollContainerRef}
+            onWheel={handleWheel}
+            className="z-10 flex max-h-64 w-full flex-row gap-5 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-3 whitespace-nowrap shadow-lg"
+          >
             {searchResults.map((res) => (
               <SearchResultBlock key={res._id} res={res} />
             ))}
