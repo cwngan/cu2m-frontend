@@ -1,8 +1,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CoursePlan } from "../types/CoursePlan";
-import moment from "moment";
+import { CoursePlanCreate, CoursePlanRead } from "@/app/types/Models";
 import { ObjectId } from "bson";
+import axios from "axios";
+import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 
 export default function InputForm({ onClose }: { onClose: () => void }) {
   const router = useRouter();
@@ -10,19 +11,25 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState("");
   const [name, setName] = useState("");
 
-  //the created plan object that could be passed to the backend
-  const newPlan: CoursePlan = {
-    _id: new ObjectId().toHexString(),
-    name: name,
-    updated_at: moment(),
-    description: description,
-    favourite: false,
-  };
-
   // navigation function of the add button
   const handleAdd = (event: React.FormEvent) => {
     event.preventDefault();
-    router.push(`/course-plan/${newPlan._id}`); // navigate to an id greater than maxID
+    // Submit a new plan
+    const coursePlanCreate: CoursePlanCreate = { "description": description, "name": name };
+    axios.post<CoursePlanResponseModel>("/api/course-plans/", coursePlanCreate, {
+      baseURL: process.env.NEXT_PUBLIC_API_URL,
+    })
+    .then((res) => {
+      const response = res.data;
+      if (response.status === "ERROR" || response.data === null) {
+        throw new Error(response.error);
+      }
+      const newPlan: CoursePlanRead = response.data as CoursePlanRead;
+      router.push(`/course-plan/${newPlan._id}`); // navigate to course plan id 
+    }).catch((err) => {
+      console.error(err);
+      alert("Course plan creation failed");
+    })
   };
 
   const plus = () => {
@@ -51,7 +58,7 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
       </label>
 
       {/* No. of year */}
-      <label className="flex flex-row items-center">
+      {/* <label className="flex flex-row items-center">
         <span className="w-22 font-medium text-gray-700">No. of Year:</span>
         <div className="flex items-center gap-2">
           <input
@@ -75,7 +82,7 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
             -
           </button>
         </div>
-      </label>
+      </label> */}
 
       {/* Description */}
       <label className="flex flex-col">
