@@ -1,11 +1,25 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CoursePlanCreate, CoursePlanRead } from "@/app/types/Models";
-import { ObjectId } from "bson";
+import {
+  CoursePlan,
+  CoursePlanCreate,
+  CoursePlanRead,
+} from "@/app/types/Models";
 import axios from "axios";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
+import moment from "moment";
 
-export default function InputForm({ onClose }: { onClose: () => void }) {
+export default function InputForm({
+  mode,
+  plan,
+  onClose,
+  handleBlockChange,
+}: {
+  mode: string;
+  plan: CoursePlan | null;
+  onClose: () => void;
+  handleBlockChange: ((updatedPlan: CoursePlan) => void) | null;
+}) {
   const router = useRouter();
   const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
   const [description, setDescription] = useState("");
@@ -37,6 +51,47 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
       });
   };
 
+  const handleUpdate = (event: React.FormEvent) => {
+    event.preventDefault();
+    // Submit a new plan
+    const coursePlanUpdate: CoursePlanCreate = {
+      description: description,
+      name: name,
+    };
+
+    if (plan !== null) {
+      axios
+        .patch<CoursePlanResponseModel>(
+          `/api/course-plans/${plan._id}`,
+          coursePlanUpdate,
+          {
+            baseURL: process.env.NEXT_PUBLIC_API_URL,
+          },
+        )
+        .then((res) => {
+          const response = res.data;
+          if (response.status === "ERROR" || response.data === null) {
+            throw new Error(response.error);
+          }
+          const updatedPlan: CoursePlanRead = response.data as CoursePlanRead;
+          updatedPlan.updated_at = moment(updatedPlan.updated_at);
+          if (handleBlockChange !== null) {
+            handleBlockChange(updatedPlan);
+          } else {
+            throw new Error("handleBlockChange is null");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Course plan update failed");
+        });
+      onClose();
+    } else {
+      console.error("plan is null");
+      alert("Course plan update failed");
+    }
+  };
+
   const plus = () => {
     if (numOfYears < 8) setNumOfYears(numOfYears + 1); // maximum 8 years
   };
@@ -47,10 +102,13 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
 
   return (
     <form
-      onSubmit={handleAdd} // Attach the custom handler to the form
+      onSubmit={mode === "add" ? handleAdd : handleUpdate} // Attach the custom handler to the form
       className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-lg border bg-white p-6 shadow-md"
     >
       {/* Plan name*/}
+      <div className="mb-4 text-2xl font-medium text-zinc-800">
+        {mode === "add" ? "Create Plan" : "Update Plan"}
+      </div>
       <label className="flex flex-row items-center">
         <span className="w-22 font-medium text-gray-700">Name:</span>
         <input
@@ -114,7 +172,7 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
           type="submit"
           className="rounded-md bg-slate-400 px-4 py-2 text-white transition hover:bg-slate-500"
         >
-          Add
+          {mode === "add" ? "Add" : "Update"}
         </button>
       </div>
     </form>
