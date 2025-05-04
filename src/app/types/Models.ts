@@ -1,13 +1,15 @@
+import { Moment } from "moment";
+
 export interface PreUser {
-  id: string;
+  _id: string;
   email: string;
   license_key_hash: string;
-  activated_at: Date;
+  activated_at: Moment;
 }
 
 export interface User extends PreUser {
   first_name: string;
-  last_login: Date;
+  last_login: Moment;
   last_name: string;
   major: string;
   password_hash: string;
@@ -28,21 +30,21 @@ export interface UserRead {
   _id: string;
   email: string;
   first_name: string;
-  last_login: Date;
+  last_login: Moment;
   last_name: string;
   major: string;
   username: string;
 }
 
-export interface UserUpdate {
+export interface UserUpMoment {
   major?: string;
   password?: string;
   username?: string;
-  last_login?: Date;
+  last_login?: Moment;
 }
 
 export interface Course {
-  id: string;
+  _id: string;
   code: string;
   corequisites: string;
   description: string;
@@ -55,7 +57,7 @@ export interface Course {
 }
 
 export interface SemesterPlan {
-  id: string;
+  _id: string;
   course_plan_id: string;
   courses: string[];
   semester: number;
@@ -63,20 +65,30 @@ export interface SemesterPlan {
 }
 
 export interface CoursePlan {
-  id: string;
+  _id: string;
   description: string;
   favourite: boolean;
   name: string;
-  updated_at: Date;
+  updated_at: Moment;
+  user_id: string;
+}
+
+
+export interface RawCoursePlan {
+  _id: string;
+  description: string;
+  favourite: boolean;
+  name: string;
+  updated_at: string;
   user_id: string;
 }
 
 export interface CoursePlanRead {
-  id: string;
+  _id: string;
   description: string;
   favourite: boolean;
   name: string;
-  updated_at: Date;
+  updated_at: Moment;
   user_id: string;
 }
 
