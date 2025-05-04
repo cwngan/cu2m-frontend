@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { CoursePlan } from "../types/CoursePlan";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import "./scrollbar.css";
+import "@/app/scrollbar.css";
 
 export default function CoursePlanBlock({
   plan: orgiPlan,

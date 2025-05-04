@@ -1,7 +1,7 @@
 import Link from "next/link";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
-import "../../dashboard/components/page.css";
+import "@/app/background.css";
 
 export default function Page() {
   return (

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import CoursePlanGridContainer from "./components/CoursePlanGridContainer";
 import TopBar from "./components/TopBar";
-import "./components/page.css";
+import "@/app/background.css";
 
 export default async function Page() {
   return (
