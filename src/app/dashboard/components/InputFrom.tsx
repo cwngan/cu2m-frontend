@@ -30,7 +30,7 @@ export default function InputFrom({ onClose }: { onClose: () => void }) {
   };
 
   const minus = () => {
-    if (numOfYears > 2) setNumOfYears(numOfYears - 1); //minimum 2 years
+    if (numOfYears > 1) setNumOfYears(numOfYears - 1); //minimum 1 years
   };
 
   return (
