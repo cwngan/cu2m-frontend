@@ -18,7 +18,6 @@ export default function Page() {
             <div>
               <div className="mb-2 text-xl">Username</div>
               <InputBox
-                className="rounded-md border-neutral-400 ring-slate-400 hover:ring-2"
                 type="text"
                 placeholder="user123"
                 required
@@ -27,7 +26,6 @@ export default function Page() {
             <div>
               <div className="mb-2 text-xl">Password</div>
               <InputBox
-                className="rounded-md border-neutral-400 ring-slate-400 hover:ring-2"
                 type="password"
                 required
               />

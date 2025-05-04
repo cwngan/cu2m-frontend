@@ -5,6 +5,13 @@ import clsx from "clsx";
 import { useState } from "react";
 import { useEffect } from "react";
 
+const levelColors: { [key: number]: string } = {
+  1: "bg-green-800/30 text-gray-80",
+  2: "bg-zinc-500/40",
+  3: "bg-teal-700/30",
+  4: "bg-stone-600/40 text-stone-800",
+};
+
 interface CourseBlockProps {
   semesterPlanId: string;
   course: CourseBasicInfo;
@@ -26,13 +33,6 @@ export default function CourseBlock({
 
   //set the color of course block base on number of semester
   const [color, setColor] = useState<string>("bg-neutral-200");
-
-  const levelColors: { [key: number]: string } = {
-    1: "bg-green-800/30 text-gray-80",
-    2: "bg-zinc-500/40",
-    3: "bg-teal-700/30",
-    4: "bg-stone-600/40 text-stone-800",
-  };
 
   useEffect(() => {
     // Extract the first digit from the numeric part of the course code (e.g., CSCI2100 -> 2)
