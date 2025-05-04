@@ -1,9 +1,9 @@
 "use client";
-import axios from "axios";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
 import { useRouter } from "next/navigation";
 import "@/app/background.css";
+import { apiClient } from "@/apiClient";
 
 export default function Page() {
   const router = useRouter();
@@ -20,10 +20,8 @@ export default function Page() {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const data = Object.fromEntries(formData.entries());
-            axios
-              .post("/api/user/signup", data, {
-                baseURL: process.env.NEXT_PUBLIC_API_URL,
-              })
+            apiClient
+              .post("/api/user/signup", data)
               .then((res) => {
                 if (res.status >= 200 && res.status < 300) {
                   router.push("/dashboard");

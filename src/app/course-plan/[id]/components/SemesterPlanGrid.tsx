@@ -6,7 +6,6 @@ import { SemesterPlanData } from "../types/SemesterPlan";
 import { RawSemesterPlanData } from "../types/RawSemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
 import SearchBlock from "./SearchBlock";
-// import axios from "axios";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 // import { CoursePlanRead } from "@/app/types/Models";
 

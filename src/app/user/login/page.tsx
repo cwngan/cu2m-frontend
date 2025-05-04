@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import axios from "axios";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
 import "@/app/background.css";
+import { apiClient } from "@/apiClient";
 
 export default function Page() {
   return (
@@ -20,10 +20,8 @@ export default function Page() {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const data = Object.fromEntries(formData.entries());
-            axios
-              .post("/api/user/login", data, {
-                baseURL: process.env.NEXT_PUBLIC_API_URL,
-              })
+            apiClient
+              .post("/api/user/login", data)
               .then((res) => {
                 if (res.status === 200) {
                   window.location.href = "/dashboard";
@@ -41,7 +39,12 @@ export default function Page() {
           <div className="flex flex-col items-start gap-3 rounded-4xl bg-white p-8 shadow-lg">
             <div>
               <div className="mb-2 text-xl">Username</div>
-              <InputBox type="text" placeholder="user123" name="username" required />
+              <InputBox
+                type="text"
+                placeholder="user123"
+                name="username"
+                required
+              />
             </div>
             <div>
               <div className="mb-2 text-xl">Password</div>

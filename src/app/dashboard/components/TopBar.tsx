@@ -1,15 +1,15 @@
 "use client";
 
+import { apiClient } from "@/apiClient";
 import { UserResponseModel } from "@/app/types/ApiResponseModel";
 import { UserRead } from "@/app/types/Models";
-import axios from "axios";
 import { MouseEventHandler, useCallback, useEffect, useState } from "react";
 
 export default function TopBar() {
   const [user, setUser] = useState<UserRead | null>(null);
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await axios.get<UserResponseModel>("/api/user/me");
+      const res = await apiClient.get<UserResponseModel>("/api/user/me");
       if (res.status === 200) {
         setUser(res.data.data);
       }
@@ -18,7 +18,7 @@ export default function TopBar() {
   }, []);
   const logoutHandler = useCallback<MouseEventHandler>((e) => {
     e.preventDefault();
-    axios
+    apiClient
       .post("/api/user/logout")
       .then((res) => {
         if (res.status === 200) {
