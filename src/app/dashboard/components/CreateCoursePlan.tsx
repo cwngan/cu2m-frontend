@@ -1,5 +1,5 @@
 import { useState } from "react";
-import InputFrom from "./InputFrom";
+import InputForm from "./InputForm";
 
 export default function CreateCoursePlan() {
   const [showForm, setShowForm] = useState(false);
@@ -38,7 +38,7 @@ export default function CreateCoursePlan() {
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
           >
             {/* Pass the handleCloseForm function as a prop */}
-            <InputFrom onClose={handleCloseForm} />
+            <InputForm onClose={handleCloseForm} />
           </div>
         </div>
       )}
