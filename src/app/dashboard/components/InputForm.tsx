@@ -92,13 +92,13 @@ export default function InputForm({
     }
   };
 
-  const plus = () => {
-    if (numOfYears < 8) setNumOfYears(numOfYears + 1); // maximum 8 years
-  };
+  // const plus = () => {
+  //   if (numOfYears < 8) setNumOfYears(numOfYears + 1); // maximum 8 years
+  // };
 
-  const minus = () => {
-    if (numOfYears > 2) setNumOfYears(numOfYears - 1); // minimum 2 years
-  };
+  // const minus = () => {
+  //   if (numOfYears > 2) setNumOfYears(numOfYears - 1); // minimum 2 years
+  // };
 
   return (
     <form

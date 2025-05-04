@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import clsx from "clsx";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
-import { CoursePlan, CoursePlanRead, RawCoursePlan } from "@/app/types/Models";
+import { CoursePlan, CoursePlanRead } from "@/app/types/Models";
 import CoursePlanBlock from "./CoursePlanBlock";
 import CreateCoursePlan from "./CreateCoursePlan";
 
