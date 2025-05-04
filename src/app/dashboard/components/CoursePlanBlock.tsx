@@ -1,25 +1,26 @@
 import clsx from "clsx";
-import { CoursePlan } from "../types/CoursePlan";
+import { CoursePlan, CoursePlanRead, CoursePlanUpdate } from "@/app/types/Models";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "@/app/scrollbar.css";
+import axios from "axios";
+import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
+import moment from "moment";
 
 export default function CoursePlanBlock({
-  plan: orgiPlan,
+  plan,
   isUpdating: allUpdating,
+  handleBlockChange,
 }: {
   plan: CoursePlan;
   isUpdating: boolean;
+  handleBlockChange: (updatedPlan: CoursePlan) => void;
 }) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState<boolean>(allUpdating);
-  const [plan, setPlan] = useState<CoursePlan>(orgiPlan);
   useEffect(() => {
     setIsUpdating(allUpdating);
-  }, [allUpdating]);
-  useEffect(() => {
-    setPlan(orgiPlan);
-  }, [orgiPlan]);
+  }, [allUpdating]); 
 
   return (
     // course plan block
@@ -53,10 +54,24 @@ export default function CoursePlanBlock({
               e.stopPropagation();
               // Simulate an API call to update the favourite status
               setIsUpdating(true);
-              setTimeout(() => {
-                setPlan((prev) => ({ ...prev, favourite: !prev.favourite }));
+              const coursePlanUpdate: CoursePlanUpdate = { "favourite": !plan.favourite };
+              axios.patch<CoursePlanResponseModel>(`/api/course-plans/${plan._id}`, coursePlanUpdate, {
+                baseURL: process.env.NEXT_PUBLIC_API_URL,
+              })
+              .then((res) => {
+                const response = res.data;
+                if (response.status == "ERROR" || response.data === null) {
+                  throw new Error(response.error);
+                }
+
+                let updatedPlan: CoursePlanRead = response.data as CoursePlanRead;
+                updatedPlan.updated_at = moment(updatedPlan.updated_at);
+                handleBlockChange(updatedPlan);
                 setIsUpdating(false);
-              }, 500);
+              }).catch((err) => {
+                console.error(err);
+                alert("Course plan update failed");
+              })
             }}
           >
             {plan.favourite ? "★" : "☆"}
