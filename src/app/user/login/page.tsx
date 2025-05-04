@@ -59,7 +59,7 @@ export default function Page() {
               </div>
             </div>
             <div className="flex w-full justify-center">
-              <Button text="Signup" />
+              <Button text="Login" />
             </div>
           </div>
         </form>

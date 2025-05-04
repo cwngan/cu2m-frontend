@@ -98,7 +98,7 @@ export default function Page() {
               />
             </div>
             <div className="mt-2 flex w-full justify-center">
-              <Button text="Login" />
+              <Button text="Signup" />
             </div>
           </div>
         </form>
