@@ -79,6 +79,16 @@ export default function Page() {
               />
             </div>
             <div>
+              <div className="mb-2 text-xl">Major</div>
+              <InputBox
+                type="text"
+                placeholder="CSCI"
+                className="rounded-md border-neutral-400 ring-slate-400 hover:ring-2"
+                name="major"
+                required
+              />
+            </div>
+            <div>
               <div className="mb-2 text-xl">Username</div>
               <InputBox
                 type="text"
