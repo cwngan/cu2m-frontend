@@ -21,7 +21,7 @@ export default function InputForm({
   handleBlockChange: ((updatedPlan: CoursePlan) => void) | null;
 }) {
   const router = useRouter();
-  const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
+  // const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
   const [description, setDescription] = useState("");
   const [name, setName] = useState("");
 
