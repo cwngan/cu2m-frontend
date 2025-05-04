@@ -1,0 +1,44 @@
+/* Background animation container */
+.animated-lines {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image:
+    linear-gradient(to right, transparent 98%, #e0e3e9 98%, #b3b9b9 100%),
+    linear-gradient(to bottom, transparent 98%, #fdfeff 98%, #a8aeb1 100%);
+  background-size: 50px 50px;
+  animation: move-lines 4s steps(16) infinite;
+}
+
+@keyframes move-lines {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: translate(10px, 10px);
+    opacity: 0.7;
+  }
+  40% {
+    transform: translate(20px, 20px);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(25px, 25px);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(30px, 30px);
+    opacity: 0.9;
+  }
+  80% {
+    transform: translate(40px, 40px);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(50px, 50px);
+    opacity: 0.5;
+  }
+}

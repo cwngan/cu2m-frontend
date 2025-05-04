@@ -9,13 +9,11 @@ type InputBoxProps = DetailedHTMLProps<
 export default function InputBox(props: InputBoxProps) {
   return (
     <input
-      {...{
-        ...props,
-        className: clsx(
-          "border leading-none p-2 w-96",
-          props.className
-        ),
-      }}
+      {...props}
+      className={clsx(
+        "w-96 rounded-md border border-neutral-400 p-2 leading-none ring-slate-400 hover:ring-2",
+        props.className, // still allow override if needed, but default is always applied
+      )}
     />
   );
 }

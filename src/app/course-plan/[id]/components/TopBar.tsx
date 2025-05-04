@@ -22,7 +22,7 @@ export default function TopBar({ coursePlanId }: TopBarProps) {
     }
   }, [coursePlanId]);
   return (
-    <div className="fixed top-0 left-0 z-30 h-12 w-full border-b bg-white">
+    <div className="from-neutral-60 via0-neutral-300 fixed top-0 left-0 z-30 h-12 w-full border-b border-white bg-gradient-to-br to-neutral-300 shadow-md inset-ring inset-ring-neutral-300">
       <div className="container mx-auto flex h-full items-center justify-between gap-4 px-4">
         <Link href={"/dashboard"}>Back</Link>
         <div>

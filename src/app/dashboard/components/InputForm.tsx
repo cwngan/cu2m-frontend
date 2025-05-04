@@ -4,7 +4,7 @@ import { CoursePlan } from "../types/CoursePlan";
 import moment from "moment";
 import { ObjectId } from "bson";
 
-export default function InputFrom({ onClose }: { onClose: () => void }) {
+export default function InputForm({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
   const [description, setDescription] = useState("");
@@ -36,7 +36,7 @@ export default function InputFrom({ onClose }: { onClose: () => void }) {
   return (
     <form
       onSubmit={handleAdd} // Attach the custom handler to the form
-      className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col gap-3 rounded-lg border bg-white p-6 shadow-md"
+      className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-lg border bg-white p-6 shadow-md"
     >
       {/* Plan name*/}
       <label className="flex flex-row items-center">
@@ -46,7 +46,7 @@ export default function InputFrom({ onClose }: { onClose: () => void }) {
           placeholder="Plan name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-violet-400 focus:outline-none"
+          className="flex-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-zinc-400 focus:outline-none"
         />
       </label>
 
@@ -85,7 +85,7 @@ export default function InputFrom({ onClose }: { onClose: () => void }) {
           placeholder=""
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="mt-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-violet-400 focus:outline-none"
+          className="mt-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-zinc-400 focus:outline-none"
         />
       </label>
 
@@ -100,7 +100,7 @@ export default function InputFrom({ onClose }: { onClose: () => void }) {
         </button>
         <button
           type="submit"
-          className="rounded-md bg-violet-400 px-4 py-2 text-white transition hover:bg-indigo-500"
+          className="rounded-md bg-slate-400 px-4 py-2 text-white transition hover:bg-slate-500"
         >
           Add
         </button>
