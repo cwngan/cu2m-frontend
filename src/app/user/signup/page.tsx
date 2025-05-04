@@ -7,7 +7,7 @@ export default function Page() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-radial-[at_50%_50%] from-white via-zinc-100 to-zinc-300">
       <div className="animated-lines z-0"></div>
-      <div className="z-40 container mx-auto flex h-screen flex-col items-center justify-center gap-8 pb-20">
+      <div className="relative z-40 container mx-auto flex h-screen flex-col items-center justify-center gap-8 pb-20">
         <h2 className="z-40 text-4xl">Sign up</h2>
         {/* Directly redirect to dashboard for development use */}
         <form className="z-40" action="/dashboard">
