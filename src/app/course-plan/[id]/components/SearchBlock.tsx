@@ -137,7 +137,7 @@ export default function SearchBlock() {
           <div
             ref={scrollContainerRef}
             onWheel={handleWheel}
-            className="z-10 flex max-h-64 w-full flex-row gap-5 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-3 whitespace-nowrap shadow-lg"
+            className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
           >
             {searchResults.map((res) => (
               <SearchResultBlock key={res._id} res={res} />
