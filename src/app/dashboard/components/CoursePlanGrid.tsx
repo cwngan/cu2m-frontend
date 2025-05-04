@@ -68,46 +68,54 @@ export default function CoursePlanGrid({
   const [renderedPlans, setRenderedPlans] = useState<CoursePlan[]>([]);
   const [isUpdating, setIsUpdating] = useState(true);
 
-  const handleBlockChange = useCallback((updatedPlan: CoursePlan) => {
-    const index = coursePlans.findIndex((plan) => plan._id === updatedPlan._id);
-    setCoursePlans((prev) => {
-      const newCoursePlans = [...prev];
-      newCoursePlans[index] = updatedPlan;
-      return newCoursePlans;
-    })
-  }, [coursePlans])
+  const handleBlockChange = useCallback(
+    (updatedPlan: CoursePlan) => {
+      const index = coursePlans.findIndex(
+        (plan) => plan._id === updatedPlan._id,
+      );
+      setCoursePlans((prev) => {
+        const newCoursePlans = [...prev];
+        newCoursePlans[index] = updatedPlan;
+        return newCoursePlans;
+      });
+    },
+    [coursePlans],
+  );
 
   useEffect(() => {
     const fetchData = async () => {
       setIsUpdating(true);
 
-      axios.get<CoursePlanResponseModel>("/api/course-plans/", {
-        baseURL: process.env.NEXT_PUBLIC_API_URL,
-      })
-      .then((res) => {
-        const response = res.data;
-        if (response.status === "ERROR" || response.data === null) {
-          throw new Error(response.error);
-        }
+      axios
+        .get<CoursePlanResponseModel>("/api/course-plans/", {
+          baseURL: process.env.NEXT_PUBLIC_API_URL,
+        })
+        .then((res) => {
+          const response = res.data;
+          if (response.status === "ERROR" || response.data === null) {
+            throw new Error(response.error);
+          }
 
-        const coursePlans: CoursePlan[] = (response.data as CoursePlanRead[])
-        .map((plan: CoursePlan) => {
-          return {
-            _id: plan._id,
-            name: plan.name,
-            updated_at: moment(plan.updated_at),
-            description: plan.description,
-            favourite: plan.favourite,
-            user_id: plan.user_id,
-          };
-        }).sort(compFunc);
-        setCoursePlans(coursePlans);
-        setIsUpdating(false);
-      }).catch((err) => {
-        console.error(err);
-        alert("Course plans fetch failed");
-        setIsUpdating(false);
-      })
+          const coursePlans: CoursePlan[] = (response.data as CoursePlanRead[])
+            .map((plan: CoursePlan) => {
+              return {
+                _id: plan._id,
+                name: plan.name,
+                updated_at: moment(plan.updated_at),
+                description: plan.description,
+                favourite: plan.favourite,
+                user_id: plan.user_id,
+              };
+            })
+            .sort(compFunc);
+          setCoursePlans(coursePlans);
+          setIsUpdating(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Course plans fetch failed");
+          setIsUpdating(false);
+        });
     };
     fetchData();
   }, [compFunc]);
@@ -118,7 +126,7 @@ export default function CoursePlanGrid({
     } else {
       setRenderedPlans(coursePlans);
     }
-  }, [coursePlans, starredFilter])
+  }, [coursePlans, starredFilter]);
 
   return (
     <div className={clsx("flex flex-row flex-wrap gap-6")}>

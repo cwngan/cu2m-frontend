@@ -15,21 +15,26 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
   const handleAdd = (event: React.FormEvent) => {
     event.preventDefault();
     // Submit a new plan
-    const coursePlanCreate: CoursePlanCreate = { "description": description, "name": name };
-    axios.post<CoursePlanResponseModel>("/api/course-plans/", coursePlanCreate, {
-      baseURL: process.env.NEXT_PUBLIC_API_URL,
-    })
-    .then((res) => {
-      const response = res.data;
-      if (response.status === "ERROR" || response.data === null) {
-        throw new Error(response.error);
-      }
-      const newPlan: CoursePlanRead = response.data as CoursePlanRead;
-      router.push(`/course-plan/${newPlan._id}`); // navigate to course plan id 
-    }).catch((err) => {
-      console.error(err);
-      alert("Course plan creation failed");
-    })
+    const coursePlanCreate: CoursePlanCreate = {
+      description: description,
+      name: name,
+    };
+    axios
+      .post<CoursePlanResponseModel>("/api/course-plans/", coursePlanCreate, {
+        baseURL: process.env.NEXT_PUBLIC_API_URL,
+      })
+      .then((res) => {
+        const response = res.data;
+        if (response.status === "ERROR" || response.data === null) {
+          throw new Error(response.error);
+        }
+        const newPlan: CoursePlanRead = response.data as CoursePlanRead;
+        router.push(`/course-plan/${newPlan._id}`); // navigate to course plan id
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Course plan creation failed");
+      });
   };
 
   const plus = () => {

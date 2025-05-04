@@ -1,5 +1,9 @@
 import clsx from "clsx";
-import { CoursePlan, CoursePlanRead, CoursePlanUpdate } from "@/app/types/Models";
+import {
+  CoursePlan,
+  CoursePlanRead,
+  CoursePlanUpdate,
+} from "@/app/types/Models";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "@/app/scrollbar.css";
@@ -20,7 +24,7 @@ export default function CoursePlanBlock({
   const [isUpdating, setIsUpdating] = useState<boolean>(allUpdating);
   useEffect(() => {
     setIsUpdating(allUpdating);
-  }, [allUpdating]); 
+  }, [allUpdating]);
 
   return (
     // course plan block
@@ -54,24 +58,33 @@ export default function CoursePlanBlock({
               e.stopPropagation();
               // Simulate an API call to update the favourite status
               setIsUpdating(true);
-              const coursePlanUpdate: CoursePlanUpdate = { "favourite": !plan.favourite };
-              axios.patch<CoursePlanResponseModel>(`/api/course-plans/${plan._id}`, coursePlanUpdate, {
-                baseURL: process.env.NEXT_PUBLIC_API_URL,
-              })
-              .then((res) => {
-                const response = res.data;
-                if (response.status == "ERROR" || response.data === null) {
-                  throw new Error(response.error);
-                }
+              const coursePlanUpdate: CoursePlanUpdate = {
+                favourite: !plan.favourite,
+              };
+              axios
+                .patch<CoursePlanResponseModel>(
+                  `/api/course-plans/${plan._id}`,
+                  coursePlanUpdate,
+                  {
+                    baseURL: process.env.NEXT_PUBLIC_API_URL,
+                  },
+                )
+                .then((res) => {
+                  const response = res.data;
+                  if (response.status == "ERROR" || response.data === null) {
+                    throw new Error(response.error);
+                  }
 
-                let updatedPlan: CoursePlanRead = response.data as CoursePlanRead;
-                updatedPlan.updated_at = moment(updatedPlan.updated_at);
-                handleBlockChange(updatedPlan);
-                setIsUpdating(false);
-              }).catch((err) => {
-                console.error(err);
-                alert("Course plan update failed");
-              })
+                  let updatedPlan: CoursePlanRead =
+                    response.data as CoursePlanRead;
+                  updatedPlan.updated_at = moment(updatedPlan.updated_at);
+                  handleBlockChange(updatedPlan);
+                  setIsUpdating(false);
+                })
+                .catch((err) => {
+                  console.error(err);
+                  alert("Course plan update failed");
+                });
             }}
           >
             {plan.favourite ? "★" : "☆"}

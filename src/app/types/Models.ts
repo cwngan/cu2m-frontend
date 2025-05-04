@@ -73,7 +73,6 @@ export interface CoursePlan {
   user_id: string;
 }
 
-
 export interface RawCoursePlan {
   _id: string;
   description: string;
