@@ -15,6 +15,8 @@ interface SemesterPlanProps {
     semesterPlanId: string,
   ) => void;
 }
+
+// This component represents an individual year column in the course plan grid
 export default function SemesterPlan({
   plan,
   addSummerSession,

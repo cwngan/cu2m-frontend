@@ -1,7 +1,7 @@
 import { useState } from "react";
 import InputFrom from "./InputFrom";
 
-export default function CreateCoursePlan({ ID }: { ID: number }) {
+export default function CreateCoursePlan() {
   const [showForm, setShowForm] = useState(false);
 
   const InputInfo = () => {
@@ -22,7 +22,7 @@ export default function CreateCoursePlan({ ID }: { ID: number }) {
         <div className="flex h-40 w-40 items-center justify-center text-9xl font-light text-gray-400 group-hover:hidden">
           +
         </div>
-        <div className="font-large hidden h-40 w-40 animate-pulse items-center justify-center text-9xl text-white select-none group-hover:flex">
+        <div className="hidden h-40 w-40 animate-pulse items-center justify-center text-9xl text-white select-none group-hover:flex">
           +
         </div>
       </div>
@@ -38,7 +38,7 @@ export default function CreateCoursePlan({ ID }: { ID: number }) {
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
           >
             {/* Pass the handleCloseForm function as a prop */}
-            <InputFrom onClose={handleCloseForm} maxID={ID} />
+            <InputFrom onClose={handleCloseForm} />
           </div>
         </div>
       )}
