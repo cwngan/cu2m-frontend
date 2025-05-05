@@ -1,6 +1,6 @@
 /* Background animation container */
 .animated-lines {
-  position: absolute;
+  position: fixed;
   top: -50%;
   left: -50%;
   width: 200%;
