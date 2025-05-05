@@ -88,7 +88,7 @@ export default function SearchBlock() {
             const query = queryRef.current?.value;
             if (query) {
               console.log(`Searching for ${query}`);
-              apiClient.get(`/api/courses?code=${query}&basic=true`)
+              apiClient.get(`/api/courses?keywords=${query}&basic=true`)
               .then((res) => {
                 const response = res.data;
                 if (response.status === "ERROR" || response.data === null) {
