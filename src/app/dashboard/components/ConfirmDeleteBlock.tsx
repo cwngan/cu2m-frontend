@@ -1,7 +1,6 @@
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
-import { CoursePlan, CoursePlanRead } from "@/app/types/Models";
-import axios from "axios";
-import moment from "moment";
+import { CoursePlan } from "@/app/types/Models";
+import { apiClient } from "@/apiClient";
 
 export default function ConfirmDeleteBlock({
   plan,
@@ -14,10 +13,8 @@ export default function ConfirmDeleteBlock({
 }) {
   const handleDelete = (event: React.FormEvent) => {
     event.preventDefault();
-    axios
-      .delete<CoursePlanResponseModel>(`/api/course-plans/${plan._id}`, {
-        baseURL: process.env.NEXT_PUBLIC_API_URL,
-      })
+    apiClient
+      .delete<CoursePlanResponseModel>(`/api/course-plans/${plan._id}`)
       .then((res) => {
         const response = res.data;
         if (response.status === "ERROR") {
