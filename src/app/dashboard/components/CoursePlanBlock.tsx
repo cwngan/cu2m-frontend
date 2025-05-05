@@ -43,14 +43,15 @@ export default function CoursePlanBlock({
       <div
         className={clsx(
           "group duration 400 shaodw-2xl relative flex h-52 w-42 flex-col items-center justify-center rounded-2xl bg-white shadow-lg transition delay-20 ease-in-out transform-3d hover:flex hover:scale-110",
-          isUpdating
-            ? "cursor-not-allowed opacity-25 select-none"
-            : "cursor-pointer opacity-100",
+          isUpdating ? "cursor-not-allowed select-none" : "cursor-pointer",
         )}
         onClick={() => {
           router.push(`/course-plan/${plan._id}`);
         }}
       >
+        {isUpdating && (
+          <div className="absolute top-0 left-0 h-full w-full rounded-2xl bg-zinc-100/75"></div>
+        )}
         <a
           className="absolute top-2 right-2 p-2 text-slate-600 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={async (e) => {
