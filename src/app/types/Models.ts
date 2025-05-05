@@ -53,9 +53,8 @@ export interface Course {
   not_for_taken: string;
   prerequisites: string;
   title: string;
-  units: string;
+  units: number;
 }
- 
 
 export interface CourseRead {
   _id: string;
@@ -67,9 +66,8 @@ export interface CourseRead {
   not_for_taken: string | null;
   prerequisites: string | null;
   title: string | null;
-  units: string | null;
+  units: number | null;
 }
- 
 
 export interface SemesterPlan {
   _id: string;
