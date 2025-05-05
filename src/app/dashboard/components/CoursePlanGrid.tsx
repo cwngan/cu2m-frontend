@@ -1,4 +1,3 @@
-import axios from "axios";
 import moment from "moment";
 import { useCallback, useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -7,6 +6,7 @@ import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import { CoursePlan, CoursePlanRead } from "@/app/types/Models";
 import CoursePlanBlock from "./CoursePlanBlock";
 import CreateCoursePlan from "./CreateCoursePlan";
+import { apiClient } from "@/apiClient";
 
 // data structure simulation for course plan(receicing RawCoursePlan typed objects as data)
 // const template: { data: RawCoursePlan[] } = {
@@ -86,10 +86,8 @@ export default function CoursePlanGrid({
     const fetchData = async () => {
       setIsUpdating(true);
 
-      axios
-        .get<CoursePlanResponseModel>("/api/course-plans/", {
-          baseURL: process.env.NEXT_PUBLIC_API_URL,
-        })
+      apiClient
+        .get<CoursePlanResponseModel>("/api/course-plans/")
         .then((res) => {
           const response = res.data;
           if (response.status === "ERROR" || response.data === null) {

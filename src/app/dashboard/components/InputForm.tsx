@@ -5,9 +5,9 @@ import {
   CoursePlanCreate,
   CoursePlanRead,
 } from "@/app/types/Models";
-import axios from "axios";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import moment from "moment";
+import { apiClient } from "@/apiClient";
 
 export default function InputForm({
   mode,
@@ -33,10 +33,8 @@ export default function InputForm({
       description: description,
       name: name,
     };
-    axios
-      .post<CoursePlanResponseModel>("/api/course-plans/", coursePlanCreate, {
-        baseURL: process.env.NEXT_PUBLIC_API_URL,
-      })
+    apiClient
+      .post<CoursePlanResponseModel>("/api/course-plans/", coursePlanCreate)
       .then((res) => {
         const response = res.data;
         if (response.status === "ERROR" || response.data === null) {
@@ -60,13 +58,10 @@ export default function InputForm({
     };
 
     if (plan !== null) {
-      axios
+      apiClient
         .patch<CoursePlanResponseModel>(
           `/api/course-plans/${plan._id}`,
           coursePlanUpdate,
-          {
-            baseURL: process.env.NEXT_PUBLIC_API_URL,
-          },
         )
         .then((res) => {
           const response = res.data;

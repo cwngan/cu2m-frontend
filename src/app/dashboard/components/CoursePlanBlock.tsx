@@ -7,10 +7,10 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "@/app/scrollbar.css";
-import axios from "axios";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import moment from "moment";
 import InputForm from "./InputForm";
+import { apiClient } from "@/apiClient";
 
 export default function CoursePlanBlock({
   plan,
@@ -95,13 +95,10 @@ export default function CoursePlanBlock({
                 const coursePlanUpdate: CoursePlanUpdate = {
                   favourite: !plan.favourite,
                 };
-                axios
+                apiClient
                   .patch<CoursePlanResponseModel>(
                     `/api/course-plans/${plan._id}`,
                     coursePlanUpdate,
-                    {
-                      baseURL: process.env.NEXT_PUBLIC_API_URL,
-                    },
                   )
                   .then((res) => {
                     const response = res.data;
