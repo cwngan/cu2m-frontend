@@ -1,72 +1,16 @@
 "use client";
 import { useRef, useState, WheelEvent } from "react";
-import { CourseBasicInfo } from "../types/Course";
 import SearchResultBlock from "./SearchResultBlock";
 import { apiClient } from "@/apiClient";
+import { CourseRead } from "@/app/types/Models";
 
-// const sampleSearchResults = [
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "ENGG1110",
-//     title: "Problem Solving with Programming",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "MATH1510",
-//     title: "Calculus for Engineers",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "CSCI1130",
-//     title: "Introduction to Computing with Java",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "ENGG1120",
-//     title: "Linear Algebra for Engineers",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "ENGG1130",
-//     title: "Multivariable Calculus for Engineers",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "CSCI2100",
-//     title: "Data Structures",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "CSCI3100",
-//     title: "Software Engineering",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "CSCI3160",
-//     title: "Design and Analysis of Algorithms",
-//     units: 3,
-//   },
-//   {
-//     _id: crypto.randomUUID(),
-//     code: "CHEM2870",
-//     title: "Integrated Chemistry Laboratory II",
-//     units: 4,
-//   },
-// ];
 
 export default function SearchBlock() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const queryRef = useRef<HTMLInputElement>(null);
   const [resultBlockOpen, setResultBlockOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<CourseBasicInfo[]>([]);
+  const [searchResults, setSearchResults] = useState<CourseRead[]>([]);
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     if (scrollContainerRef.current) {
@@ -88,19 +32,21 @@ export default function SearchBlock() {
             const query = queryRef.current?.value;
             if (query) {
               console.log(`Searching for ${query}`);
-              apiClient.get(`/api/courses?keywords=${query}&basic=true`)
-              .then((res) => {
-                const response = res.data;
-                if (response.status === "ERROR" || response.data === null) {
-                  throw new Error(response.error);
-                }
+              apiClient
+                .get(`/api/courses?keywords=${query}&basic=true`)
+                .then((res) => {
+                  const response = res.data;
+                  if (response.status === "ERROR" || response.data === null) {
+                    throw new Error(response.error);
+                  }
 
-                setSearchResults(response.data);
-                setResultBlockOpen(true);
-              }).catch((err) => {
-                console.error(err);
-                alert("Course fetch failed");
-              });
+                  setSearchResults(response.data);
+                  setResultBlockOpen(true);
+                })
+                .catch((err) => {
+                  console.error(err);
+                  alert("Course fetch failed");
+                });
             }
           }}
         >
