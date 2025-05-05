@@ -22,7 +22,9 @@ export default function InputForm({
 }) {
   const router = useRouter();
   // const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
-  const [description, setDescription] = useState(plan === null ? "" : plan.description);
+  const [description, setDescription] = useState(
+    plan === null ? "" : plan.description,
+  );
   const [name, setName] = useState(plan === null ? "" : plan.name);
 
   // navigation function of the add button
