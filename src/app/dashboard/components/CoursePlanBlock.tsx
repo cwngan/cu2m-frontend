@@ -4,25 +4,35 @@ import {
   CoursePlanRead,
   CoursePlanUpdate,
 } from "@/app/types/Models";
-import { useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import "@/app/scrollbar.css";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import moment from "moment";
-import InputForm from "./InputForm";
 import { apiClient } from "@/apiClient";
-import ConfirmDeleteBlock from "./ConfirmDeleteBlock";
 
 export default function CoursePlanBlock({
   plan,
   isUpdating: allUpdating,
   handleBlockChange,
-  handleDeleteChange,
+  setPopupPlan,
+  setShowForm,
+  setShowDelete,
+  popupPlan,
 }: {
   plan: CoursePlan;
   isUpdating: boolean;
   handleBlockChange: (updatedPlan: CoursePlan) => void;
-  handleDeleteChange: (deletedPlan: CoursePlan) => void;
+  setPopupPlan: Dispatch<SetStateAction<CoursePlan | null>>;
+  setShowForm: Dispatch<SetStateAction<boolean>>;
+  setShowDelete: Dispatch<SetStateAction<boolean>>;
+  popupPlan: CoursePlan | null;
 }) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState<boolean>(allUpdating);
@@ -31,22 +41,15 @@ export default function CoursePlanBlock({
     setIsUpdating(allUpdating);
   }, [allUpdating]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
-
-  const InputInfo = () => {
+  const InputInfo = useCallback(() => {
+    setPopupPlan(plan);
     setShowForm(true); // Show the form when the block is clicked
-  };
+  }, [plan, setPopupPlan, setShowForm]);
 
-  const ConfirmDelete = () => {
+  const ConfirmDelete = useCallback(() => {
+    setPopupPlan(plan);
     setShowDelete(true); // Show the delete confirmation
-  };
-
-  const handleCloseForm = () => {
-    // Close all forms
-    setShowForm(false);
-    setShowDelete(false);
-  };
+  }, [plan, setPopupPlan, setShowDelete]);
 
   return (
     <>
@@ -56,13 +59,13 @@ export default function CoursePlanBlock({
           "group duration 400 relative transition delay-20 ease-in-out transform-3d hover:flex hover:scale-110",
           isUpdating
             ? "cursor-not-allowed select-none"
-            : showForm || showDelete
+            : popupPlan?._id === plan._id
               ? "cursor-default select-none"
               : "cursor-pointer",
-          showForm || showDelete ? "z-999" : "hover:z-999",
+          popupPlan?._id === plan._id ? "z-999" : "hover:z-999",
         )}
         onClick={() => {
-          if (!showForm && !showDelete && !isUpdating)
+          if (popupPlan?._id !== plan._id && !isUpdating)
             router.push(`/course-plan/${plan._id}`);
         }}
       >
@@ -74,7 +77,7 @@ export default function CoursePlanBlock({
           {isUpdating && (
             <div className="absolute top-0 left-0 h-full w-full rounded-2xl bg-zinc-100/75"></div>
           )}
-          {!showForm && !showDelete && (
+          {popupPlan?._id !== plan._id && (
             <div className="absolute top-2 flex w-full flex-row justify-between p-2 text-slate-600 opacity-0 transition-opacity group-hover:opacity-100">
               <a
                 onClick={async (e) => {
@@ -173,23 +176,6 @@ export default function CoursePlanBlock({
         </div>
         {/* end of the hover description */}
       </div>
-      {/* Input Form */}
-      {/* Pass the handleCloseForm function as a prop */}
-      <InputForm
-        mode="update"
-        plan={plan}
-        onClose={handleCloseForm}
-        handleBlockChange={handleBlockChange}
-        isOpen={showForm}
-      />
-      {/* Delete Form */}
-      {/* Pass the handleCloseForm function as a prop */}
-      <ConfirmDeleteBlock
-        plan={plan}
-        onClose={handleCloseForm}
-        handleDeleteChange={handleDeleteChange}
-        isOpen={showDelete}
-      />
     </>
   );
 }

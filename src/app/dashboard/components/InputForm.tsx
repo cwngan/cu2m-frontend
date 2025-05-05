@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CoursePlan,
   CoursePlanCreate,
@@ -29,6 +29,13 @@ export default function InputForm({
     plan === null ? "" : plan.description,
   );
   const [name, setName] = useState(plan === null ? "" : plan.name);
+
+  useEffect(() => {
+    if (plan !== null) {
+      setDescription(plan.description);
+      setName(plan.name);
+    }
+  }, [plan]);
 
   // navigation function of the add button
   const handleAdd = (event: React.FormEvent) => {

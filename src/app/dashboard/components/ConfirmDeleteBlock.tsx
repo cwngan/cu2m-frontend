@@ -2,6 +2,7 @@ import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import { CoursePlan } from "@/app/types/Models";
 import { apiClient } from "@/apiClient";
 import clsx from "clsx";
+import { useCallback, useEffect, useState } from "react";
 
 export default function ConfirmDeleteBlock({
   plan,
@@ -9,28 +10,39 @@ export default function ConfirmDeleteBlock({
   onClose,
   handleDeleteChange,
 }: {
-  plan: CoursePlan;
+  plan: CoursePlan | null;
   isOpen: boolean;
   onClose: () => void;
   handleDeleteChange: (deletedPlan: CoursePlan) => void;
 }) {
-  const handleDelete = (event: React.FormEvent) => {
-    event.preventDefault();
-    apiClient
-      .delete<CoursePlanResponseModel>(`/api/course-plans/${plan._id}`)
-      .then((res) => {
-        const response = res.data;
-        if (response.status === "ERROR") {
-          throw new Error(response.error);
-        }
-        handleDeleteChange(plan);
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("Course plan deletion failed");
-      });
-    onClose();
-  };
+  const [name, setName] = useState(plan === null ? "" : plan.name);
+  useEffect(() => {
+    if (plan !== null) {
+      setName(plan.name);
+    }
+  }, [plan]);
+  const handleDelete = useCallback(
+    (event: React.FormEvent) => {
+      event.preventDefault();
+      if (!plan) return;
+      apiClient
+        .delete<CoursePlanResponseModel>(`/api/course-plans/${plan._id}`)
+        .then((res) => {
+          const response = res.data;
+          if (response.status === "ERROR") {
+            throw new Error(response.error);
+          }
+          handleDeleteChange(plan);
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Course plan deletion failed");
+        });
+      onClose();
+    },
+    [plan, handleDeleteChange, onClose],
+  );
+
   return (
     <>
       <div
@@ -54,7 +66,8 @@ export default function ConfirmDeleteBlock({
           className="absolute top-1/2 left-1/2 flex flex-auto -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-lg bg-white p-6 ring-2 ring-zinc-300/20"
         >
           <div className="mb-4 flex-1 text-2xl font-medium text-nowrap text-zinc-800">
-            Are you sure to delete the course plan &quot;{plan.name}&quot;?
+            Are you sure to delete the course plan &quot;{name}
+            &quot;?
           </div>
           {/* Buttons */}
           <div className="mt-4 flex justify-between">

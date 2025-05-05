@@ -7,6 +7,8 @@ import { CoursePlan, CoursePlanRead } from "@/app/types/Models";
 import CoursePlanBlock from "./CoursePlanBlock";
 import CreateCoursePlan from "./CreateCoursePlan";
 import { apiClient } from "@/apiClient";
+import InputForm from "./InputForm";
+import ConfirmDeleteBlock from "./ConfirmDeleteBlock";
 
 // data structure simulation for course plan(receicing RawCoursePlan typed objects as data)
 // const template: { data: RawCoursePlan[] } = {
@@ -72,6 +74,10 @@ export default function CoursePlanGrid({
   const [renderedPlans, setRenderedPlans] = useState<CoursePlan[]>([]);
   const [isUpdating, setIsUpdating] = useState(true);
 
+  const [showForm, setShowForm] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [popupPlan, setPopupPlan] = useState<CoursePlan | null>(null);
+
   const handleBlockChange = useCallback(
     (updatedPlan: CoursePlan) => {
       const index = coursePlans.findIndex(
@@ -99,6 +105,13 @@ export default function CoursePlanGrid({
     },
     [coursePlans],
   );
+
+  const handleClosePopup = () => {
+    // Close all forms
+    setShowForm(false);
+    setShowDelete(false);
+    setPopupPlan(null);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -163,10 +176,15 @@ export default function CoursePlanGrid({
         ? renderedPlans.map((plan) => (
             <CoursePlanBlock
               key={plan._id}
-              plan={plan}
-              isUpdating={isUpdating}
-              handleBlockChange={handleBlockChange}
-              handleDeleteChange={handleDeleteChange}
+              {...{
+                plan,
+                isUpdating,
+                handleBlockChange,
+                setShowForm,
+                setShowDelete,
+                setPopupPlan,
+                popupPlan,
+              }}
             />
           ))
         : null}
@@ -192,6 +210,23 @@ export default function CoursePlanGrid({
             />
           </div>
         ))}
+      {/* Input Form */}
+      {/* Pass the handleCloseForm function as a prop */}
+      <InputForm
+        mode="update"
+        plan={popupPlan}
+        onClose={handleClosePopup}
+        handleBlockChange={handleBlockChange}
+        isOpen={showForm}
+      />
+      {/* Delete Form */}
+      {/* Pass the handleCloseForm function as a prop */}
+      <ConfirmDeleteBlock
+        plan={popupPlan}
+        onClose={handleClosePopup}
+        handleDeleteChange={handleDeleteChange}
+        isOpen={showDelete}
+      />
     </div>
   );
 }
