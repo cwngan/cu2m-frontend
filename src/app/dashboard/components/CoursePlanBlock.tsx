@@ -11,15 +11,18 @@ import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import moment from "moment";
 import InputForm from "./InputForm";
 import { apiClient } from "@/apiClient";
+import ConfirmDeleteBlock from "./ConfirmDeleteBlock";
 
 export default function CoursePlanBlock({
   plan,
   isUpdating: allUpdating,
   handleBlockChange,
+  handleDeleteChange,
 }: {
   plan: CoursePlan;
   isUpdating: boolean;
   handleBlockChange: (updatedPlan: CoursePlan) => void;
+  handleDeleteChange: (deletedPlan: CoursePlan) => void;
 }) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState<boolean>(allUpdating);
@@ -28,13 +31,20 @@ export default function CoursePlanBlock({
   }, [allUpdating]);
 
   const [showForm, setShowForm] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
   const InputInfo = () => {
     setShowForm(true); // Show the form when the block is clicked
   };
 
+  const ConfirmDelete = () => {
+    setShowDelete(true); // Show the delete confirmation
+  };
+
   const handleCloseForm = () => {
-    setShowForm(false); // Close the form
+    // Close all forms
+    setShowForm(false);
+    setShowDelete(false);
   };
 
   return (
@@ -52,25 +62,45 @@ export default function CoursePlanBlock({
         {isUpdating && (
           <div className="absolute top-0 left-0 h-full w-full rounded-2xl bg-zinc-100/75"></div>
         )}
-        <a
-          className="absolute top-2 right-2 p-2 text-slate-600 opacity-0 transition-opacity group-hover:opacity-100"
-          onClick={async (e) => {
-            e.stopPropagation();
-            InputInfo();
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            className="bi bi-gear"
-            viewBox="0 0 16 16"
+        <div className="absolute top-2 flex w-full flex-row justify-between p-2 text-slate-600 opacity-0 transition-opacity group-hover:opacity-100">
+          <a
+            onClick={async (e) => {
+              e.stopPropagation();
+              ConfirmDelete();
+            }}
           >
-            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
-            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z" />
-          </svg>
-        </a>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              className="bi bi-trash"
+              viewBox="0 0 16 16"
+            >
+              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+              <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+            </svg>
+          </a>
+          <a
+            onClick={async (e) => {
+              e.stopPropagation();
+              InputInfo();
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              className="bi bi-gear"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z" />
+            </svg>
+          </a>
+        </div>
+
         <div className="mb-4 text-2xl font-medium text-zinc-800">
           {plan.name}
         </div>
@@ -137,6 +167,25 @@ export default function CoursePlanBlock({
         handleBlockChange={handleBlockChange}
         isOpen={showForm}
       />
+      {/* Delete Form */}
+      {showDelete && (
+        <div
+          className="fixed top-0 right-0 z-50 flex h-full w-full items-center justify-center"
+          onClick={handleCloseForm} // Close the form when clicking outside
+        >
+          <div
+            className="animate-fade-in-up relative translate-y-0 transform opacity-100 transition-all duration-500 ease-in-out"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
+          >
+            {/* Pass the handleCloseForm function as a prop */}
+            <ConfirmDeleteBlock
+              plan={plan}
+              onClose={handleCloseForm}
+              handleDeleteChange={handleDeleteChange}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

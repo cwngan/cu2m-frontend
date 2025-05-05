@@ -86,6 +86,20 @@ export default function CoursePlanGrid({
     [coursePlans],
   );
 
+  const handleDeleteChange = useCallback(
+    (deletedPlan: CoursePlan) => {
+      const index = coursePlans.findIndex(
+        (plan) => plan._id === deletedPlan._id,
+      );
+      setCoursePlans((prev) => {
+        const newCoursePlans = [...prev];
+        newCoursePlans.splice(index, 1);
+        return newCoursePlans;
+      });
+    },
+    [coursePlans],
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       setIsUpdating(true);
@@ -152,6 +166,7 @@ export default function CoursePlanGrid({
               plan={plan}
               isUpdating={isUpdating}
               handleBlockChange={handleBlockChange}
+              handleDeleteChange={handleDeleteChange}
             />
           ))
         : null}
