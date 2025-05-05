@@ -34,7 +34,7 @@ export default function ConfirmDeleteBlock({
       className="absolute top-1/2 left-1/2 flex flex-auto -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-lg border bg-white p-6 shadow-md"
     >
       <div className="mb-4 flex-1 text-2xl font-medium text-nowrap text-zinc-800">
-        Are you sure to delete the course plan "{plan.name}"?
+        Are you sure to delete the course plan &quot;{plan.name}&quot;?
       </div>
       {/* Buttons */}
       <div className="mt-4 flex justify-between">
