@@ -1,44 +1,111 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CoursePlan } from "../types/CoursePlan";
+import {
+  CoursePlan,
+  CoursePlanCreate,
+  CoursePlanRead,
+} from "@/app/types/Models";
+import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import moment from "moment";
-import { ObjectId } from "bson";
+import { apiClient } from "@/apiClient";
 
-export default function InputForm({ onClose }: { onClose: () => void }) {
+export default function InputForm({
+  mode,
+  plan,
+  onClose,
+  handleBlockChange,
+}: {
+  mode: string;
+  plan: CoursePlan | null;
+  onClose: () => void;
+  handleBlockChange: ((updatedPlan: CoursePlan) => void) | null;
+}) {
   const router = useRouter();
-  const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
-  const [description, setDescription] = useState("");
-  const [name, setName] = useState("");
-
-  //the created plan object that could be passed to the backend
-  const newPlan: CoursePlan = {
-    _id: new ObjectId().toHexString(),
-    name: name,
-    updated_at: moment(),
-    description: description,
-    favourite: false,
-  };
+  // const [numOfYears, setNumOfYears] = useState(4); //no. of years default set as 4 years
+  const [description, setDescription] = useState(
+    plan === null ? "" : plan.description,
+  );
+  const [name, setName] = useState(plan === null ? "" : plan.name);
 
   // navigation function of the add button
   const handleAdd = (event: React.FormEvent) => {
     event.preventDefault();
-    router.push(`/course-plan/${newPlan._id}`); // navigate to an id greater than maxID
+    // Submit a new plan
+    const coursePlanCreate: CoursePlanCreate = {
+      description: description,
+      name: name,
+    };
+    apiClient
+      .post<CoursePlanResponseModel>("/api/course-plans/", coursePlanCreate)
+      .then((res) => {
+        const response = res.data;
+        if (response.status === "ERROR" || response.data === null) {
+          throw new Error(response.error);
+        }
+        const newPlan: CoursePlanRead = response.data as CoursePlanRead;
+        router.push(`/course-plan/${newPlan._id}`); // navigate to course plan id
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Course plan creation failed");
+      });
   };
 
-  const plus = () => {
-    if (numOfYears < 8) setNumOfYears(numOfYears + 1); // maximum 8 years
+  const handleUpdate = (event: React.FormEvent) => {
+    event.preventDefault();
+    // Submit a new plan
+    const coursePlanUpdate: CoursePlanCreate = {
+      description: description,
+      name: name,
+    };
+
+    if (plan !== null) {
+      apiClient
+        .patch<CoursePlanResponseModel>(
+          `/api/course-plans/${plan._id}`,
+          coursePlanUpdate,
+        )
+        .then((res) => {
+          const response = res.data;
+          if (response.status === "ERROR" || response.data === null) {
+            throw new Error(response.error);
+          }
+          const updatedPlan: CoursePlanRead = response.data as CoursePlanRead;
+          updatedPlan.updated_at = moment(updatedPlan.updated_at);
+          if (handleBlockChange !== null) {
+            handleBlockChange(updatedPlan);
+          } else {
+            throw new Error("handleBlockChange is null");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Course plan update failed");
+        });
+      onClose();
+    } else {
+      console.error("plan is null");
+      alert("Course plan update failed");
+    }
   };
 
-  const minus = () => {
-    if (numOfYears > 2) setNumOfYears(numOfYears - 1); // minimum 2 years
-  };
+  // const plus = () => {
+  //   if (numOfYears < 8) setNumOfYears(numOfYears + 1); // maximum 8 years
+  // };
+
+  // const minus = () => {
+  //   if (numOfYears > 2) setNumOfYears(numOfYears - 1); // minimum 2 years
+  // };
 
   return (
     <form
-      onSubmit={handleAdd} // Attach the custom handler to the form
+      onSubmit={mode === "add" ? handleAdd : handleUpdate} // Attach the custom handler to the form
       className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-lg border bg-white p-6 shadow-md"
     >
       {/* Plan name*/}
+      <div className="mb-4 text-2xl font-medium text-zinc-800">
+        {mode === "add" ? "Create Plan" : "Update Plan"}
+      </div>
       <label className="flex flex-row items-center">
         <span className="w-22 font-medium text-gray-700">Name:</span>
         <input
@@ -51,7 +118,7 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
       </label>
 
       {/* No. of year */}
-      <label className="flex flex-row items-center">
+      {/* <label className="flex flex-row items-center">
         <span className="w-22 font-medium text-gray-700">No. of Year:</span>
         <div className="flex items-center gap-2">
           <input
@@ -75,7 +142,7 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
             -
           </button>
         </div>
-      </label>
+      </label> */}
 
       {/* Description */}
       <label className="flex flex-col">
@@ -102,7 +169,7 @@ export default function InputForm({ onClose }: { onClose: () => void }) {
           type="submit"
           className="rounded-md bg-slate-400 px-4 py-2 text-white transition hover:bg-slate-500"
         >
-          Add
+          {mode === "add" ? "Add" : "Update"}
         </button>
       </div>
     </form>

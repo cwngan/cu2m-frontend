@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Abel } from "next/font/google";
 import "./globals.css";
+import "./background.css";
 import "react-loading-skeleton/dist/skeleton.css";
 
 const abel = Abel({
@@ -20,7 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${abel.className} antialiased`}>{children}</body>
+      <body className={`${abel.className} antialiased`}>
+        <div className="animated-lines z-0"></div>
+        <div className="h-screen w-screen bg-radial-[at_50%_50%] from-white via-zinc-100 to-zinc-200">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

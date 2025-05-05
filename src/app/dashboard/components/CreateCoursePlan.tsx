@@ -38,7 +38,12 @@ export default function CreateCoursePlan() {
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
           >
             {/* Pass the handleCloseForm function as a prop */}
-            <InputForm onClose={handleCloseForm} />
+            <InputForm
+              mode="add"
+              plan={null}
+              onClose={handleCloseForm}
+              handleBlockChange={null}
+            />
           </div>
         </div>
       )}
