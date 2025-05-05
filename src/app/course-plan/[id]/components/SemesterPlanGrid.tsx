@@ -249,8 +249,8 @@ export default function SemesterPlanGrid({
               <div className="text-2xl">Loading...</div>
             </div>
           )}
-          <div className="container-padding-block-px-4 fixed top-0 left-0 h-full bg-gradient-to-l from-transparent to-white to-25%"></div>
-          <div className="container-padding-block-px-4 fixed top-0 right-0 h-full bg-gradient-to-r from-transparent to-white to-25%"></div>
+          {/* <div className="container-padding-block-px-4 fixed top-0 left-0 h-full bg-gradient-to-l from-transparent to-white to-25%"></div>
+          <div className="container-padding-block-px-4 fixed top-0 right-0 h-full bg-gradient-to-r from-transparent to-white to-25%"></div> */}
         </div>
       </div>
       <SearchBlock />
