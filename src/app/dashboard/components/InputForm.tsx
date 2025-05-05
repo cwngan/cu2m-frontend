@@ -8,13 +8,16 @@ import {
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import moment from "moment";
 import { apiClient } from "@/apiClient";
+import clsx from "clsx";
 
 export default function InputForm({
+  isOpen,
   mode,
   plan,
   onClose,
   handleBlockChange,
 }: {
+  isOpen: boolean;
   mode: string;
   plan: CoursePlan | null;
   onClose: () => void;
@@ -96,27 +99,41 @@ export default function InputForm({
   // };
 
   return (
-    <form
-      onSubmit={mode === "add" ? handleAdd : handleUpdate} // Attach the custom handler to the form
-      className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-lg border bg-white p-6 shadow-md"
+    <div
+      className={clsx(
+        "fixed top-0 right-0 z-50 flex h-full w-full items-center justify-center bg-black/50 transition-opacity duration-300 ease-in-out",
+        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
+      )}
+      onClick={onClose} // Close the form when clicking outside
     >
-      {/* Plan name*/}
-      <div className="mb-4 text-2xl font-medium text-zinc-800">
-        {mode === "add" ? "Create Plan" : "Update Plan"}
-      </div>
-      <label className="flex flex-row items-center">
-        <span className="w-22 font-medium text-gray-700">Name:</span>
-        <input
-          type="text"
-          placeholder="Plan name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="flex-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-zinc-400 focus:outline-none"
-        />
-      </label>
+      <div
+        className={clsx(
+          "animate-fade-in-up relative translate-y-0 transform transition-all duration-500 ease-in-out",
+          isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
+        )}
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
+      >
+        <form
+          onSubmit={mode === "add" ? handleAdd : handleUpdate} // Attach the custom handler to the form
+          className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-xl bg-white p-6 drop-shadow-lg"
+        >
+          {/* Plan name*/}
+          <div className="mb-4 text-2xl font-medium text-zinc-800">
+            {mode === "add" ? "Create Plan" : "Update Plan"}
+          </div>
+          <label className="flex flex-row items-center">
+            <span className="w-22 font-medium text-gray-700">Name:</span>
+            <input
+              type="text"
+              placeholder="Plan name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="flex-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-zinc-400 focus:outline-none"
+            />
+          </label>
 
-      {/* No. of year */}
-      {/* <label className="flex flex-row items-center">
+          {/* No. of year */}
+          {/* <label className="flex flex-row items-center">
         <span className="w-22 font-medium text-gray-700">No. of Year:</span>
         <div className="flex items-center gap-2">
           <input
@@ -142,34 +159,36 @@ export default function InputForm({
         </div>
       </label> */}
 
-      {/* Description */}
-      <label className="flex flex-col">
-        <span className="font-medium text-gray-700">Description:</span>
-        <textarea
-          rows={4}
-          placeholder=""
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="mt-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-zinc-400 focus:outline-none"
-        />
-      </label>
+          {/* Description */}
+          <label className="flex flex-col">
+            <span className="font-medium text-gray-700">Description:</span>
+            <textarea
+              rows={4}
+              placeholder=""
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-1 rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-zinc-400 focus:outline-none"
+            />
+          </label>
 
-      {/* Buttons */}
-      <div className="mt-4 flex justify-between">
-        <button
-          type="button"
-          className="rounded-md bg-gray-300 px-4 py-2 text-gray-700 transition hover:bg-gray-400"
-          onClick={onClose}
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="rounded-md bg-slate-400 px-4 py-2 text-white transition hover:bg-slate-500"
-        >
-          {mode === "add" ? "Add" : "Update"}
-        </button>
+          {/* Buttons */}
+          <div className="mt-4 flex justify-between">
+            <button
+              type="button"
+              className="rounded-md bg-gray-300 px-4 py-2 text-gray-700 transition hover:bg-gray-400"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-md bg-slate-400 px-4 py-2 text-white transition hover:bg-slate-500"
+            >
+              {mode === "add" ? "Add" : "Update"}
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   );
 }

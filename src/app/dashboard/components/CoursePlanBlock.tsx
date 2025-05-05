@@ -129,25 +129,14 @@ export default function CoursePlanBlock({
         {/* end of the hover description */}
       </div>
       {/* Input Form */}
-      {showForm && (
-        <div
-          className="fixed top-0 right-0 z-50 flex h-full w-full items-center justify-center"
-          onClick={() => setShowForm(false)} // Close the form when clicking outside
-        >
-          <div
-            className="animate-fade-in-up relative translate-y-0 transform opacity-100 transition-all duration-500 ease-in-out"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
-          >
-            {/* Pass the handleCloseForm function as a prop */}
-            <InputForm
-              mode="update"
-              plan={plan}
-              onClose={handleCloseForm}
-              handleBlockChange={handleBlockChange}
-            />
-          </div>
-        </div>
-      )}
+      {/* Pass the handleCloseForm function as a prop */}
+      <InputForm
+        mode="update"
+        plan={plan}
+        onClose={handleCloseForm}
+        handleBlockChange={handleBlockChange}
+        isOpen={showForm}
+      />
     </>
   );
 }

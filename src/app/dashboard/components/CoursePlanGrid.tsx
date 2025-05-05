@@ -46,7 +46,11 @@ interface CoursePlanGridProps {
 
 // filter function for sorting course plans
 const compByName = (a: CoursePlan, b: CoursePlan) => {
-  return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+  return a.name.toLowerCase() < b.name.toLowerCase()
+    ? -1
+    : a.name.toLowerCase() > b.name.toLowerCase()
+      ? 1
+      : 0;
 };
 
 const compByLastEdit = (a: CoursePlan, b: CoursePlan) => {
@@ -105,7 +109,7 @@ export default function CoursePlanGrid({
                 user_id: plan.user_id,
               };
             })
-            .sort(compFunc);
+            .sort(compByName);
           setCoursePlans(coursePlans);
           setIsUpdating(false);
         })
@@ -116,15 +120,25 @@ export default function CoursePlanGrid({
         });
     };
     fetchData();
-  }, [compFunc]);
+  }, []);
+
+  // useEffect(() => {
+  //   setCoursePlans((prev) => {
+  //     const newCoursePlans = [...prev];
+  //     newCoursePlans.sort(compFunc);
+  //     return newCoursePlans;
+  //   });
+  // }, [compFunc]);
 
   useEffect(() => {
     if (starredFilter) {
-      setRenderedPlans(coursePlans.filter((plan) => plan.favourite));
+      setRenderedPlans(
+        coursePlans.filter((plan) => plan.favourite).sort(compFunc),
+      );
     } else {
-      setRenderedPlans(coursePlans);
+      setRenderedPlans(coursePlans.sort(compFunc));
     }
-  }, [coursePlans, starredFilter]);
+  }, [coursePlans, starredFilter, compFunc]);
 
   return (
     <div className={clsx("flex flex-row flex-wrap gap-6")}>
