@@ -25,15 +25,16 @@ export default function CoursePlanBlock({
     // course plan block
     <div
       className={clsx(
-        "group duration 400 shaodw-2xl relative flex h-52 w-42 flex-col items-center justify-center rounded-2xl bg-white shadow-lg transition delay-20 ease-in-out transform-3d hover:flex hover:scale-110",
-        isUpdating
-          ? "cursor-not-allowed opacity-25 select-none"
-          : "cursor-pointer opacity-100",
+        "group duration 400 shaodw-2xl relative flex h-52 w-42 flex-col items-center justify-center rounded-2xl bg-white shadow-lg transition-transform ease-in-out transform-3d hover:flex hover:scale-110",
+        isUpdating ? "cursor-not-allowed select-none" : "cursor-pointer",
       )}
       onClick={() => {
         router.push(`/course-plan/${plan._id}`);
       }}
     >
+      {isUpdating && (
+        <div className="absolute top-0 left-0 h-full w-full rounded-2xl bg-zinc-100/75"></div>
+      )}
       <div className="mb-4 text-2xl font-medium text-zinc-800">{plan.name}</div>
       <div className="text-md text-zinc-600">
         {plan.updated_at.format("HH:mm")}
@@ -43,7 +44,12 @@ export default function CoursePlanBlock({
       </div>
 
       {/* Hover decription*/}
-      <div className="from absolute h-42 w-42 -translate-z-10 flex-col overflow-hidden rounded-b-2xl bg-gradient-to-b via-zinc-800/10 to-zinc-800/20 p-4 text-ellipsis transition duration-350 group-hover:flex group-hover:translate-y-45">
+      <div
+        className={clsx(
+          "from absolute h-42 w-42 -translate-z-10 flex-col overflow-hidden rounded-b-2xl bg-gradient-to-b via-zinc-800/10 to-zinc-800/20 p-4 text-ellipsis duration-350 group-hover:flex group-hover:translate-y-45",
+          isUpdating ? "hidden transition-none" : "transition",
+        )}
+      >
         {/* Title block with star icon of the course plan when hover */}
         <div className="relative flex items-center justify-center">
           <div
