@@ -27,7 +27,7 @@ export default function DraggableBlock<ItemType>({
     <div
       ref={drag}
       className={clsx(
-        "transform rounded-lg transition-transform delay-100 duration-200 hover:scale-105 hover:transition active:scale-95",
+        "transform rounded-lg transition-transform duration-200 hover:scale-105 hover:transition active:scale-95",
         isDragging ? "opacity-50" : "",
         className,
       )}
