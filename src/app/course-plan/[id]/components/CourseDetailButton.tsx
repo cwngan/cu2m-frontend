@@ -8,8 +8,8 @@ export default function CourseDetailButton({
   onClick: () => void;
 }) {
   return (
-    <>
-      <button className={clsx(className, "cursor-pointer")} onClick={onClick}>
+    <div className="pl-3" onClick={onClick}>
+      <button className={clsx(className, "cursor-pointer")}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -21,6 +21,6 @@ export default function CourseDetailButton({
           <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0" />
         </svg>
       </button>
-    </>
+    </div>
   );
 }
