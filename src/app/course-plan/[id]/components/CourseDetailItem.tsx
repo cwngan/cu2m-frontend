@@ -15,7 +15,7 @@ export function CourseDetailItem({
       className={clsx(
         "text-graph-700 flex max-h-64 flex-col overflow-auto rounded-sm font-medium text-pretty hyphens-auto outline outline-offset-4 outline-stone-500 outline-solid",
         `col-span-${span}`,
-        className
+        className,
       )}
       lang="en"
     >

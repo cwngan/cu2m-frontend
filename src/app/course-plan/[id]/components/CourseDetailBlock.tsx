@@ -40,17 +40,28 @@ export default function CourseDetailBlock({
               </div>
               <div className="grid grid-cols-4 gap-4">
                 {/* TODO: set opacity */}
-                <CourseDetailItem className="justify-center" span={1}>Units</CourseDetailItem>
+                <CourseDetailItem className="justify-center" span={1}>
+                  Units
+                </CourseDetailItem>
                 <CourseDetailItem span={3}>
                   {course.units.toFixed(1).toString()}{" "}
                 </CourseDetailItem>
-                <CourseDetailItem className="justify-center" span={1}>Graded</CourseDetailItem>
+                <CourseDetailItem className="justify-center" span={1}>
+                  Graded
+                </CourseDetailItem>
                 <CourseDetailItem span={3}>
-                  <div className={clsx("flex w-16 h-8 items-center justify-center text-center rounded-md", course.is_graded ? "bg-green-400" : "bg-red-400")}>
+                  <div
+                    className={clsx(
+                      "flex h-8 w-16 items-center justify-center rounded-md text-center",
+                      course.is_graded ? "bg-green-400" : "bg-red-400",
+                    )}
+                  >
                     {course.is_graded ? "Yes" : "No"}
                   </div>
                 </CourseDetailItem>
-                <CourseDetailItem className="justify-center" span={1}>Description</CourseDetailItem>
+                <CourseDetailItem className="justify-center" span={1}>
+                  Description
+                </CourseDetailItem>
                 <CourseDetailItem span={3}>
                   {course.description.split("\n").map((str) => (
                     <span>{str}</span>
