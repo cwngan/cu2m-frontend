@@ -56,6 +56,7 @@ export default function SearchResultBlock({ res }: SearchResultBlockProps) {
         className={clsx(
           "group relative flex cursor-pointer flex-col gap-1 p-3 leading-none",
           color,
+          showPopupDetail ? "z-1099 scale-110" : "hover:z-999",
         )}
       >
         <div className="group relative flex flex-row justify-between">
