@@ -4,7 +4,6 @@ import SearchResultBlock from "./SearchResultBlock";
 import { apiClient } from "@/apiClient";
 import { CourseRead } from "@/app/types/Models";
 
-
 export default function SearchBlock() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -54,7 +53,7 @@ export default function SearchBlock() {
           <div className="flex items-center gap-3 rounded-t-xl bg-zinc-300 p-3">
             <input
               type="text"
-              placeholder="ENGG1110"
+              placeholder="Search by keywords..."
               className="h-8 w-32 border p-2 duration-150 hover:bg-neutral-100 hover:transition"
               required
               ref={queryRef}
@@ -102,6 +101,8 @@ export default function SearchBlock() {
             ))}
           </div>
         )}
+
+        {/* TODO: Put CourseDetailBlock here */}
       </div>
     </div>
   );
