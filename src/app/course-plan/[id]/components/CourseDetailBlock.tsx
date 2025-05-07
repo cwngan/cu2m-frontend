@@ -1,6 +1,7 @@
 import { Course } from "@/app/types/Models";
 import clsx from "clsx";
 import { CourseDetailItem } from "./CourseDetailItem";
+import { getUnitsColor } from "../utils";
 
 export default function CourseDetailBlock({
   course,
@@ -40,16 +41,37 @@ export default function CourseDetailBlock({
               </div>
               <div className="grid grid-cols-4 gap-4">
                 {/* TODO: set opacity */}
-                <CourseDetailItem className="justify-center" span={1}>
+                <CourseDetailItem
+                  key={"course-detail-item-units"}
+                  className="justify-center"
+                  span={1}
+                >
                   Units
                 </CourseDetailItem>
-                <CourseDetailItem span={3}>
-                  {course.units.toFixed(1).toString()}{" "}
+                <CourseDetailItem
+                  key={"course-detail-item-units-value"}
+                  span={3}
+                >
+                  <div
+                    className={clsx(
+                      "flex h-8 w-16 items-center justify-center rounded-md text-center",
+                      getUnitsColor(course.units),
+                    )}
+                  >
+                    {course.units.toFixed(1).toString()}{" "}
+                  </div>
                 </CourseDetailItem>
-                <CourseDetailItem className="justify-center" span={1}>
+                <CourseDetailItem
+                  key={"course-detail-item-graded"}
+                  className="justify-center"
+                  span={1}
+                >
                   Graded
                 </CourseDetailItem>
-                <CourseDetailItem span={3}>
+                <CourseDetailItem
+                  key={"course-detail-item-graded-value"}
+                  span={3}
+                >
                   <div
                     className={clsx(
                       "flex h-8 w-16 items-center justify-center rounded-md text-center",
@@ -59,14 +81,61 @@ export default function CourseDetailBlock({
                     {course.is_graded ? "Yes" : "No"}
                   </div>
                 </CourseDetailItem>
-                <CourseDetailItem className="justify-center" span={1}>
+                <CourseDetailItem
+                  key={"course-detail-item-description"}
+                  className="justify-center"
+                  span={1}
+                >
                   Description
                 </CourseDetailItem>
-                <CourseDetailItem span={3}>
-                  {course.description.split("\n").map((str) => (
-                    <span>{str}</span>
+                <CourseDetailItem
+                  key={"course-detail-item-description-value"}
+                  span={3}
+                >
+                  {course.description.split("\n").map((str, index) => (
+                    <span
+                      key={`course-detail-item-description-paragraph-${index}`}
+                    >
+                      {str}
+                    </span>
                   ))}
                 </CourseDetailItem>
+                {course.parsed && (
+                  <>
+                    <CourseDetailItem
+                      key={"course-detail-item-prerequisites"}
+                      className="justify-center"
+                      span={1}
+                    >
+                      Prerequisites
+                    </CourseDetailItem>
+                    <CourseDetailItem
+                      className="overflow-x-auto whitespace-nowrap"
+                      key={"course-detail-item-prerequisites-value"}
+                      span={3}
+                    >
+                      {course.prerequisites === "" ? "-" : course.prerequisites}
+                    </CourseDetailItem>
+                  </>
+                )}
+                {!course.parsed && (
+                  <>
+                    <CourseDetailItem
+                      key={"course-detail-item-prerequisites"}
+                      className="justify-center"
+                      span={1}
+                    >
+                      Prerequisites (Not parsed)
+                    </CourseDetailItem>
+                    <CourseDetailItem
+                      className="overflow-x-auto whitespace-nowrap"
+                      key={"course-detail-item-prerequisites-value"}
+                      span={3}
+                    >
+                      {course.original}
+                    </CourseDetailItem>
+                  </>
+                )}
               </div>
             </div>
           )}
