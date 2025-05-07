@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState, useRef } from "react";
-import { DndProvider } from "react-dnd";
+import { DndProvider, useDragLayer, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { SemesterPlanData } from "../types/SemesterPlan";
 import { RawSemesterPlanData } from "../types/RawSemesterPlan";
@@ -9,12 +9,160 @@ import SearchBlock from "./SearchBlock";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import { apiClient } from "@/apiClient";
 import { CourseBasicInfo } from "../types/Course";
+import { clsx } from "clsx";
 // import { CoursePlanRead } from "@/app/types/Models";
 
 interface SemesterPlanGridProps {
   coursePlanId: string;
   coursePlanResponse: CoursePlanResponseModel;
 }
+
+// Inner component that uses drag and drop hooks
+function SemesterPlanGridContent({
+  coursePlanId,
+  semesterPlans,
+  setSemesterPlans,
+  semesterPlansByYear,
+  isLoading,
+  handleCreateSemesterPlan,
+}: {
+  coursePlanId: string;
+  semesterPlans: SemesterPlanData[];
+  setSemesterPlans: React.Dispatch<React.SetStateAction<SemesterPlanData[]>>;
+  semesterPlansByYear: { [year: number]: SemesterPlanData[] };
+  isLoading: boolean;
+  handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Monitor drag state
+  const { isDragging: isItemDragging } = useDragLayer((monitor) => ({
+    isDragging: monitor.isDragging(),
+  }));
+
+  useEffect(() => {
+    setIsDragging(isItemDragging);
+  }, [isItemDragging]);
+
+  const handleRemoveCourseFromSemsterPlan = useCallback(
+    async (courseId: string, semesterPlanId: string) => {
+      try {
+        // Get the current semester plan
+        const currentPlan = semesterPlans.find(plan => plan._id === semesterPlanId);
+        if (!currentPlan) return;
+
+        // Create updated courses array without the removed course
+        const updatedCourses = currentPlan.courses
+          .filter(course => course._id !== courseId)
+          .map(course => course.code);
+
+        // Update the semester plan in the backend
+        const response = await apiClient.patch(`/api/semester-plans/${semesterPlanId}`, {
+          courses: updatedCourses
+        });
+
+        if (response.status === 200) {
+          // Update the frontend state
+          setSemesterPlans((prevPlans) => {
+            const updatedPlans = prevPlans.map((plan) => {
+              if (plan._id === semesterPlanId) {
+                const updatedCourses = plan.courses.filter(
+                  (course) => course._id !== courseId,
+                );
+                return { ...plan, courses: updatedCourses };
+              }
+              return plan;
+            });
+            return updatedPlans;
+          });
+        } else {
+          throw new Error("Failed to update semester plan");
+        }
+      } catch (error) {
+        console.error("Error removing course from semester plan:", error);
+        alert("Failed to remove course from semester plan");
+      }
+    },
+    [semesterPlans, setSemesterPlans],
+  );
+
+  // Make the removal area droppable
+  const removalAreaRef = useRef<HTMLDivElement>(null);
+  const [{ isOver: isOverRemoval }, dropRemoval] = useDrop(() => ({
+    accept: "COURSE",
+    drop: (item: { course: CourseBasicInfo; semesterPlanId: string | null }) => {
+      if (item.semesterPlanId) {
+        handleRemoveCourseFromSemsterPlan(item.course._id, item.semesterPlanId);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }));
+
+  // Connect the drop ref to our div ref
+  useEffect(() => {
+    if (removalAreaRef.current) {
+      dropRemoval(removalAreaRef.current);
+    }
+  }, [dropRemoval]);
+
+  return (
+    <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
+      <div
+        ref={containerRef}
+        className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8"
+      >
+        {isLoading ? (
+          <div className="flex h-96 w-full items-center justify-center">
+            <div className="text-2xl">Loading...</div>
+          </div>
+        ) : Object.keys(semesterPlansByYear).length > 0 ? (
+          <>
+            {Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
+              return (
+                <SemesterPlanOfYear
+                  yearNumber={parseInt(yearNumber)}
+                  plans={plans}
+                  key={yearNumber}
+                  handleRemoveCourseFromSemsterPlan={
+                    handleRemoveCourseFromSemsterPlan
+                  }
+                />
+              );
+            })}
+            <div
+              ref={removalAreaRef}
+              className={clsx(
+                "fixed bottom-0 left-0 right-0 h-32 transition-opacity duration-300",
+                "flex items-center justify-center text-red-600 text-xl font-bold",
+                isOverRemoval ? "bg-red-200 opacity-100" : "bg-red-100 opacity-0"
+              )}
+              style={{
+                pointerEvents: isDragging ? 'auto' : 'none'
+              }}
+            >
+              Drop here to remove course
+            </div>
+          </>
+        ) : (
+          <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
+            <div className="text-2xl text-gray-600">No semester plans found</div>
+            <button
+              onClick={() => handleCreateSemesterPlan(1, 1)}
+              className="rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700"
+            >
+              Create First Semester Plan
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Main component that provides the DndProvider context
 export default function SemesterPlanGrid({
   coursePlanId,
   coursePlanResponse,
@@ -24,25 +172,6 @@ export default function SemesterPlanGrid({
     [year: number]: SemesterPlanData[];
   }>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleRemoveCourseFromSemsterPlan = useCallback(
-    (courseId: string, semesterPlanId: string) => {
-      setSemesterPlans((prevPlans) => {
-        const updatedPlans = prevPlans.map((plan) => {
-          if (plan._id === semesterPlanId) {
-            const updatedCourses = plan.courses.filter(
-              (course) => course._id !== courseId,
-            );
-            return { ...plan, courses: updatedCourses };
-          }
-          return plan;
-        });
-        return updatedPlans;
-      });
-    },
-    [],
-  );
 
   const handleCreateSemesterPlan = async (year: number, semester: number) => {
     try {
@@ -66,6 +195,11 @@ export default function SemesterPlanGrid({
 
   const fetchCourseDetails = async (courseCodes: string[]): Promise<CourseBasicInfo[]> => {
     try {
+      // If there are no course codes, return an empty array
+      if (!courseCodes || courseCodes.length === 0) {
+        return [];
+      }
+
       console.log('Fetching details for course codes:', courseCodes);
       const response = await apiClient.get("/api/courses/", {
         params: {
@@ -136,43 +270,14 @@ export default function SemesterPlanGrid({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
-        <div
-          ref={containerRef}
-          className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8"
-        >
-          {isLoading ? (
-            <div className="flex h-96 w-full items-center justify-center">
-              <div className="text-2xl">Loading...</div>
-            </div>
-          ) : Object.keys(semesterPlansByYear).length > 0 ? (
-            Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
-              return (
-                <SemesterPlanOfYear
-                  yearNumber={parseInt(yearNumber)}
-                  plans={plans}
-                  key={yearNumber}
-                  handleRemoveCourseFromSemsterPlan={
-                    handleRemoveCourseFromSemsterPlan
-                  }
-                />
-              );
-            })
-          ) : (
-            <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
-              <div className="text-2xl text-gray-600">No semester plans found</div>
-              <button
-                onClick={() => handleCreateSemesterPlan(1, 1)}
-                className="rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700"
-              >
-                Create First Semester Plan
-              </button>
-            </div>
-          )}
-          {/* <div className="container-padding-block-px-4 fixed top-0 left-0 h-full bg-gradient-to-l from-transparent to-white to-25%"></div>
-          <div className="container-padding-block-px-4 fixed top-0 right-0 h-full bg-gradient-to-r from-transparent to-white to-25%"></div> */}
-        </div>
-      </div>
+      <SemesterPlanGridContent
+        coursePlanId={coursePlanId}
+        semesterPlans={semesterPlans}
+        setSemesterPlans={setSemesterPlans}
+        semesterPlansByYear={semesterPlansByYear}
+        isLoading={isLoading}
+        handleCreateSemesterPlan={handleCreateSemesterPlan}
+      />
       <SearchBlock />
     </DndProvider>
   );

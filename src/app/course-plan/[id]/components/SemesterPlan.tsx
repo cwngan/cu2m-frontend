@@ -89,16 +89,19 @@ export default function SemesterPlan({
     >
       <SemesterPlanTitle plan={semesterPlan} />
       <div className="flex h-128 w-full flex-col gap-5 overflow-auto rounded-xl p-4">
-        {(() => {console.log(semesterPlan.courses); console.log(semesterPlan.courses[0]._id); console.log(semesterPlan.courses[0].code); return null; })()}
-        {
-          // console.log(semesterPlan.courses); // Debugging line
-        semesterPlan.courses.map((course) => (
-          <CourseBlock
-            course={course}
-            key={course._id}
-            semesterPlanId={plan._id}
-          />
-        ))}
+        {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
+          semesterPlan.courses.map((course) => (
+            <CourseBlock
+              course={course}
+              key={course._id}
+              semesterPlanId={plan._id}
+            />
+          ))
+        ) : (
+          <div className="flex h-full items-center justify-center text-gray-400">
+            No courses
+          </div>
+        )}
       </div>
       {/* add summer session button */}
       {addSummerSession && handleAddSummerSession && (
