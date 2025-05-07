@@ -162,6 +162,41 @@ function SemesterPlanGridContent({
   );
 }
 
+// Create a separate component for the background drop zone
+function BackgroundDropZone({ onRemove, children }: { onRemove: (courseId: string, semesterPlanId: string) => void; children: React.ReactNode }) {
+  const backgroundRef = useRef<HTMLDivElement>(null);
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: "COURSE",
+    drop: (item: { course: CourseBasicInfo; semesterPlanId: string | null }) => {
+      if (item.semesterPlanId) {
+        onRemove(item.course._id, item.semesterPlanId);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }));
+
+  drop(backgroundRef);
+
+  return (
+    <div 
+      ref={backgroundRef}
+      className={clsx(
+        "fixed inset-0 z-0",
+        isOver && "bg-red-50/50"
+      )}
+      style={{ pointerEvents: 'all' }}
+    >
+      <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18 min-h-screen relative z-10">
+        <div className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Main component that provides the DndProvider context
 export default function SemesterPlanGrid({
   coursePlanId,
@@ -172,6 +207,52 @@ export default function SemesterPlanGrid({
     [year: number]: SemesterPlanData[];
   }>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleRemoveCourseFromSemsterPlan = useCallback(
+    async (courseId: string, semesterPlanId: string) => {
+      try {
+        // Get the current semester plan
+        const currentPlan = semesterPlans.find(plan => plan._id === semesterPlanId);
+        if (!currentPlan) {
+          console.error('Semester plan not found:', semesterPlanId);
+          return;
+        }
+
+        // Create updated courses array without the removed course
+        const updatedCourses = currentPlan.courses
+          .filter(course => course._id !== courseId)
+          .map(course => course.code);
+
+        // Update the semester plan in the backend
+        const response = await apiClient.patch(`/api/semester-plans/${semesterPlanId}`, {
+          courses: updatedCourses
+        });
+
+        if (response.status === 200) {
+          // Update the frontend state
+          setSemesterPlans((prevPlans) => {
+            const updatedPlans = prevPlans.map((plan) => {
+              if (plan._id === semesterPlanId) {
+                const updatedCourses = plan.courses.filter(
+                  (course) => course._id !== courseId,
+                );
+                return { ...plan, courses: updatedCourses };
+              }
+              return plan;
+            });
+            return updatedPlans;
+          });
+        } else {
+          throw new Error("Failed to update semester plan");
+        }
+      } catch (error) {
+        console.error("Error removing course from semester plan:", error);
+        alert("Failed to remove course from semester plan");
+      }
+    },
+    [semesterPlans],
+  );
 
   const handleCreateSemesterPlan = async (year: number, semester: number) => {
     try {
@@ -270,14 +351,34 @@ export default function SemesterPlanGrid({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <SemesterPlanGridContent
-        coursePlanId={coursePlanId}
-        semesterPlans={semesterPlans}
-        setSemesterPlans={setSemesterPlans}
-        semesterPlansByYear={semesterPlansByYear}
-        isLoading={isLoading}
-        handleCreateSemesterPlan={handleCreateSemesterPlan}
-      />
+      <BackgroundDropZone onRemove={handleRemoveCourseFromSemsterPlan}>
+        {isLoading ? (
+          <div className="flex h-96 w-full items-center justify-center">
+            <div className="text-2xl">Loading...</div>
+          </div>
+        ) : Object.keys(semesterPlansByYear).length > 0 ? (
+          Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
+            return (
+              <SemesterPlanOfYear
+                yearNumber={parseInt(yearNumber)}
+                plans={plans}
+                key={yearNumber}
+                handleRemoveCourseFromSemsterPlan={handleRemoveCourseFromSemsterPlan}
+              />
+            );
+          })
+        ) : (
+          <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
+            <div className="text-2xl text-gray-600">No semester plans found</div>
+            <button
+              onClick={() => handleCreateSemesterPlan(1, 1)}
+              className="rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700"
+            >
+              Create First Semester Plan
+            </button>
+          </div>
+        )}
+      </BackgroundDropZone>
       <SearchBlock />
     </DndProvider>
   );
