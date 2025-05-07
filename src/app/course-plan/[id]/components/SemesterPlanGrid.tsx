@@ -7,6 +7,8 @@ import { RawSemesterPlanData } from "../types/RawSemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
 import SearchBlock from "./SearchBlock";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
+import { apiClient } from "@/apiClient";
+import { CourseBasicInfo } from "../types/Course";
 // import { CoursePlanRead } from "@/app/types/Models";
 
 const template: { data: RawSemesterPlanData[] } = {
@@ -161,19 +163,18 @@ interface SemesterPlanGridProps {
   coursePlanResponse: CoursePlanResponseModel;
 }
 export default function SemesterPlanGrid({
-  // coursePlanId,
+  coursePlanId,
   coursePlanResponse,
 }: SemesterPlanGridProps) {
   const [semesterPlans, setSemesterPlans] = useState<SemesterPlanData[]>([]);
   const [semesterPlansByYear, setSemesterPlansByYear] = useState<{
     [year: number]: SemesterPlanData[];
   }>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
     (courseId: string, semesterPlanId: string) => {
-      // Simulate removing the course from the semester plan
-      // To be replaced by an API call
       setSemesterPlans((prevPlans) => {
         const updatedPlans = prevPlans.map((plan) => {
           if (plan._id === semesterPlanId) {
@@ -189,30 +190,77 @@ export default function SemesterPlanGrid({
     },
     [],
   );
+
+  const handleCreateSemesterPlan = async (year: number, semester: number) => {
+    try {
+      const response = await apiClient.post("/api/semester-plans/", {
+        course_plan_id: coursePlanId,
+        year,
+        semester,
+      });
+
+      if (response.status === 200) {
+        const newPlan = response.data.data;
+        setSemesterPlans((prevPlans) => [...prevPlans, newPlan]);
+      } else {
+        throw new Error("Failed to create semester plan");
+      }
+    } catch (error) {
+      console.error("Error creating semester plan:", error);
+      alert("Failed to create semester plan");
+    }
+  };
+
+  const fetchCourseDetails = async (courseCodes: string[]): Promise<CourseBasicInfo[]> => {
+    try {
+      const response = await apiClient.get("/api/courses/", {
+        params: {
+          code: courseCodes
+        }
+      });
+      
+      if (response.status === 200 && response.data.data) {
+        return response.data.data;
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching course details:", error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate an API call
-      const response = await new Promise<{ data: RawSemesterPlanData[] }>(
-        (resolve) => setTimeout(() => resolve(template), 400),
-      );
-      const semesterPlans = response.data.map((plan: RawSemesterPlanData) => {
-        return {
-          _id: plan._id,
-          courses: plan.courses,
-          semester: plan.semester,
-          year: plan.year,
-        };
-      });
-      setSemesterPlans(semesterPlans);
-      // if (
-      //   coursePlanResponse.data &&
-      //   typeof coursePlanResponse.data === "object"
-      // ) {
-      //   setSemesterPlans(coursePlanResponse.data.semester_plans || []);
-      // }
+      setIsLoading(true);
+      try {
+        // Fetch semester plans
+        const response = await apiClient.get(`/api/course-plans/${coursePlanId}`);
+        if (response.status === 200 && response.data.data) {
+          const rawSemesterPlans = response.data.data.semester_plans || [];
+          
+          // Fetch course details for each semester plan
+          const semesterPlansWithDetails = await Promise.all(
+            rawSemesterPlans.map(async (plan: any) => {
+              const courseDetails = await fetchCourseDetails(plan.courses);
+              return {
+                ...plan,
+                courses: courseDetails
+              };
+            })
+          );
+          
+          setSemesterPlans(semesterPlansWithDetails);
+        }
+      } catch (error) {
+        console.error("Error fetching semester plans:", error);
+        alert("Failed to fetch semester plans");
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
-  }, [coursePlanResponse]);
+  }, [coursePlanId]);
+
   useEffect(() => {
     const plansByYear: { [year: number]: SemesterPlanData[] } = {};
     semesterPlans.forEach((plan) => {
@@ -223,6 +271,7 @@ export default function SemesterPlanGrid({
     });
     setSemesterPlansByYear(plansByYear);
   }, [semesterPlans]);
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
@@ -230,7 +279,11 @@ export default function SemesterPlanGrid({
           ref={containerRef}
           className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8"
         >
-          {Object.keys(semesterPlansByYear).length > 0 ? (
+          {isLoading ? (
+            <div className="flex h-96 w-full items-center justify-center">
+              <div className="text-2xl">Loading...</div>
+            </div>
+          ) : Object.keys(semesterPlansByYear).length > 0 ? (
             Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
               return (
                 <SemesterPlanOfYear
@@ -244,8 +297,14 @@ export default function SemesterPlanGrid({
               );
             })
           ) : (
-            <div className="flex h-96 w-full items-center justify-center">
-              <div className="text-2xl">Loading...</div>
+            <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
+              <div className="text-2xl text-gray-600">No semester plans found</div>
+              <button
+                onClick={() => handleCreateSemesterPlan(1, 1)}
+                className="rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700"
+              >
+                Create First Semester Plan
+              </button>
             </div>
           )}
           {/* <div className="container-padding-block-px-4 fixed top-0 left-0 h-full bg-gradient-to-l from-transparent to-white to-25%"></div>

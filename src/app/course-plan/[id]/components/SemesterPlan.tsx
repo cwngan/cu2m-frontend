@@ -5,6 +5,7 @@ import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
 import { CourseBasicInfo } from "../types/Course";
 import clsx from "clsx";
+import { apiClient } from "@/apiClient";
 
 interface SemesterPlanProps {
   plan: SemesterPlanData;
@@ -30,7 +31,7 @@ export default function SemesterPlan({
   const drop = useRef<HTMLDivElement>(null);
   const [{ isOver }, dropConnector] = useDrop(() => ({
     accept: "COURSE",
-    drop: (item: {
+    drop: async (item: {
       course: CourseBasicInfo;
       semesterPlanId: string | null;
     }) => {
@@ -38,23 +39,37 @@ export default function SemesterPlan({
       if (item.semesterPlanId === semesterPlan._id) {
         return;
       }
-      // console.log("Dropped item:", item);
-      // console.log("Dropped on plan:", plan);
-      // Handle the dropped course here
-      // Simulate adding the course to the semester plan
-      // To be replaced by an API call
-      setSemesterPlan((prevPlan) => {
-        const updatedPlan = { ...prevPlan };
-        const courseIndex = updatedPlan.courses.findIndex(
-          (course) => course._id === item.course._id,
-        );
-        if (courseIndex === -1) {
-          updatedPlan.courses.push(item.course);
+
+      try {
+        // Update the semester plan with the new course
+        const updatedCourses = [...semesterPlan.courses, item.course];
+        const response = await apiClient.patch(`/api/semester-plans/${semesterPlan._id}`, {
+          courses: updatedCourses.map(course => course.code)
+        });
+
+        if (response.status === 200) {
+          setSemesterPlan((prevPlan) => {
+            const updatedPlan = { ...prevPlan };
+            const courseIndex = updatedPlan.courses.findIndex(
+              (course) => course._id === item.course._id,
+            );
+            if (courseIndex === -1) {
+              updatedPlan.courses.push(item.course);
+            }
+            return updatedPlan;
+          });
+
+          // If the course was moved from another semester plan, remove it from there
+          if (item.semesterPlanId !== null) {
+            handleRemoveCourseFromSemsterPlan(item.course._id, item.semesterPlanId);
+          }
+        } else {
+          throw new Error("Failed to update semester plan");
         }
-        return updatedPlan;
-      });
-      if (item.semesterPlanId === null) return;
-      handleRemoveCourseFromSemsterPlan(item.course._id, item.semesterPlanId);
+      } catch (error) {
+        console.error("Error updating semester plan:", error);
+        alert("Failed to update semester plan");
+      }
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
@@ -74,7 +89,10 @@ export default function SemesterPlan({
     >
       <SemesterPlanTitle plan={semesterPlan} />
       <div className="flex h-128 w-full flex-col gap-5 overflow-auto rounded-xl p-4">
-        {semesterPlan.courses.map((course) => (
+        {(() => {console.log(semesterPlan.courses); console.log(semesterPlan.courses[0]._id); console.log(semesterPlan.courses[0].code); return null; })()}
+        {
+          // console.log(semesterPlan.courses); // Debugging line
+        semesterPlan.courses.map((course) => (
           <CourseBlock
             course={course}
             key={course._id}
