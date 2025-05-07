@@ -2,7 +2,8 @@
 import { useRef, useState, WheelEvent } from "react";
 import SearchResultBlock from "./SearchResultBlock";
 import { apiClient } from "@/apiClient";
-import { CourseRead } from "@/app/types/Models";
+import { Course, CourseRead } from "@/app/types/Models";
+import CourseDetailBlock from "./CourseDetailBlock";
 
 export default function SearchBlock() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -16,6 +17,13 @@ export default function SearchBlock() {
       scrollContainerRef.current.scrollLeft += event.deltaY; // Scroll horizontally
       event.preventDefault(); // Prevent default vertical scroll
     }
+  };
+
+  const [showPopupDetail, setShowPopupDetail] = useState<boolean>(false);
+  const [popupDetail, setPopupDetail] = useState<Course | null>(null);
+
+  const onClose = () => {
+    setShowPopupDetail(false);
   };
 
   return (
@@ -97,12 +105,24 @@ export default function SearchBlock() {
             className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
           >
             {searchResults.map((res) => (
-              <SearchResultBlock key={res._id} res={res} />
+              <SearchResultBlock
+                key={res._id}
+                res={res}
+                popupDetail={popupDetail}
+                showPopupDetail={showPopupDetail}
+                setPopupDetail={setPopupDetail}
+                setShowPopupDetail={setShowPopupDetail}
+              />
             ))}
           </div>
         )}
 
         {/* TODO: Put CourseDetailBlock here */}
+        <CourseDetailBlock
+          course={popupDetail}
+          isOpen={showPopupDetail}
+          onClose={onClose}
+        ></CourseDetailBlock>
       </div>
     </div>
   );

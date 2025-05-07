@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { CourseBasicInfo } from "../types/Course";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DraggableBlock from "@/app/components/DraggableBlock";
 import { getCourseColor } from "../utils";
 import clsx from "clsx";
@@ -7,16 +6,22 @@ import CourseDetailButton from "./CourseDetailButton";
 import { Course, CourseRead } from "@/app/types/Models";
 import { apiClient } from "@/apiClient";
 import { CoursesResponseModel } from "@/app/types/ApiResponseModel";
-import CourseDetailBlock from "./CourseDetailBlock";
 
 interface SearchResultBlockProps {
   res: CourseRead;
+  popupDetail: Course | null;
+  showPopupDetail: boolean;
+  setPopupDetail: Dispatch<SetStateAction<Course | null>>;
+  setShowPopupDetail: Dispatch<SetStateAction<boolean>>;
 }
-export default function SearchResultBlock({ res }: SearchResultBlockProps) {
+export default function SearchResultBlock({
+  res,
+  popupDetail,
+  showPopupDetail,
+  setPopupDetail,
+  setShowPopupDetail,
+}: SearchResultBlockProps) {
   const [color, setColor] = useState<string>("bg-neutral-200");
-
-  const [showPopupDetail, setShowPopupDetail] = useState<boolean>(false);
-  const [popupDetail, setPopupDetail] = useState<Course | null>(null);
 
   const handleCourseDetailFetch = () => {
     apiClient
@@ -37,10 +42,6 @@ export default function SearchResultBlock({ res }: SearchResultBlockProps) {
       });
   };
 
-  const onClose = () => {
-    setShowPopupDetail(false);
-  };
-
   useEffect(() => {
     if (res.code !== null) {
       setColor(getCourseColor(res.code));
@@ -56,7 +57,11 @@ export default function SearchResultBlock({ res }: SearchResultBlockProps) {
         className={clsx(
           "group relative flex cursor-pointer flex-col gap-1 p-3 leading-none",
           color,
-          showPopupDetail ? "z-1099 scale-110" : "hover:z-999",
+          showPopupDetail &&
+            popupDetail !== null &&
+            res.code === popupDetail.code
+            ? "z-1099 scale-110"
+            : "hover:z-999",
         )}
       >
         <div className="group relative flex flex-row justify-between">
@@ -70,11 +75,6 @@ export default function SearchResultBlock({ res }: SearchResultBlockProps) {
         </div>
         <div>{res.title}</div>
       </DraggableBlock>
-      <CourseDetailBlock
-        course={popupDetail}
-        isOpen={showPopupDetail}
-        onClose={onClose}
-      ></CourseDetailBlock>
     </>
   );
 }
