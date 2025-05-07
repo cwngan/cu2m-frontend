@@ -54,6 +54,8 @@ export interface Course {
   prerequisites: string;
   title: string;
   units: number;
+  parsed: boolean;
+  original: string;
 }
 
 export interface CourseRead {
@@ -67,6 +69,8 @@ export interface CourseRead {
   prerequisites: string | null;
   title: string | null;
   units: number | null;
+  parsed: boolean | null;
+  original: string | null;
 }
 
 export interface SemesterPlan {
