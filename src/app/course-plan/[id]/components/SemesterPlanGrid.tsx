@@ -11,153 +11,6 @@ import { apiClient } from "@/apiClient";
 import { CourseBasicInfo } from "../types/Course";
 // import { CoursePlanRead } from "@/app/types/Models";
 
-const template: { data: RawSemesterPlanData[] } = {
-  data: [
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG1110",
-          title: "Problem Solving with Programming",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "MATH1510",
-          title: "Calculus for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI1130",
-          title: "Introduction to Computing with Java",
-          units: 3,
-        },
-      ],
-      semester: 1,
-      year: 1,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG1120",
-          title: "Linear Algebra for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG1130",
-          title: "Multivariable Calculus for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI2100",
-          title: "Data Structures",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "ELTU2014",
-          title: "English for Engineering",
-          units: 3,
-        },
-      ],
-      semester: 2,
-      year: 1,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG2440",
-          title: "Discrete Mathematics for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG2760",
-          title: "Probability for Engineers",
-          units: 2,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI3130",
-          title: "Formal Languages and Automata Theory",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI3160",
-          title: "Design and Analysis of Algorithms",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "UGCP1001",
-          title: "Understanding China",
-          units: 1,
-        },
-      ],
-      semester: 1,
-      year: 2,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG2780",
-          title: "Statistics for Engineers",
-          units: 2,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI3180",
-          title: "Principles of Programming Languages",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CENG3420",
-          title: "Computer Organization",
-          units: 3,
-        },
-      ],
-      semester: 2,
-      year: 2,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "UGCP1002",
-          title: "Hong Kong under Wider Constitutional Order",
-          units: 1,
-        },
-      ],
-      semester: 3,
-      year: 2,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [],
-      semester: 1,
-      year: 3,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [],
-      semester: 2,
-      year: 3,
-    },
-  ],
-};
 interface SemesterPlanGridProps {
   coursePlanId: string;
   coursePlanResponse: CoursePlanResponseModel;
@@ -213,12 +66,17 @@ export default function SemesterPlanGrid({
 
   const fetchCourseDetails = async (courseCodes: string[]): Promise<CourseBasicInfo[]> => {
     try {
+      console.log('Fetching details for course codes:', courseCodes);
       const response = await apiClient.get("/api/courses/", {
         params: {
           code: courseCodes
+        },
+        paramsSerializer: {
+          indexes: null // This will make axios repeat the parameter name for each value
         }
       });
       
+      console.log('API Response:', response.data);
       if (response.status === 200 && response.data.data) {
         return response.data.data;
       }
@@ -235,13 +93,16 @@ export default function SemesterPlanGrid({
       try {
         // Fetch semester plans
         const response = await apiClient.get(`/api/course-plans/${coursePlanId}`);
+        console.log('Raw semester plans:', response.data.data.semester_plans);
         if (response.status === 200 && response.data.data) {
           const rawSemesterPlans = response.data.data.semester_plans || [];
           
           // Fetch course details for each semester plan
           const semesterPlansWithDetails = await Promise.all(
             rawSemesterPlans.map(async (plan: any) => {
+              console.log('Processing plan:', plan);
               const courseDetails = await fetchCourseDetails(plan.courses);
+              console.log('Course details for plan:', courseDetails);
               return {
                 ...plan,
                 courses: courseDetails
@@ -249,6 +110,7 @@ export default function SemesterPlanGrid({
             })
           );
           
+          console.log('Final semester plans with details:', semesterPlansWithDetails);
           setSemesterPlans(semesterPlansWithDetails);
         }
       } catch (error) {
