@@ -27,7 +27,7 @@ export default function CourseBlock({
 }: CourseBlockProps) {
   const drag = useRef<HTMLDivElement>(null);
   const [didBounce, setDidBounce] = useState(false);
-  
+
   const [{ isDragging }, dragConnector] = useDrag(() => ({
     type: "COURSE",
     item: { semesterPlanId, course },
@@ -43,7 +43,7 @@ export default function CourseBlock({
       isDragging: !!monitor.isDragging(),
     }),
   }));
-  
+
   dragConnector(drag);
 
   //set the color of course block base on number of semester
@@ -66,7 +66,7 @@ export default function CourseBlock({
       className={clsx(
         "flex transform flex-col items-center justify-center rounded-xl p-2 transition-all duration-150",
         color,
-        isDragging ? "opacity-50 scale-105" : "",
+        isDragging ? "scale-105 opacity-50" : "",
         didBounce && "animate-bounce",
       )}
     >

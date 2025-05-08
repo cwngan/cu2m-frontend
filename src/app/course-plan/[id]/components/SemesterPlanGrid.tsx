@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { DndProvider, useDragLayer, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { SemesterPlanData } from "../types/SemesterPlan";
+import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
 import { RawSemesterPlanData } from "../types/RawSemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
 import SearchBlock from "./SearchBlock";
@@ -10,7 +10,6 @@ import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
 import { apiClient } from "@/apiClient";
 import { CourseBasicInfo } from "../types/Course";
 import { clsx } from "clsx";
-// import { CoursePlanRead } from "@/app/types/Models";
 
 interface SemesterPlanGridProps {
   coursePlanId: string;
@@ -97,6 +96,41 @@ function SemesterPlanGridContent({
     [], // Remove semesterPlans dependency since we're using callback form of setState
   );
 
+  const handleNewYearAdded = useCallback((newPlans: SemesterPlanData[]) => {
+    setSemesterPlans((prevPlans) => [...prevPlans, ...newPlans]);
+  }, [setSemesterPlans]);
+
+  const handleCreateInitialYearPlan = async () => {
+    try {
+      // Create Autumn semester
+      const autumnResponse = await apiClient.post("/api/semester-plans/", {
+        course_plan_id: coursePlanId,
+        year: 1,
+        semester: SemesterTypes.AUTUMN,
+      });
+
+      // Create Spring semester
+      const springResponse = await apiClient.post("/api/semester-plans/", {
+        course_plan_id: coursePlanId,
+        year: 1,
+        semester: SemesterTypes.SPRING,
+      });
+
+      if (autumnResponse.status === 200 && springResponse.status === 200) {
+        const newPlans = [autumnResponse.data.data, springResponse.data.data];
+        setSemesterPlans(newPlans);
+      } else {
+        throw new Error("Failed to create initial year plan");
+      }
+    } catch (error) {
+      console.error("Error creating initial year plan:", error);
+      alert("Failed to create initial year plan");
+    }
+  };
+
+  const years = Object.keys(semesterPlansByYear).map(Number);
+  const maxYear = years.length > 0 ? Math.max(...years) : 0;
+
   return (
     <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
       <div
@@ -109,18 +143,19 @@ function SemesterPlanGridContent({
           </div>
         ) : Object.keys(semesterPlansByYear).length > 0 ? (
           <>
-            {Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
-              return (
-                <SemesterPlanOfYear
-                  yearNumber={parseInt(yearNumber)}
-                  plans={plans}
-                  key={yearNumber}
-                  handleRemoveCourseFromSemsterPlan={
-                    handleRemoveCourseFromSemsterPlan
-                  }
-                />
-              );
-            })}
+            {Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => (
+              <SemesterPlanOfYear
+                yearNumber={parseInt(yearNumber)}
+                plans={plans}
+                key={yearNumber}
+                handleRemoveCourseFromSemsterPlan={
+                  handleRemoveCourseFromSemsterPlan
+                }
+                coursePlanId={coursePlanId}
+                isLastYear={parseInt(yearNumber) === maxYear}
+                onYearAdded={handleNewYearAdded}
+              />
+            ))}
           </>
         ) : (
           <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
@@ -128,10 +163,10 @@ function SemesterPlanGridContent({
               No semester plans found
             </div>
             <button
-              onClick={() => handleCreateSemesterPlan(1, 1)}
+              onClick={handleCreateInitialYearPlan}
               className="rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700"
             >
-              Create First Semester Plan
+              Create First Year Plan
             </button>
           </div>
         )}
