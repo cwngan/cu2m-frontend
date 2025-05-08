@@ -97,30 +97,6 @@ function SemesterPlanGridContent({
     [], // Remove semesterPlans dependency since we're using callback form of setState
   );
 
-  // Make the removal area droppable
-  const removalAreaRef = useRef<HTMLDivElement>(null);
-  const [{ isOver: isOverRemoval }, dropRemoval] = useDrop(() => ({
-    accept: "COURSE",
-    drop: (item: {
-      course: CourseBasicInfo;
-      semesterPlanId: string | null;
-    }) => {
-      if (item.semesterPlanId) {
-        handleRemoveCourseFromSemsterPlan(item.course._id, item.semesterPlanId);
-      }
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
-  }));
-
-  // Connect the drop ref to our div ref
-  useEffect(() => {
-    if (removalAreaRef.current) {
-      dropRemoval(removalAreaRef.current);
-    }
-  }, [dropRemoval]);
-
   return (
     <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
       <div
@@ -145,21 +121,6 @@ function SemesterPlanGridContent({
                 />
               );
             })}
-            <div
-              ref={removalAreaRef}
-              className={clsx(
-                "fixed right-0 bottom-0 left-0 h-32 transition-opacity duration-300",
-                "flex items-center justify-center text-xl font-bold text-red-600",
-                isOverRemoval
-                  ? "bg-red-200 opacity-100"
-                  : "bg-red-100 opacity-0",
-              )}
-              style={{
-                pointerEvents: isDragging ? "auto" : "none",
-              }}
-            >
-              Drop here to remove course
-            </div>
           </>
         ) : (
           <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
@@ -179,16 +140,14 @@ function SemesterPlanGridContent({
   );
 }
 
-// Create a separate component for the background drop zone
-function BackgroundDropZone({
+// Create a deletion zone component
+function DeleteZone({
   onRemove,
-  children,
 }: {
   onRemove: (courseId: string, semesterPlanId: string) => void;
-  children: React.ReactNode;
 }) {
-  const backgroundRef = useRef<HTMLDivElement>(null);
-  const [{ isOver }, drop] = useDrop(() => ({
+  const deleteRef = useRef<HTMLDivElement>(null);
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: "COURSE",
     drop: (item: {
       course: CourseBasicInfo;
@@ -200,22 +159,38 @@ function BackgroundDropZone({
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
+      canDrop: !!monitor.canDrop(),
     }),
   }));
 
-  drop(backgroundRef);
+  drop(deleteRef);
 
   return (
     <div
-      ref={backgroundRef}
-      className={clsx("fixed inset-0 z-0", isOver && "bg-red-50/50")}
-      style={{ pointerEvents: "all" }}
+      ref={deleteRef}
+      className={clsx(
+        "fixed right-8 bottom-8 z-50 flex h-16 w-16 items-center justify-center rounded-lg transition-all duration-200",
+        isOver ? "scale-110 bg-red-500" : "bg-red-400 hover:bg-red-500",
+        canDrop ? "opacity-100" : "opacity-70",
+      )}
     >
-      <div className="relative z-10 mt-20 flex min-h-screen w-full items-start justify-center overflow-auto pb-18">
-        <div className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8">
-          {children}
-        </div>
-      </div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="white"
+        className={clsx(
+          "h-8 w-8 transition-transform duration-200",
+          isOver && "scale-110",
+        )}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+        />
+      </svg>
     </div>
   );
 }
@@ -388,38 +363,15 @@ export default function SemesterPlanGrid({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <BackgroundDropZone onRemove={handleRemoveCourseFromSemsterPlan}>
-        {isLoading ? (
-          <div className="flex h-96 w-full items-center justify-center">
-            <div className="text-2xl">Loading...</div>
-          </div>
-        ) : Object.keys(semesterPlansByYear).length > 0 ? (
-          Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
-            return (
-              <SemesterPlanOfYear
-                yearNumber={parseInt(yearNumber)}
-                plans={plans}
-                key={yearNumber}
-                handleRemoveCourseFromSemsterPlan={
-                  handleRemoveCourseFromSemsterPlan
-                }
-              />
-            );
-          })
-        ) : (
-          <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
-            <div className="text-2xl text-gray-600">
-              No semester plans found
-            </div>
-            <button
-              onClick={() => handleCreateSemesterPlan(1, 1)}
-              className="rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700"
-            >
-              Create First Semester Plan
-            </button>
-          </div>
-        )}
-      </BackgroundDropZone>
+      <SemesterPlanGridContent
+        coursePlanId={coursePlanId}
+        semesterPlans={semesterPlans}
+        setSemesterPlans={setSemesterPlans}
+        semesterPlansByYear={semesterPlansByYear}
+        isLoading={isLoading}
+        handleCreateSemesterPlan={handleCreateSemesterPlan}
+      />
+      <DeleteZone onRemove={handleRemoveCourseFromSemsterPlan} />
       <SearchBlock />
     </DndProvider>
   );

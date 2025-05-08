@@ -17,18 +17,33 @@ interface CourseBlockProps {
   course: CourseBasicInfo;
 }
 
+interface DropResultType {
+  allowedDrop?: boolean;
+}
+
 export default function CourseBlock({
   semesterPlanId,
   course,
 }: CourseBlockProps) {
   const drag = useRef<HTMLDivElement>(null);
+  const [didBounce, setDidBounce] = useState(false);
+  
   const [{ isDragging }, dragConnector] = useDrag(() => ({
     type: "COURSE",
     item: { semesterPlanId, course },
+    end: (item, monitor) => {
+      const dropResult = monitor.getDropResult<DropResultType>();
+      // If no drop result or drop was not allowed, trigger bounce animation
+      if (!dropResult || !dropResult.allowedDrop) {
+        setDidBounce(true);
+        setTimeout(() => setDidBounce(false), 300); // Reset after animation
+      }
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
   }));
+  
   dragConnector(drag);
 
   //set the color of course block base on number of semester
@@ -49,9 +64,10 @@ export default function CourseBlock({
     <div
       ref={drag}
       className={clsx(
-        "flex transform flex-col items-center justify-center rounded-xl p-2 transition-transform duration-150 duration-200 hover:scale-110 hover:transition active:scale-90",
+        "flex transform flex-col items-center justify-center rounded-xl p-2 transition-all duration-150",
         color,
-        isDragging ? "opacity-50" : "",
+        isDragging ? "opacity-50 scale-105" : "",
+        didBounce && "animate-bounce",
       )}
     >
       <div>{course.code}</div>

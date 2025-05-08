@@ -28,6 +28,7 @@ export default function SemesterPlan({
   useEffect(() => {
     setSemesterPlan(plan);
   }, [plan]);
+
   const drop = useRef<HTMLDivElement>(null);
   const [{ isOver }, dropConnector] = useDrop(() => ({
     accept: "COURSE",
@@ -35,17 +36,21 @@ export default function SemesterPlan({
       course: CourseBasicInfo;
       semesterPlanId: string | null;
     }) => {
-      // Prevent dropping on the same semester plan
+      // If dropping in the same plan, do nothing
       if (item.semesterPlanId === semesterPlan._id) {
-        return;
+        return undefined;
       }
 
       try {
         // Update the semester plan with the new course
         const updatedCourses = [...semesterPlan.courses, item.course];
-        const response = await apiClient.patch(`/api/semester-plans/${semesterPlan._id}`, {
-          courses: updatedCourses.map(course => course.code)
-        });
+
+        const response = await apiClient.patch(
+          `/api/semester-plans/${semesterPlan._id}`,
+          {
+            courses: updatedCourses.map((course) => course.code),
+          },
+        );
 
         if (response.status === 200) {
           setSemesterPlan((prevPlan) => {
@@ -61,14 +66,19 @@ export default function SemesterPlan({
 
           // If the course was moved from another semester plan, remove it from there
           if (item.semesterPlanId !== null) {
-            handleRemoveCourseFromSemsterPlan(item.course._id, item.semesterPlanId);
+            handleRemoveCourseFromSemsterPlan(
+              item.course._id,
+              item.semesterPlanId,
+            );
           }
+          return { allowedDrop: true };
         } else {
           throw new Error("Failed to update semester plan");
         }
       } catch (error) {
         console.error("Error updating semester plan:", error);
         alert("Failed to update semester plan");
+        return { allowedDrop: false };
       }
     },
     collect: (monitor) => ({
@@ -81,6 +91,7 @@ export default function SemesterPlan({
     // block that contains each column of semester plan
     <div
       ref={drop}
+      data-semplan-id={plan._id}
       className={clsx(
         "from-stone-60 relative flex w-44 flex-col items-center justify-center gap-3 rounded-lg border-1 border-neutral-300 bg-gradient-to-br via-neutral-100 to-stone-100 ring-3 inset-ring ring-white inset-ring-white",
         isOver &&
