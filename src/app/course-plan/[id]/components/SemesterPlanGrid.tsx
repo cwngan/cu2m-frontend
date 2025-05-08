@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { DndProvider, useDragLayer, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
-import { RawSemesterPlanData } from "../types/RawSemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
 import SearchBlock from "./SearchBlock";
 import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
@@ -19,11 +18,9 @@ interface SemesterPlanGridProps {
 // Inner component that uses drag and drop hooks
 function SemesterPlanGridContent({
   coursePlanId,
-  semesterPlans,
   setSemesterPlans,
   semesterPlansByYear,
   isLoading,
-  handleCreateSemesterPlan,
 }: {
   coursePlanId: string;
   semesterPlans: SemesterPlanData[];
@@ -33,7 +30,7 @@ function SemesterPlanGridContent({
   handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [, setIsDragging] = useState(false);
 
   // Monitor drag state
   const { isDragging: isItemDragging } = useDragLayer((monitor) => ({
@@ -93,7 +90,7 @@ function SemesterPlanGridContent({
         alert("Failed to remove course from semester plan");
       }
     },
-    [], // Remove semesterPlans dependency since we're using callback form of setState
+    [setSemesterPlans], // Add setSemesterPlans to dependency array
   );
 
   const handleNewYearAdded = useCallback(
@@ -246,14 +243,12 @@ function DeleteZone({
 // Main component that provides the DndProvider context
 export default function SemesterPlanGrid({
   coursePlanId,
-  coursePlanResponse,
 }: SemesterPlanGridProps) {
   const [semesterPlans, setSemesterPlans] = useState<SemesterPlanData[]>([]);
   const [semesterPlansByYear, setSemesterPlansByYear] = useState<{
     [year: number]: SemesterPlanData[];
   }>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
     async (courseId: string, semesterPlanId: string) => {
@@ -304,7 +299,7 @@ export default function SemesterPlanGrid({
         alert("Failed to remove course from semester plan");
       }
     },
-    [], // Remove semesterPlans dependency since we're using callback form of setState
+    [setSemesterPlans], // Add setSemesterPlans to dependency array
   );
 
   const handleCreateSemesterPlan = async (year: number, semester: number) => {
@@ -371,9 +366,11 @@ export default function SemesterPlanGrid({
 
           // Fetch course details for each semester plan
           const semesterPlansWithDetails = await Promise.all(
-            rawSemesterPlans.map(async (plan: any) => {
+            rawSemesterPlans.map(async (plan: SemesterPlanData) => {
               console.log("Processing plan:", plan);
-              const courseDetails = await fetchCourseDetails(plan.courses);
+              const courseDetails = await fetchCourseDetails(
+                plan.courses.map((course) => course.code),
+              );
               console.log("Course details for plan:", courseDetails);
               return {
                 ...plan,

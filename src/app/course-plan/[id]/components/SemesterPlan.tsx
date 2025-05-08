@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
+import { SemesterPlanData } from "../types/SemesterPlan";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
