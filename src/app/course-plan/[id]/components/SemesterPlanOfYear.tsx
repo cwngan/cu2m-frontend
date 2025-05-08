@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlan from "./SemesterPlan";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { apiClient } from "@/apiClient";
 
 interface SemesterPlanOfYearProps {
@@ -14,6 +14,7 @@ interface SemesterPlanOfYearProps {
   coursePlanId: string;
   isLastYear?: boolean;
   onYearAdded?: (newPlans: SemesterPlanData[]) => void;
+  onPlanDeleted?: (planId: string) => void;
 }
 
 export default function SemesterPlanOfYear({
@@ -23,9 +24,30 @@ export default function SemesterPlanOfYear({
   coursePlanId,
   isLastYear = false,
   onYearAdded,
+  onPlanDeleted,
 }: SemesterPlanOfYearProps) {
-  const [semesterPlans, setSemesterPlans] = useState<SemesterPlanData[]>(plans);
-  
+  const handleAddSemesterPlan = useCallback(
+    async (semester: number) => {
+      try {
+        const response = await apiClient.post("/api/semester-plans/", {
+          course_plan_id: coursePlanId,
+          year: yearNumber,
+          semester,
+        });
+
+        if (response.status === 200) {
+          onYearAdded?.([response.data.data]);
+        } else {
+          throw new Error("Failed to add semester");
+        }
+      } catch (error) {
+        console.error("Error adding semester:", error);
+        alert("Failed to add semester");
+      }
+    },
+    [yearNumber, coursePlanId, onYearAdded],
+  );
+
   const handleAddSummerSession = useCallback(async () => {
     try {
       const response = await apiClient.post("/api/semester-plans/", {
@@ -35,7 +57,7 @@ export default function SemesterPlanOfYear({
       });
 
       if (response.status === 200) {
-        setSemesterPlans((prevPlans) => [...prevPlans, response.data.data]);
+        onYearAdded?.([response.data.data]);
       } else {
         throw new Error("Failed to add summer session");
       }
@@ -43,7 +65,7 @@ export default function SemesterPlanOfYear({
       console.error("Error adding summer session:", error);
       alert("Failed to add summer session");
     }
-  }, [yearNumber, coursePlanId]);
+  }, [yearNumber, coursePlanId, onYearAdded]);
 
   const handleAddNextYear = useCallback(async () => {
     try {
@@ -73,11 +95,43 @@ export default function SemesterPlanOfYear({
     }
   }, [yearNumber, coursePlanId, onYearAdded]);
 
-  useEffect(() => {
-    setSemesterPlans(plans);
-  }, [plans]);
+  const handleSemesterPlanDeleted = useCallback(
+    (planId: string) => {
+      onPlanDeleted?.(planId);
+    },
+    [onPlanDeleted],
+  );
 
-  const hasSpring = semesterPlans.some(plan => plan.semester === SemesterTypes.SPRING);
+  // Always use the plans prop directly instead of local state
+  const hasSpring = plans.some(
+    (plan) => plan.semester === SemesterTypes.SPRING,
+  );
+  const hasAutumn = plans.some(
+    (plan) => plan.semester === SemesterTypes.AUTUMN,
+  );
+
+  // Determine which plans have add buttons and their positions
+  const getAddButtonConfig = (plan: SemesterPlanData) => {
+    // When only one plan exists
+    if (plans.length === 1) {
+      if (!hasSpring && plan.semester === SemesterTypes.AUTUMN) {
+        return { semester: SemesterTypes.SPRING, position: "after" as const };
+      }
+      if (!hasAutumn && plan.semester === SemesterTypes.SPRING) {
+        return { semester: SemesterTypes.AUTUMN, position: "before" as const };
+      }
+    }
+    // If we have Spring but no Autumn, show add button before Spring
+    if (!hasAutumn && plan.semester === SemesterTypes.SPRING) {
+      return { semester: SemesterTypes.AUTUMN, position: "before" as const };
+    }
+    // If we have Autumn but no Spring, show add button after Autumn
+    if (!hasSpring && plan.semester === SemesterTypes.AUTUMN) {
+      return { semester: SemesterTypes.SPRING, position: "after" as const };
+    }
+    // No add button in other cases
+    return undefined;
+  };
 
   return (
     <div className="flex h-auto flex-col items-center">
@@ -88,21 +142,28 @@ export default function SemesterPlanOfYear({
       >{`Year ${yearNumber}`}</div>
       <div className="relative flex items-center justify-center">
         <div className={clsx("flex items-center justify-center")}>
-          {semesterPlans.map((plan) => (
+          {plans.map((plan) => (
             <SemesterPlan
               key={plan._id}
               plan={plan}
-              addSummerSession={semesterPlans.length < 3 && plan.semester === 2}
+              addSummerSession={
+                plans.length === 2 && plan.semester === SemesterTypes.SPRING
+              }
               handleAddSummerSession={handleAddSummerSession}
-              handleRemoveCourseFromSemsterPlan={handleRemoveCourseFromSemsterPlan}
+              handleRemoveCourseFromSemsterPlan={
+                handleRemoveCourseFromSemsterPlan
+              }
+              onSemesterPlanDeleted={handleSemesterPlanDeleted}
+              handleAddSemesterPlan={handleAddSemesterPlan}
+              showAddButton={getAddButtonConfig(plan)}
             />
           ))}
         </div>
-        {/* Add Year Button - only show if this is the last year and has a spring semester */}
-        {isLastYear && hasSpring && (
+        {/* Add Year Button - only show if this is the last year */}
+        {isLastYear && (
           <div className="absolute -right-12 flex h-full items-center justify-center">
             <div
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 font-extrabold text-white transition-all duration-200 hover:scale-110 hover:bg-blue-700 shadow-lg"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 font-extrabold text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-blue-700"
               onClick={handleAddNextYear}
             >
               +

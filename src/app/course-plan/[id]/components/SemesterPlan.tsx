@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { SemesterPlanData } from "../types/SemesterPlan";
+import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
@@ -15,6 +15,12 @@ interface SemesterPlanProps {
     courseId: string,
     semesterPlanId: string,
   ) => void;
+  onSemesterPlanDeleted?: (planId: string) => void;
+  handleAddSemesterPlan?: (semester: number) => void;
+  showAddButton?: {
+    semester: number;
+    position: "before" | "after";
+  };
 }
 
 // This component represents an individual year column in the course plan grid
@@ -23,8 +29,14 @@ export default function SemesterPlan({
   addSummerSession,
   handleAddSummerSession,
   handleRemoveCourseFromSemsterPlan,
+  onSemesterPlanDeleted,
+  handleAddSemesterPlan,
+  showAddButton,
 }: SemesterPlanProps) {
   const [semesterPlan, setSemesterPlan] = useState<SemesterPlanData>(plan);
+  const [showLeftButton, setShowLeftButton] = useState(false);
+  const [showRightButton, setShowRightButton] = useState(false);
+
   useEffect(() => {
     setSemesterPlan(plan);
   }, [plan]);
@@ -88,42 +100,87 @@ export default function SemesterPlan({
   dropConnector(drop);
 
   return (
-    // block that contains each column of semester plan
-    <div
-      ref={drop}
-      data-semplan-id={plan._id}
-      className={clsx(
-        "from-stone-60 relative flex w-44 flex-col items-center justify-center gap-3 rounded-lg border-1 border-neutral-300 bg-gradient-to-br via-neutral-100 to-stone-100 ring-3 inset-ring ring-white inset-ring-white",
-        isOver &&
-          "bg-linear-to-t from-neutral-200 to-neutral-300 transition duration-300",
-      )}
-    >
-      <SemesterPlanTitle plan={semesterPlan} />
-      <div className="flex h-128 w-full flex-col gap-5 overflow-auto rounded-xl p-4">
-        {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
-          semesterPlan.courses.map((course) => (
-            <CourseBlock
-              course={course}
-              key={course._id}
-              semesterPlanId={plan._id}
-            />
-          ))
-        ) : (
-          <div className="flex h-full items-center justify-center text-gray-400">
-            No courses
-          </div>
-        )}
-      </div>
-      {/* add summer session button */}
-      {addSummerSession && handleAddSummerSession && (
-        <div className="absolute -right-3 flex h-full w-6 items-center justify-center overflow-visible opacity-0 hover:opacity-100">
+    <div className="relative flex items-center">
+      {/* Left margin hover area */}
+      {showAddButton?.position === "before" && (
+        <div
+          className="absolute -left-3 z-10 flex h-full w-6 items-center justify-center"
+          onMouseEnter={() => setShowLeftButton(true)}
+          onMouseLeave={() => setShowLeftButton(false)}
+        >
           <div
-            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-green-600 leading-none font-extrabold text-white"
-            onClick={() => {
-              handleAddSummerSession();
-            }}
+            className={clsx(
+              "flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-green-600 leading-none font-extrabold text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
+              showLeftButton && "opacity-100",
+            )}
           >
-            +
+            <div
+              onClick={() => handleAddSemesterPlan?.(showAddButton.semester)}
+            >
+              +
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main semester plan content */}
+      <div
+        ref={drop}
+        data-semplan-id={plan._id}
+        className={clsx(
+          "from-stone-60 relative flex w-44 flex-col items-center justify-center gap-3 rounded-lg border-1 border-neutral-300 bg-gradient-to-br via-neutral-100 to-stone-100 ring-3 inset-ring ring-white inset-ring-white",
+          isOver &&
+            "bg-linear-to-t from-neutral-200 to-neutral-300 transition duration-300",
+        )}
+      >
+        <SemesterPlanTitle
+          plan={semesterPlan}
+          onSemesterPlanDeleted={() => {
+            onSemesterPlanDeleted?.(semesterPlan._id);
+          }}
+        />
+        <div className="flex h-128 w-full flex-col gap-5 overflow-auto rounded-xl p-4">
+          {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
+            semesterPlan.courses.map((course) => (
+              <CourseBlock
+                course={course}
+                key={course._id}
+                semesterPlanId={plan._id}
+              />
+            ))
+          ) : (
+            <div className="flex h-full items-center justify-center text-gray-400">
+              No courses
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right margin hover area */}
+      {((addSummerSession && handleAddSummerSession) ||
+        showAddButton?.position === "after") && (
+        <div
+          className="absolute -right-3 z-10 flex h-full w-6 items-center justify-center"
+          onMouseEnter={() => setShowRightButton(true)}
+          onMouseLeave={() => setShowRightButton(false)}
+        >
+          <div
+            className={clsx(
+              "flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-green-600 leading-none font-extrabold text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
+              showRightButton && "opacity-100",
+            )}
+          >
+            <div
+              onClick={() => {
+                if (addSummerSession && handleAddSummerSession) {
+                  handleAddSummerSession();
+                } else if (showAddButton?.position === "after") {
+                  handleAddSemesterPlan?.(showAddButton.semester);
+                }
+              }}
+            >
+              +
+            </div>
           </div>
         </div>
       )}

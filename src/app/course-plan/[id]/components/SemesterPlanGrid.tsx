@@ -96,9 +96,12 @@ function SemesterPlanGridContent({
     [], // Remove semesterPlans dependency since we're using callback form of setState
   );
 
-  const handleNewYearAdded = useCallback((newPlans: SemesterPlanData[]) => {
-    setSemesterPlans((prevPlans) => [...prevPlans, ...newPlans]);
-  }, [setSemesterPlans]);
+  const handleNewYearAdded = useCallback(
+    (newPlans: SemesterPlanData[]) => {
+      setSemesterPlans((prevPlans) => [...prevPlans, ...newPlans]);
+    },
+    [setSemesterPlans],
+  );
 
   const handleCreateInitialYearPlan = async () => {
     try {
@@ -128,6 +131,15 @@ function SemesterPlanGridContent({
     }
   };
 
+  const handlePlanDeleted = useCallback(
+    (planId: string) => {
+      setSemesterPlans((prevPlans) =>
+        prevPlans.filter((plan) => plan._id !== planId),
+      );
+    },
+    [setSemesterPlans],
+  );
+
   const years = Object.keys(semesterPlansByYear).map(Number);
   const maxYear = years.length > 0 ? Math.max(...years) : 0;
 
@@ -154,6 +166,7 @@ function SemesterPlanGridContent({
                 coursePlanId={coursePlanId}
                 isLastYear={parseInt(yearNumber) === maxYear}
                 onYearAdded={handleNewYearAdded}
+                onPlanDeleted={handlePlanDeleted}
               />
             ))}
           </>
@@ -373,7 +386,11 @@ export default function SemesterPlanGrid({
             "Final semester plans with details:",
             semesterPlansWithDetails,
           );
-          setSemesterPlans(semesterPlansWithDetails);
+          // Sort semester plans by semester before setting state
+          const sortedPlans = [...semesterPlansWithDetails].sort(
+            (a, b) => a.semester - b.semester,
+          );
+          setSemesterPlans(sortedPlans);
         }
       } catch (error) {
         console.error("Error fetching semester plans:", error);
@@ -392,6 +409,10 @@ export default function SemesterPlanGrid({
         plansByYear[plan.year] = [];
       }
       plansByYear[plan.year].push(plan);
+    });
+    // Sort plans by semester within each year
+    Object.values(plansByYear).forEach((plans) => {
+      plans.sort((a, b) => a.semester - b.semester);
     });
     setSemesterPlansByYear(plansByYear);
   }, [semesterPlans]);
