@@ -119,49 +119,62 @@ export default function SemesterPlanOfYear({
   //   (plan) => plan.semester === SemesterTypes.AUTUMN,
   // );
 
-  // Refactored: Determine which plans have add buttons and their positions
+  /**
+   * Determines where to show the "+" button for adding new semesters in a year.
+   * The function handles different scenarios of semester combinations and returns
+   * the appropriate configuration for the add button.
+   * 
+   * Rules for adding semesters:
+   * 1. A year should have at most 3 semesters (Autumn, Spring, Summer)
+   * 2. Autumn and Spring are the main semesters, Summer is optional
+   * 3. When adding a new semester, we need to maintain the correct order:
+   *    - Autumn should come before Spring
+   *    - Summer can be added between Autumn and Spring
+   * 
+   * @param plan The current semester plan being rendered
+   * @returns Configuration for the add button, or undefined if no button should be shown
+   */
   const getAddButtonConfig = (plan: SemesterPlanData) => {
-    // Build a set of present semesters
+    // Get all semesters that currently exist in this year
     const present = new Set(plans.map(p => p.semester));
     const isAutumn = present.has(SemesterTypes.AUTUMN);
     const isSpring = present.has(SemesterTypes.SPRING);
     const isSummer = present.has(SemesterTypes.SUMMER);
 
-    // Only one plan present
+    // Case 1: Only one semester exists in the year
     if (plans.length === 1) {
       if (plan.semester === SemesterTypes.AUTUMN) {
-        // Only Autumn: can add Spring after
+        // If only Autumn exists, we can add Spring after it
         return { semester: SemesterTypes.SPRING, position: "after" as const };
       }
       if (plan.semester === SemesterTypes.SPRING) {
-        // Only Spring: can add Autumn before
+        // If only Spring exists, we can add Autumn before it
         return { semester: SemesterTypes.AUTUMN, position: "before" as const };
       }
       if (plan.semester === SemesterTypes.SUMMER) {
-        // Only Summer: can add Spring before and/or Autumn after
-        if (!isSpring) {
-          return { semester: SemesterTypes.SPRING, position: "before" as const };
-        }
-        if (!isAutumn) {
-          return { semester: SemesterTypes.AUTUMN, position: "after" as const };
-        }
+        // If only Summer exists, we can add Spring after it
+        return { semester: SemesterTypes.SPRING, position: "before" as const };
       }
     }
 
-    // Two plans present
+    // Case 2: Two semesters exist in the year
     if (plans.length === 2) {
-      // Autumn + Spring: no add button (should add summer via special button)
+      // If we have both Autumn and Spring, no add button needed
+      // (Summer should be added via the special summer session button)
       if (isAutumn && isSpring) return undefined;
-      // Autumn + Summer: can add Spring between
+
+      // If we have Autumn and Summer, we can add Spring between them
       if (isAutumn && isSummer && plan.semester === SemesterTypes.AUTUMN) {
         return { semester: SemesterTypes.SPRING, position: "after" as const };
       }
-      // Spring + Summer: can add Autumn before Spring
+
+      // If we have Spring and Summer, we can add Autumn before Spring
       if (isSpring && isSummer && plan.semester === SemesterTypes.SPRING) {
         return { semester: SemesterTypes.AUTUMN, position: "before" as const };
       }
     }
 
+    // Case 3: Handle edge cases for maintaining semester order
     // If we have Spring but no Autumn, show add button before Spring
     if (!isAutumn && plan.semester === SemesterTypes.SPRING) {
       return { semester: SemesterTypes.AUTUMN, position: "before" as const };
@@ -170,7 +183,8 @@ export default function SemesterPlanOfYear({
     if (!isSpring && plan.semester === SemesterTypes.AUTUMN) {
       return { semester: SemesterTypes.SPRING, position: "after" as const };
     }
-    // No add button in other cases
+
+    // No add button needed in other cases
     return undefined;
   };
 
