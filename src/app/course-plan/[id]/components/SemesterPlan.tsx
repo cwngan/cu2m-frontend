@@ -89,18 +89,17 @@ export default function SemesterPlan({
           onMouseEnter={() => setShowLeftButton(true)}
           onMouseLeave={() => setShowLeftButton(false)}
         >
-          <div
+          <button
             className={clsx(
-              "flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-green-600 leading-none font-extrabold text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
-              showLeftButton && "opacity-100",
+              "flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-xl font-extrabold cursor-pointer opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
+              showLeftButton && "opacity-100"
             )}
+            onClick={() => handleAddSemesterPlan?.(showAddButton.semester)}
+            tabIndex={0}
+            aria-label="Add semester"
           >
-            <div
-              onClick={() => handleAddSemesterPlan?.(showAddButton.semester)}
-            >
-              +
-            </div>
-          </div>
+            +
+          </button>
         </div>
       )}
 
@@ -156,24 +155,23 @@ export default function SemesterPlan({
           onMouseEnter={() => setShowRightButton(true)}
           onMouseLeave={() => setShowRightButton(false)}
         >
-          <div
+          <button
             className={clsx(
-              "flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-green-600 leading-none font-extrabold text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
-              showRightButton && "opacity-100",
+              "flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-xl font-extrabold cursor-pointer opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
+              showRightButton && "opacity-100"
             )}
+            onClick={() => {
+              if (addSummerSession && handleAddSummerSession) {
+                handleAddSummerSession();
+              } else if (showAddButton?.position === "after") {
+                handleAddSemesterPlan?.(showAddButton.semester);
+              }
+            }}
+            tabIndex={0}
+            aria-label="Add semester or summer session"
           >
-            <div
-              onClick={() => {
-                if (addSummerSession && handleAddSummerSession) {
-                  handleAddSummerSession();
-                } else if (showAddButton?.position === "after") {
-                  handleAddSemesterPlan?.(showAddButton.semester);
-                }
-              }}
-            >
-              +
-            </div>
-          </div>
+            +
+          </button>
         </div>
       )}
     </div>

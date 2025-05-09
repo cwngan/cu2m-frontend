@@ -119,23 +119,55 @@ export default function SemesterPlanOfYear({
     (plan) => plan.semester === SemesterTypes.AUTUMN,
   );
 
-  // Determine which plans have add buttons and their positions
+  // Refactored: Determine which plans have add buttons and their positions
   const getAddButtonConfig = (plan: SemesterPlanData) => {
-    // When only one plan exists
+    // Build a set of present semesters
+    const present = new Set(plans.map(p => p.semester));
+    const isAutumn = present.has(SemesterTypes.AUTUMN);
+    const isSpring = present.has(SemesterTypes.SPRING);
+    const isSummer = present.has(SemesterTypes.SUMMER);
+
+    // Only one plan present
     if (plans.length === 1) {
-      if (!hasSpring && plan.semester === SemesterTypes.AUTUMN) {
+      if (plan.semester === SemesterTypes.AUTUMN) {
+        // Only Autumn: can add Spring after
         return { semester: SemesterTypes.SPRING, position: "after" as const };
       }
-      if (!hasAutumn && plan.semester === SemesterTypes.SPRING) {
+      if (plan.semester === SemesterTypes.SPRING) {
+        // Only Spring: can add Autumn before
+        return { semester: SemesterTypes.AUTUMN, position: "before" as const };
+      }
+      if (plan.semester === SemesterTypes.SUMMER) {
+        // Only Summer: can add Spring before and/or Autumn after
+        if (!isSpring) {
+          return { semester: SemesterTypes.SPRING, position: "before" as const };
+        }
+        if (!isAutumn) {
+          return { semester: SemesterTypes.AUTUMN, position: "after" as const };
+        }
+      }
+    }
+
+    // Two plans present
+    if (plans.length === 2) {
+      // Autumn + Spring: no add button (should add summer via special button)
+      if (isAutumn && isSpring) return undefined;
+      // Autumn + Summer: can add Spring between
+      if (isAutumn && isSummer && plan.semester === SemesterTypes.AUTUMN) {
+        return { semester: SemesterTypes.SPRING, position: "after" as const };
+      }
+      // Spring + Summer: can add Autumn before Spring
+      if (isSpring && isSummer && plan.semester === SemesterTypes.SPRING) {
         return { semester: SemesterTypes.AUTUMN, position: "before" as const };
       }
     }
+
     // If we have Spring but no Autumn, show add button before Spring
-    if (!hasAutumn && plan.semester === SemesterTypes.SPRING) {
+    if (!isAutumn && plan.semester === SemesterTypes.SPRING) {
       return { semester: SemesterTypes.AUTUMN, position: "before" as const };
     }
     // If we have Autumn but no Spring, show add button after Autumn
-    if (!hasSpring && plan.semester === SemesterTypes.AUTUMN) {
+    if (!isSpring && plan.semester === SemesterTypes.AUTUMN) {
       return { semester: SemesterTypes.SPRING, position: "after" as const };
     }
     // No add button in other cases
@@ -156,7 +188,7 @@ export default function SemesterPlanOfYear({
               key={plan._id}
               plan={plan}
               addSummerSession={
-                plans.length === 2 && plan.semester === SemesterTypes.SPRING
+                !plans.some(p => p.semester === SemesterTypes.SUMMER) && plan.semester === SemesterTypes.SPRING
               }
               handleAddSummerSession={handleAddSummerSession}
               handleRemoveCourseFromSemsterPlan={
