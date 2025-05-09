@@ -28,17 +28,6 @@ export default function SemesterPlanGridContent({
   ) => Promise<void>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [, setIsDragging] = useState(false);
-
-  // Monitor drag state
-  const { isDragging: isItemDragging } = useDragLayer((monitor) => ({
-    isDragging: monitor.isDragging(),
-  }));
-
-  useEffect(() => {
-    setIsDragging(isItemDragging);
-  }, [isItemDragging]);
-
 
   const handleNewYearAdded = useCallback(
     (newPlans: SemesterPlanData[]) => {
