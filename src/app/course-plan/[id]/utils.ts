@@ -6,12 +6,12 @@ const levelColors: { [key: number]: string } = {
 };
 
 const unitsColors: { [key: number]: string } = {
-  0: "bg-lime-100",
-  1: "bg-yellow-100",
-  2: "bg-amber-200",
-  3: "bg-orange-300",
-  4: "bg-red-300",
-  5: "bg-pink-300",
+  0: "bg-lime-200/50",
+  1: "bg-yellow-200/50",
+  2: "bg-amber-300/50",
+  3: "bg-orange-300/50",
+  4: "bg-red-300/50",
+  5: "bg-pink-300/50",
 };
 
 export const getCourseColor = (code: string): string => {
