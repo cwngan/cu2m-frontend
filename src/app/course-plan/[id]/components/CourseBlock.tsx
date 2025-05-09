@@ -1,14 +1,14 @@
-import { CourseBasicInfo } from "../types/Course";
 import clsx from "clsx";
 import { useState } from "react";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import DraggableBlock from "@/app/components/DraggableBlock";
 import { getCourseColor } from "../utils";
+import { CourseRead } from "@/app/types/Models";
 
 interface CourseBlockProps {
   semesterPlanId: string;
-  course: CourseBasicInfo;
+  course: CourseRead;
   isDuplicate?: boolean;
   warningType?: string;
 }
@@ -25,6 +25,9 @@ export default function CourseBlock({
   const [color, setColor] = useState<string>("bg-neutral-200");
 
   useEffect(() => {
+    if (course.code === null) {
+      throw new Error("Course code is null");
+    }
     setColor(getCourseColor(course.code));
   }, [course.code]);
 

@@ -1,14 +1,16 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { SemesterPlanData } from "../types/SemesterPlan";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
-import { CourseBasicInfo } from "../types/Course";
 import clsx from "clsx";
+import {
+  CourseRead,
+  SemesterPlanReadWithCourseDetails,
+} from "@/app/types/Models";
 // import { apiClient } from "@/apiClient";
 
 interface SemesterPlanProps {
-  plan: SemesterPlanData;
+  plan: SemesterPlanReadWithCourseDetails;
   addSummerSession: boolean;
   handleAddSummerSession?: () => void;
   // handleRemoveCourseFromSemsterPlan: (
@@ -23,7 +25,7 @@ interface SemesterPlanProps {
   };
   isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
   handleAddCourseToSemesterPlan: (
-    course: CourseBasicInfo,
+    course: CourseRead,
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
@@ -41,7 +43,8 @@ export default function SemesterPlan({
   isCourseDuplicate,
   handleAddCourseToSemesterPlan,
 }: SemesterPlanProps) {
-  const [semesterPlan, setSemesterPlan] = useState<SemesterPlanData>(plan);
+  const [semesterPlan, setSemesterPlan] =
+    useState<SemesterPlanReadWithCourseDetails>(plan);
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(false);
 
@@ -53,7 +56,7 @@ export default function SemesterPlan({
   const [{ isOver }, dropConnector] = useDrop(() => ({
     accept: "COURSE",
     drop: async (item: {
-      course: CourseBasicInfo;
+      course: CourseRead;
       semesterPlanId: string | null;
       setIsDragging: Dispatch<SetStateAction<boolean>> | null;
     }) => {

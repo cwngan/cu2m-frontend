@@ -1,9 +1,11 @@
 import { apiClient } from "@/apiClient";
-import { useRef, useState, useEffect, useCallback } from "react";
-import { useDragLayer } from "react-dnd";
-import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
+import { useRef, useCallback } from "react";
+import { SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
-import { CourseBasicInfo } from "../types/Course";
+import {
+  CourseRead,
+  SemesterPlanReadWithCourseDetails,
+} from "@/app/types/Models";
 
 export default function SemesterPlanGridContent({
   coursePlanId,
@@ -15,14 +17,16 @@ export default function SemesterPlanGridContent({
   handleAddCourseToSemesterPlan,
 }: {
   coursePlanId: string;
-  semesterPlans: SemesterPlanData[];
-  setSemesterPlans: React.Dispatch<React.SetStateAction<SemesterPlanData[]>>;
-  semesterPlansByYear: { [year: number]: SemesterPlanData[] };
+  semesterPlans: SemesterPlanReadWithCourseDetails[] | null;
+  setSemesterPlans: React.Dispatch<
+    React.SetStateAction<SemesterPlanReadWithCourseDetails[] | null>
+  >;
+  semesterPlansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] };
   isLoading: boolean;
   // handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
   isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
   handleAddCourseToSemesterPlan: (
-    course: CourseBasicInfo,
+    course: CourseRead,
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
@@ -30,13 +34,18 @@ export default function SemesterPlanGridContent({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleNewYearAdded = useCallback(
-    (newPlans: SemesterPlanData[]) => {
-      setSemesterPlans((prevPlans) => [...prevPlans, ...newPlans]);
+    (newPlans: SemesterPlanReadWithCourseDetails[]) => {
+      setSemesterPlans((prevPlans) => {
+        if (prevPlans === null) {
+          throw new Error("Previous plans are null");
+        }
+        return [...prevPlans, ...newPlans];
+      });
     },
     [setSemesterPlans],
   );
 
-  const handleCreateInitialYearPlan = async () => {
+  const handleCreateInitialYearPlan = useCallback(async () => {
     try {
       // Create Autumn semester
       const autumnResponse = await apiClient.post("/api/semester-plans/", {
@@ -62,13 +71,16 @@ export default function SemesterPlanGridContent({
       console.error("Error creating initial year plan:", error);
       alert("Failed to create initial year plan");
     }
-  };
+  }, [coursePlanId, setSemesterPlans]);
 
   const handlePlanDeleted = useCallback(
     (planId: string) => {
-      setSemesterPlans((prevPlans) =>
-        prevPlans.filter((plan) => plan._id !== planId),
-      );
+      setSemesterPlans((prevPlans) => {
+        if (prevPlans === null) {
+          throw new Error("Previous plans are null");
+        }
+        return prevPlans.filter((plan) => plan._id !== planId);
+      });
     },
     [setSemesterPlans],
   );

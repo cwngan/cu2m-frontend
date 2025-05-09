@@ -2,26 +2,36 @@
 import { useCallback, useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { SemesterPlanData } from "../types/SemesterPlan";
 import SearchBlock from "./SearchBlock";
-import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
+import {
+  CoursePlanWithSemestersResponseModel,
+  CoursesResponseModel,
+  SemesterPlanResponseModel,
+} from "@/app/types/ApiResponseModel";
 import { apiClient } from "@/apiClient";
-import { CourseBasicInfo } from "../types/Course";
 import SemesterPlanGridContent from "./SemesterPlanGridContent";
 import DeleteZone from "./DeleteZone";
+import {
+  CourseRead,
+  SemesterPlanReadWithCourseDetails,
+} from "@/app/types/Models";
 
 interface SemesterPlanGridProps {
   coursePlanId: string;
-  coursePlanResponse: CoursePlanResponseModel;
+  coursePlanResponse: CoursePlanWithSemestersResponseModel;
 }
 
 // Main component that provides the DndProvider context
 export default function SemesterPlanGrid({
   coursePlanId,
+  coursePlanResponse,
 }: SemesterPlanGridProps) {
-  const [semesterPlans, setSemesterPlans] = useState<SemesterPlanData[]>([]);
+  const semesterPlans = coursePlanResponse.data!.semester_plans;
+  const [detailedSemesterPlans, setDetailedSemesterPlans] = useState<
+    SemesterPlanReadWithCourseDetails[] | null
+  >(null);
   const [semesterPlansByYear, setSemesterPlansByYear] = useState<{
-    [year: number]: SemesterPlanData[];
+    [year: number]: SemesterPlanReadWithCourseDetails[];
   }>({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,7 +39,10 @@ export default function SemesterPlanGrid({
     async (courseId: string, semesterPlanId: string) => {
       try {
         // Get the current semester plan using fresh state
-        setSemesterPlans((prevPlans) => {
+        setDetailedSemesterPlans((prevPlans) => {
+          if (prevPlans === null) {
+            throw new Error("Detailed semester plans are null");
+          }
           const currentPlan = prevPlans.find(
             (plan) => plan._id === semesterPlanId,
           );
@@ -74,18 +87,21 @@ export default function SemesterPlanGrid({
         alert("Failed to remove course from semester plan");
       }
     },
-    [setSemesterPlans],
+    [],
   );
 
   const handleAddCourseToSemesterPlan = useCallback(
     async (
-      course: CourseBasicInfo,
+      course: CourseRead,
       semesterPlanId: string,
       sourcePlanId: string | null,
     ) => {
+      if (detailedSemesterPlans === null) {
+        throw new Error("Detailed semester plans are null");
+      }
       try {
         // Get the current semester plan
-        const currentPlan = semesterPlans.find(
+        const currentPlan = detailedSemesterPlans.find(
           (plan) => plan._id === semesterPlanId,
         );
         if (!currentPlan) {
@@ -99,7 +115,7 @@ export default function SemesterPlanGrid({
         );
         const updatedCourses = [...filteredCourses, course];
 
-        const response = await apiClient.patch(
+        const response = await apiClient.patch<SemesterPlanResponseModel>(
           `/api/semester-plans/${semesterPlanId}`,
           {
             courses: updatedCourses.map((course) => course.code),
@@ -108,7 +124,10 @@ export default function SemesterPlanGrid({
 
         if (response.status === 200) {
           // Update all semester plans to trigger re-render and warning checks
-          setSemesterPlans((prevPlans) => {
+          setDetailedSemesterPlans((prevPlans) => {
+            if (prevPlans === null) {
+              throw new Error("Detailed semester plans are null");
+            }
             return prevPlans.map((plan) => {
               if (plan._id === semesterPlanId) {
                 return {
@@ -132,13 +151,12 @@ export default function SemesterPlanGrid({
         alert("Failed to update semester plan");
       }
     },
-    [semesterPlans, handleRemoveCourseFromSemsterPlan],
+    [detailedSemesterPlans, handleRemoveCourseFromSemsterPlan],
   );
-
 
   const fetchCourseDetails = async (
     courseCodes: string[],
-  ): Promise<CourseBasicInfo[]> => {
+  ): Promise<CourseRead[]> => {
     try {
       // If there are no course codes, return an empty array
       if (!courseCodes || courseCodes.length === 0) {
@@ -146,26 +164,20 @@ export default function SemesterPlanGrid({
       }
 
       console.log("Fetching details for course codes:", courseCodes);
-      const response = await apiClient.get("/api/courses/", {
-        params: {
-          keywords: courseCodes,
-          strict: true, // Only match exact course codes
-          basic: true, // Only get basic course info
+      const response = await apiClient.get<CoursesResponseModel>(
+        "/api/courses/",
+        {
+          params: {
+            keywords: courseCodes,
+            strict: true, // Only match exact course codes
+            basic: true, // Only get basic course info
+          },
         },
-      });
-
+      );
       console.log("API Response:", response.data);
       if (response.status === 200 && response.data.data) {
         // Make sure we only return courses in the same order as requested
-        const courseMap = new Map(
-          response.data.data.map((course: CourseBasicInfo) => [
-            course.code,
-            course,
-          ]),
-        );
-        return courseCodes
-          .map((code) => courseMap.get(code))
-          .filter((course): course is CourseBasicInfo => course !== undefined);
+        return response.data.data;
       }
       return [];
     } catch (error) {
@@ -177,8 +189,11 @@ export default function SemesterPlanGrid({
   // Function to check if a course is duplicated across semester plans
   const isCourseDuplicate = useCallback(
     (courseId: string, currentPlanId: string) => {
+      if (detailedSemesterPlans === null) {
+        throw new Error("Detailed semester plans are null");
+      }
       // Find the course in the current plan
-      const currentPlan = semesterPlans.find(
+      const currentPlan = detailedSemesterPlans.find(
         (plan) => plan._id === currentPlanId,
       );
       if (!currentPlan) return false;
@@ -189,7 +204,7 @@ export default function SemesterPlanGrid({
       if (!currentCourse) return false;
 
       // Check if this course appears in any other plan
-      const isDuplicate = semesterPlans.some((plan) => {
+      const isDuplicate = detailedSemesterPlans.some((plan) => {
         if (plan._id === currentPlanId) return false;
 
         return plan.courses.some((course) => course._id === currentCourse._id);
@@ -197,7 +212,7 @@ export default function SemesterPlanGrid({
 
       return isDuplicate;
     },
-    [semesterPlans],
+    [detailedSemesterPlans],
   );
 
   useEffect(() => {
@@ -214,14 +229,22 @@ export default function SemesterPlanGrid({
           }),
         );
         setIsLoading(false);
+        setDetailedSemesterPlans(detailedPlans);
+      } catch (error) {
+        console.error("Error fetching detailed semester plans:", error);
       }
     };
-    fetchData();
-  }, [coursePlanId]);
+
+    fetchDetailedSemesterPlans();
+  }, [semesterPlans]);
 
   useEffect(() => {
-    const plansByYear: { [year: number]: SemesterPlanData[] } = {};
-    semesterPlans.forEach((plan) => {
+    if (detailedSemesterPlans === null) {
+      throw new Error("Detailed semester plans are null");
+    }
+    const plansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] } =
+      {};
+    detailedSemesterPlans.forEach((plan) => {
       if (!plansByYear[plan.year]) {
         plansByYear[plan.year] = [];
       }
@@ -232,14 +255,14 @@ export default function SemesterPlanGrid({
       plans.sort((a, b) => a.semester - b.semester);
     });
     setSemesterPlansByYear(plansByYear);
-  }, [semesterPlans]);
+  }, [detailedSemesterPlans]);
 
   return (
     <DndProvider backend={HTML5Backend}>
       <SemesterPlanGridContent
         coursePlanId={coursePlanId}
-        semesterPlans={semesterPlans}
-        setSemesterPlans={setSemesterPlans}
+        semesterPlans={detailedSemesterPlans}
+        setSemesterPlans={setDetailedSemesterPlans}
         semesterPlansByYear={semesterPlansByYear}
         isLoading={isLoading}
         // handleCreateSemesterPlan={handleCreateSemesterPlan}

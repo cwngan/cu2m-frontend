@@ -1,26 +1,29 @@
 import clsx from "clsx";
-import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
+import { SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlan from "./SemesterPlan";
 import { useCallback } from "react";
 import { apiClient } from "@/apiClient";
-import { CourseBasicInfo } from "../types/Course";
+import {
+  CourseRead,
+  SemesterPlanReadWithCourseDetails,
+} from "@/app/types/Models";
 
 interface SemesterPlanOfYearProps {
   yearNumber: number;
-  plans: SemesterPlanData[];
+  plans: SemesterPlanReadWithCourseDetails[];
   // handleRemoveCourseFromSemsterPlan: (
   //   courseId: string,
   //   semesterPlanId: string,
   // ) => void;
   coursePlanId: string;
   isLastYear?: boolean;
-  onYearAdded?: (newPlans: SemesterPlanData[]) => void;
+  onYearAdded?: (newPlans: SemesterPlanReadWithCourseDetails[]) => void;
   onPlanDeleted?: (planId: string) => void;
   isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
   handleAddCourseToSemesterPlan: (
-    course: CourseBasicInfo,
+    course: CourseRead,
     semesterPlanId: string,
-    sourcePlanId: string | null
+    sourcePlanId: string | null,
   ) => Promise<void>;
 }
 
@@ -123,20 +126,20 @@ export default function SemesterPlanOfYear({
    * Determines where to show the "+" button for adding new semesters in a year.
    * The function handles different scenarios of semester combinations and returns
    * the appropriate configuration for the add button.
-   * 
+   *
    * Rules for adding semesters:
    * 1. A year should have at most 3 semesters (Autumn, Spring, Summer)
    * 2. Autumn and Spring are the main semesters, Summer is optional
    * 3. When adding a new semester, we need to maintain the correct order:
    *    - Autumn should come before Spring
    *    - Summer can be added between Autumn and Spring
-   * 
+   *
    * @param plan The current semester plan being rendered
    * @returns Configuration for the add button, or undefined if no button should be shown
    */
-  const getAddButtonConfig = (plan: SemesterPlanData) => {
+  const getAddButtonConfig = (plan: SemesterPlanReadWithCourseDetails) => {
     // Get all semesters that currently exist in this year
-    const present = new Set(plans.map(p => p.semester));
+    const present = new Set(plans.map((p) => p.semester));
     const isAutumn = present.has(SemesterTypes.AUTUMN);
     const isSpring = present.has(SemesterTypes.SPRING);
     const isSummer = present.has(SemesterTypes.SUMMER);
@@ -202,7 +205,8 @@ export default function SemesterPlanOfYear({
               key={plan._id}
               plan={plan}
               addSummerSession={
-                !plans.some(p => p.semester === SemesterTypes.SUMMER) && plan.semester === SemesterTypes.SPRING
+                !plans.some((p) => p.semester === SemesterTypes.SUMMER) &&
+                plan.semester === SemesterTypes.SPRING
               }
               handleAddSummerSession={handleAddSummerSession}
               // handleRemoveCourseFromSemsterPlan={

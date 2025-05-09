@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
+import { SemesterTypes } from "../types/SemesterPlan";
 import { apiClient } from "@/apiClient";
+import { SemesterPlanReadWithCourseDetails } from "@/app/types/Models";
 // import clsx from "clsx";
 
 interface SemesterPlanTitleProps {
-  plan: SemesterPlanData;
+  plan: SemesterPlanReadWithCourseDetails;
   onSemesterPlanDeleted?: () => void;
 }
 
@@ -16,7 +17,9 @@ export default function SemesterPlanTitle({
   const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
-    setTotalUnits(plan.courses.reduce((prev, curr) => prev + curr.units, 0));
+    setTotalUnits(
+      plan.courses.reduce((prev, curr) => prev + (curr.units as number), 0),
+    );
   }, [plan]);
 
   const handleDelete = async () => {
@@ -37,13 +40,13 @@ export default function SemesterPlanTitle({
 
   return (
     <div
-      className="group relative flex w-full flex-col items-center justify-center rounded-t-lg border-t-1 border-neutral-300 bg-neutral-200 py-2 text-center min-h-[56px]"
+      className="group relative flex min-h-[56px] w-full flex-col items-center justify-center rounded-t-lg border-t-1 border-neutral-300 bg-neutral-200 py-2 text-center"
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
     >
       {showDelete ? (
         <button
-          className="flex items-center justify-center text-xl font-bold text-white bg-red-500 rounded-full w-8 h-8 mx-auto transition-all hover:bg-red-600 focus:outline-none"
+          className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-xl font-bold text-white transition-all hover:bg-red-600 focus:outline-none"
           onClick={(e) => {
             e.stopPropagation();
             if (
