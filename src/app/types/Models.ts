@@ -53,7 +53,24 @@ export interface Course {
   not_for_taken: string;
   prerequisites: string;
   title: string;
-  units: string;
+  units: number;
+  parsed: boolean;
+  original: string;
+}
+
+export interface CourseRead {
+  _id: string;
+  code: string | null;
+  corequisites: string | null;
+  description: string | null;
+  is_graded: boolean | null;
+  not_for_major: string | null;
+  not_for_taken: string | null;
+  prerequisites: string | null;
+  title: string | null;
+  units: number | null;
+  parsed: boolean | null;
+  original: string | null;
 }
 
 export interface SemesterPlan {
