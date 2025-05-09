@@ -80,7 +80,13 @@ export default function CourseBlock({
         {isDuplicate && (
           <div className="relative group">
             <span className="font-bold text-red-500 cursor-help">!</span>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+            <div className="absolute bottom-full 
+            left-1/2 -translate-x-1/2 
+            mb-2 px-2 py-1 bg-gray-800
+             text-white text-sm rounded
+             opacity-0 group-hover:opacity-100
+              transition-opacity duration-200 
+              whitespace-nowrap z-50">
               {warningType || "Course appears in another semester"}
             </div>
           </div>
