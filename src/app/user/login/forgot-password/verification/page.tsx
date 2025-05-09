@@ -3,9 +3,9 @@ import axios from "axios";
 export default async function Page({
   searchParams,
 }: {
-  searchParams: { email: string };
+  searchParams: Promise<{ email: string }>;
 }) {
-  const email = searchParams.email;
+  const email = (await searchParams).email;
 
   if (email) {
     try {
