@@ -7,6 +7,8 @@ import { CoursePlan, CoursePlanRead } from "@/app/types/Models";
 import CoursePlanBlock from "./CoursePlanBlock";
 import CreateCoursePlan from "./CreateCoursePlan";
 import { apiClient } from "@/apiClient";
+import InputForm from "./InputForm";
+import ConfirmDeleteBlock from "./ConfirmDeleteBlock";
 
 // data structure simulation for course plan(receicing RawCoursePlan typed objects as data)
 // const template: { data: RawCoursePlan[] } = {
@@ -46,7 +48,11 @@ interface CoursePlanGridProps {
 
 // filter function for sorting course plans
 const compByName = (a: CoursePlan, b: CoursePlan) => {
-  return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+  return a.name.toLowerCase() < b.name.toLowerCase()
+    ? -1
+    : a.name.toLowerCase() > b.name.toLowerCase()
+      ? 1
+      : 0;
 };
 
 const compByLastEdit = (a: CoursePlan, b: CoursePlan) => {
@@ -67,6 +73,10 @@ export default function CoursePlanGrid({
   const [coursePlans, setCoursePlans] = useState<CoursePlan[]>([]);
   const [renderedPlans, setRenderedPlans] = useState<CoursePlan[]>([]);
   const [isUpdating, setIsUpdating] = useState(true);
+
+  const [showForm, setShowForm] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [popupPlan, setPopupPlan] = useState<CoursePlan | null>(null);
 
   const handleBlockChange = useCallback(
     (updatedPlan: CoursePlan) => {
@@ -96,6 +106,13 @@ export default function CoursePlanGrid({
     [coursePlans],
   );
 
+  const handleClosePopup = () => {
+    // Close all forms
+    setShowForm(false);
+    setShowDelete(false);
+    setPopupPlan(null);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setIsUpdating(true);
@@ -119,7 +136,7 @@ export default function CoursePlanGrid({
                 user_id: plan.user_id,
               };
             })
-            .sort(compFunc);
+            .sort(compByName);
           setCoursePlans(coursePlans);
           setIsUpdating(false);
         })
@@ -130,15 +147,25 @@ export default function CoursePlanGrid({
         });
     };
     fetchData();
-  }, [compFunc]);
+  }, []);
+
+  // useEffect(() => {
+  //   setCoursePlans((prev) => {
+  //     const newCoursePlans = [...prev];
+  //     newCoursePlans.sort(compFunc);
+  //     return newCoursePlans;
+  //   });
+  // }, [compFunc]);
 
   useEffect(() => {
     if (starredFilter) {
-      setRenderedPlans(coursePlans.filter((plan) => plan.favourite));
+      setRenderedPlans(
+        coursePlans.filter((plan) => plan.favourite).sort(compFunc),
+      );
     } else {
-      setRenderedPlans(coursePlans);
+      setRenderedPlans(coursePlans.sort(compFunc));
     }
-  }, [coursePlans, starredFilter]);
+  }, [coursePlans, starredFilter, compFunc]);
 
   return (
     <div className={clsx("flex flex-row flex-wrap gap-6")}>
@@ -149,10 +176,15 @@ export default function CoursePlanGrid({
         ? renderedPlans.map((plan) => (
             <CoursePlanBlock
               key={plan._id}
-              plan={plan}
-              isUpdating={isUpdating}
-              handleBlockChange={handleBlockChange}
-              handleDeleteChange={handleDeleteChange}
+              {...{
+                plan,
+                isUpdating,
+                handleBlockChange,
+                setShowForm,
+                setShowDelete,
+                setPopupPlan,
+                popupPlan,
+              }}
             />
           ))
         : null}
@@ -178,6 +210,23 @@ export default function CoursePlanGrid({
             />
           </div>
         ))}
+      {/* Input Form */}
+      {/* Pass the handleCloseForm function as a prop */}
+      <InputForm
+        mode="update"
+        plan={popupPlan}
+        onClose={handleClosePopup}
+        handleBlockChange={handleBlockChange}
+        isOpen={showForm}
+      />
+      {/* Delete Form */}
+      {/* Pass the handleCloseForm function as a prop */}
+      <ConfirmDeleteBlock
+        plan={popupPlan}
+        onClose={handleClosePopup}
+        handleDeleteChange={handleDeleteChange}
+        isOpen={showDelete}
+      />
     </div>
   );
 }
