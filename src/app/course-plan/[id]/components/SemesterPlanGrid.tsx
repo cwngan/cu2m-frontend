@@ -109,10 +109,9 @@ export default function SemesterPlanGrid({
       console.log("Fetching details for course codes:", courseCodes);
       const response = await apiClient.get("/api/courses/", {
         params: {
-          code: courseCodes, // Pass each course code as a separate 'code' parameter
-        },
-        paramsSerializer: {
-          indexes: null, // This makes axios repeat the parameter name for each value: code=ENGG1110&code=CSCI1130
+          keywords: courseCodes,
+          strict: true, // Only match exact course codes
+          basic: true, // Only get basic course info
         },
       });
 
