@@ -1,15 +1,17 @@
-import clsx from "clsx";
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 import { useDrop } from "react-dnd";
 import { CourseBasicInfo } from "../types/Course";
+import clsx from "clsx";
+import { SearchBlockContext } from "./SearchBlock";
 
-// Create a deletion zone component
 export default function DeleteZone({
   onRemove,
 }: {
   onRemove: (courseId: string, semesterPlanId: string) => void;
 }) {
   const deleteRef = useRef<HTMLDivElement>(null);
+  const { isOpen } = useContext(SearchBlockContext);
+
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: "COURSE",
     drop: (item: {
@@ -32,9 +34,12 @@ export default function DeleteZone({
     <div
       ref={deleteRef}
       className={clsx(
-        "fixed right-8 bottom-8 z-50 flex h-16 w-16 items-center justify-center rounded-lg transition-all duration-200",
+        "fixed right-8 z-[51] flex h-16 w-16 items-center justify-center rounded-lg transition-all duration-200",
         isOver ? "scale-110 bg-red-500" : "bg-red-400 hover:bg-red-500",
         canDrop ? "opacity-100" : "opacity-70",
+        // When search bar is closed, position just above it (16 = height of button)
+        // When open, position above the search results area
+        isOpen ? "bottom-[280px]" : "bottom-[calc(4rem_+_1rem)]",
       )}
     >
       <svg
