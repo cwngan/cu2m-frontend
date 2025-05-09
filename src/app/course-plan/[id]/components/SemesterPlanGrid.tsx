@@ -135,7 +135,7 @@ export default function SemesterPlanGrid({
 
           // If the course was moved from another semester plan, remove it from there
           if (sourcePlanId !== null) {
-            handleRemoveCourseFromSemsterPlan(course._id, sourcePlanId);
+            handleRemoveCourseFromSemsterPlan(course.code, sourcePlanId);
           }
         } else {
           throw new Error("Failed to update semester plan");
