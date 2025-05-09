@@ -15,7 +15,6 @@ export default function DeleteZone({
     () => ({
       accept: "COURSE",
       drop: (item: { course: CourseRead; semesterPlanId: string }) => {
-        console.log("Dropped item:", item);
         onRemove(item.course.code, item.semesterPlanId);
       },
       collect: (monitor) => ({

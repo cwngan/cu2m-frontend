@@ -68,7 +68,6 @@ export default function SemesterPlanGrid({
           if (prevPlans === null) {
             throw new Error("Detailed semester plans are null");
           }
-          console.log("Prev Plans:", prevPlans);
           // Update the frontend state immediately
           return prevPlans.map((plan) => {
             if (plan._id === semesterPlanId) {
@@ -225,7 +224,6 @@ export default function SemesterPlanGrid({
         );
         setIsLoading(false);
         setDetailedSemesterPlans(detailedPlans);
-        console.log("Detailed semester plans:", detailedPlans);
       } catch (error) {
         console.error("Error fetching detailed semester plans:", error);
       }
