@@ -240,7 +240,7 @@ export default function SemesterPlanGrid({
 
   useEffect(() => {
     if (detailedSemesterPlans === null) {
-      throw new Error("Detailed semester plans are null");
+      return;
     }
     const plansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] } =
       {};
