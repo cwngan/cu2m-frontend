@@ -33,7 +33,7 @@ export default function SemesterPlan({
     drop: (item: {
       course: CourseBasicInfo;
       semesterPlanId: string | null;
-      setIsDragging: Dispatch<SetStateAction<boolean>> | null
+      setIsDragging: Dispatch<SetStateAction<boolean>> | null;
     }) => {
       // Prevent dropping on the same semester plan
       if (item.semesterPlanId === semesterPlan._id) {

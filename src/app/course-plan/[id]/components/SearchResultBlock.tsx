@@ -56,7 +56,11 @@ export default function SearchResultBlock({
     <>
       <DraggableBlock
         blockType="COURSE"
-        dragItem={{ semesterPlanId: null, course: res, setIsDragging: setIsDragging }}
+        dragItem={{
+          semesterPlanId: null,
+          course: res,
+          setIsDragging: setIsDragging,
+        }}
         className={clsx(
           "group relative flex cursor-pointer flex-col gap-1 p-3 leading-none",
           color,
