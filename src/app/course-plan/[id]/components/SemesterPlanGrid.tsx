@@ -87,8 +87,10 @@ export default function SemesterPlanGrid({
           return;
         }
 
-        // Update the semester plan with the new course
-        const updatedCourses = [...currentPlan.courses, course];
+        // Remove any existing course with the same code
+        const filteredCourses = currentPlan.courses.filter(existingCourse => existingCourse.code !== course.code);
+        const updatedCourses = [...filteredCourses, course];
+
         const response = await apiClient.patch(
           `/api/semester-plans/${semesterPlanId}`,
           {
@@ -103,7 +105,7 @@ export default function SemesterPlanGrid({
               if (plan._id === semesterPlanId) {
                 return {
                   ...plan,
-                  courses: [...plan.courses, course]
+                  courses: updatedCourses
                 };
               }
               return plan;
