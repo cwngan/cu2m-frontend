@@ -53,37 +53,40 @@ export default function SemesterPlan({
   }, [plan]);
 
   const drop = useRef<HTMLDivElement>(null);
-  const [{ isOver }, dropConnector] = useDrop(() => ({
-    accept: "COURSE",
-    drop: async (item: {
-      course: CourseRead;
-      semesterPlanId: string | null;
-      setIsDragging: Dispatch<SetStateAction<boolean>> | null;
-    }) => {
-      // If dropping in the same plan, do nothing
-      if (item.semesterPlanId === semesterPlan._id) {
-        return undefined;
-      }
-      if (item.setIsDragging !== null) {
-        item.setIsDragging(false);
-      }
-      try {
-        await handleAddCourseToSemesterPlan(
-          item.course,
-          semesterPlan._id,
-          item.semesterPlanId,
-        );
-        return { allowedDrop: true };
-      } catch (error) {
-        console.error("Error updating semester plan:", error);
-        alert("Failed to update semester plan");
-        return { allowedDrop: false };
-      }
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+  const [{ isOver }, dropConnector] = useDrop(
+    () => ({
+      accept: "COURSE",
+      drop: async (item: {
+        course: CourseRead;
+        semesterPlanId: string | null;
+        setIsDragging: Dispatch<SetStateAction<boolean>> | null;
+      }) => {
+        // If dropping in the same plan, do nothing
+        if (item.semesterPlanId === semesterPlan._id) {
+          return undefined;
+        }
+        if (item.setIsDragging !== null) {
+          item.setIsDragging(false);
+        }
+        try {
+          await handleAddCourseToSemesterPlan(
+            item.course,
+            semesterPlan._id,
+            item.semesterPlanId,
+          );
+          return { allowedDrop: true };
+        } catch (error) {
+          console.error("Error updating semester plan:", error);
+          alert("Failed to update semester plan");
+          return { allowedDrop: false };
+        }
+      },
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
     }),
-  }));
+    [handleAddCourseToSemesterPlan],
+  );
   dropConnector(drop);
 
   return (

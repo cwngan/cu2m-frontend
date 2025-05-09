@@ -1,24 +1,29 @@
 import { useRef, useContext } from "react";
 import { useDrop } from "react-dnd";
 import { SearchBlockContext } from "./SearchBlock";
+import { CourseRead } from "@/app/types/Models";
 
 export default function DeleteZone({
   onRemove,
 }: {
-  onRemove: (courseId: string, semesterPlanId: string) => void;
+  onRemove: (courseCode: string | null, semesterPlanId: string) => void;
 }) {
   const deleteRef = useRef<HTMLDivElement>(null);
   const { isOpen: isSearchBlockOpen } = useContext(SearchBlockContext);
 
-  const [{ isOver }, dropConnector] = useDrop(() => ({
-    accept: "COURSE",
-    drop: (item: { courseId: string; semesterPlanId: string }) => {
-      onRemove(item.courseId, item.semesterPlanId);
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+  const [{ isOver }, dropConnector] = useDrop(
+    () => ({
+      accept: "COURSE",
+      drop: (item: { course: CourseRead; semesterPlanId: string }) => {
+        console.log("Dropped item:", item);
+        onRemove(item.course.code, item.semesterPlanId);
+      },
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
     }),
-  }));
+    [onRemove],
+  );
 
   dropConnector(deleteRef);
 

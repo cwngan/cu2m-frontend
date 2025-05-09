@@ -36,47 +36,42 @@ export default function SemesterPlanGrid({
   const [isLoading, setIsLoading] = useState(true);
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
-    async (courseId: string, semesterPlanId: string) => {
+    async (courseCode: string | null, semesterPlanId: string) => {
+      if (detailedSemesterPlans === null) {
+        throw new Error("Detailed semester plans are null");
+      }
       try {
+        const currentPlan = detailedSemesterPlans.find(
+          (plan) => plan._id === semesterPlanId,
+        );
+        if (!currentPlan) {
+          throw new Error("Semester plan not found: " + semesterPlanId);
+        }
+        const updatedCourses = currentPlan.courses.filter(
+          (course) => course.code !== courseCode,
+        );
+        await apiClient
+          .patch(`/api/semester-plans/${semesterPlanId}`, {
+            courses: updatedCourses.map((course) => course.code),
+          })
+          .then((response) => {
+            if (response.status !== 200) {
+              throw new Error("Failed to update semester plan");
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating semester plan:", error);
+            alert("Failed to update semester plan");
+          });
         // Get the current semester plan using fresh state
         setDetailedSemesterPlans((prevPlans) => {
           if (prevPlans === null) {
             throw new Error("Detailed semester plans are null");
           }
-          const currentPlan = prevPlans.find(
-            (plan) => plan._id === semesterPlanId,
-          );
-          if (!currentPlan) {
-            console.error("Semester plan not found:", semesterPlanId);
-            return prevPlans;
-          }
-
-          // Create updated courses array without the removed course
-          const updatedCourses = currentPlan.courses
-            .filter((course) => course._id !== courseId)
-            .map((course) => course.code);
-
-          // Update the semester plan in the backend
-          apiClient
-            .patch(`/api/semester-plans/${semesterPlanId}`, {
-              courses: updatedCourses,
-            })
-            .then((response) => {
-              if (response.status !== 200) {
-                throw new Error("Failed to update semester plan");
-              }
-            })
-            .catch((error) => {
-              console.error("Error updating semester plan:", error);
-              alert("Failed to update semester plan");
-            });
-
+          console.log("Prev Plans:", prevPlans);
           // Update the frontend state immediately
           return prevPlans.map((plan) => {
             if (plan._id === semesterPlanId) {
-              const updatedCourses = plan.courses.filter(
-                (course) => course._id !== courseId,
-              );
               return { ...plan, courses: updatedCourses };
             }
             return plan;
@@ -87,7 +82,7 @@ export default function SemesterPlanGrid({
         alert("Failed to remove course from semester plan");
       }
     },
-    [],
+    [detailedSemesterPlans],
   );
 
   const handleAddCourseToSemesterPlan = useCallback(
@@ -230,6 +225,7 @@ export default function SemesterPlanGrid({
         );
         setIsLoading(false);
         setDetailedSemesterPlans(detailedPlans);
+        console.log("Detailed semester plans:", detailedPlans);
       } catch (error) {
         console.error("Error fetching detailed semester plans:", error);
       }
