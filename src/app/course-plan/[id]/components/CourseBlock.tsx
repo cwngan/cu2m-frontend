@@ -15,6 +15,8 @@ const levelColors: { [key: number]: string } = {
 interface CourseBlockProps {
   semesterPlanId: string;
   course: CourseBasicInfo;
+  isDuplicate?: boolean;
+  warningType?: string;
 }
 
 interface DropResultType {
@@ -24,6 +26,8 @@ interface DropResultType {
 export default function CourseBlock({
   semesterPlanId,
   course,
+  isDuplicate = false,
+  warningType,
 }: CourseBlockProps) {
   const drag = useRef<HTMLDivElement>(null);
   const [didBounce, setDidBounce] = useState(false);
@@ -64,13 +68,24 @@ export default function CourseBlock({
     <div
       ref={drag}
       className={clsx(
-        "flex transform flex-col items-center justify-center rounded-xl p-2 transition-all duration-150",
+        "group flex transform flex-col items-center justify-center rounded-xl p-2 transition-all duration-150",
         color,
         isDragging ? "scale-105 opacity-50" : "",
         didBounce && "animate-bounce",
+        isDuplicate && "ring-2 ring-red-500",
       )}
     >
-      <div>{course.code}</div>
+      <div className="flex items-center gap-1">
+        <span>{course.code}</span>
+        {isDuplicate && (
+          <div className="relative group">
+            <span className="font-bold text-red-500 cursor-help">!</span>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+              {warningType || "Course appears in another semester"}
+            </div>
+          </div>
+        )}
+      </div>
       <div>
         {course.units} Unit{course.units != 1 && "s"}
       </div>

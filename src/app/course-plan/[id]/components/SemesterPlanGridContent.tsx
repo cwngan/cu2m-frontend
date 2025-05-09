@@ -9,6 +9,8 @@ export default function SemesterPlanGridContent({
   setSemesterPlans,
   semesterPlansByYear,
   isLoading,
+  handleCreateSemesterPlan,
+  isCourseDuplicate,
 }: {
   coursePlanId: string;
   semesterPlans: SemesterPlanData[];
@@ -16,6 +18,7 @@ export default function SemesterPlanGridContent({
   semesterPlansByYear: { [year: number]: SemesterPlanData[] };
   isLoading: boolean;
   handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
+  isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [, setIsDragging] = useState(false);
@@ -152,6 +155,7 @@ export default function SemesterPlanGridContent({
                 isLastYear={parseInt(yearNumber) === maxYear}
                 onYearAdded={handleNewYearAdded}
                 onPlanDeleted={handlePlanDeleted}
+                isCourseDuplicate={isCourseDuplicate}
               />
             ))}
           </>

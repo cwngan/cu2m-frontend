@@ -15,6 +15,7 @@ interface SemesterPlanOfYearProps {
   isLastYear?: boolean;
   onYearAdded?: (newPlans: SemesterPlanData[]) => void;
   onPlanDeleted?: (planId: string) => void;
+  isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
 }
 
 export default function SemesterPlanOfYear({
@@ -25,6 +26,7 @@ export default function SemesterPlanOfYear({
   isLastYear = false,
   onYearAdded,
   onPlanDeleted,
+  isCourseDuplicate,
 }: SemesterPlanOfYearProps) {
   const handleAddSemesterPlan = useCallback(
     async (semester: number) => {
@@ -156,6 +158,7 @@ export default function SemesterPlanOfYear({
               onSemesterPlanDeleted={handleSemesterPlanDeleted}
               handleAddSemesterPlan={handleAddSemesterPlan}
               showAddButton={getAddButtonConfig(plan)}
+              isCourseDuplicate={isCourseDuplicate}
             />
           ))}
         </div>

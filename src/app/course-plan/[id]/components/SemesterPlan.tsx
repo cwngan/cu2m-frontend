@@ -21,6 +21,7 @@ interface SemesterPlanProps {
     semester: number;
     position: "before" | "after";
   };
+  isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
 }
 
 // This component represents an individual year column in the course plan grid
@@ -32,6 +33,7 @@ export default function SemesterPlan({
   onSemesterPlanDeleted,
   handleAddSemesterPlan,
   showAddButton,
+  isCourseDuplicate,
 }: SemesterPlanProps) {
   const [semesterPlan, setSemesterPlan] = useState<SemesterPlanData>(plan);
   const [showLeftButton, setShowLeftButton] = useState(false);
@@ -141,13 +143,24 @@ export default function SemesterPlan({
         />
         <div className="flex h-128 w-full flex-col gap-5 overflow-auto rounded-xl p-4">
           {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
-            semesterPlan.courses.map((course) => (
-              <CourseBlock
-                course={course}
-                key={course._id}
-                semesterPlanId={plan._id}
-              />
-            ))
+            semesterPlan.courses.map((course) => {
+              const isDuplicate = isCourseDuplicate(course._id, plan._id);
+              console.log('Course duplicate check:', {
+                courseCode: course.code,
+                courseId: course._id,
+                planId: plan._id,
+                isDuplicate
+              });
+              return (
+                <CourseBlock
+                  course={course}
+                  key={course._id}
+                  semesterPlanId={plan._id}
+                  isDuplicate={isDuplicate}
+                  warningType={isDuplicate ? "Course is duplicated in another semester" : undefined}
+                />
+              );
+            })
           ) : (
             <div className="flex h-full items-center justify-center text-gray-400">
               No courses

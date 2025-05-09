@@ -22,7 +22,7 @@ export default function SemesterPlanGrid({
   const [semesterPlans, setSemesterPlans] = useState<SemesterPlanData[]>([]);
   const [semesterPlansByYear, setSemesterPlansByYear] = useState<{
     [year: number]: SemesterPlanData[];
-  }>([]);
+  }>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
@@ -135,6 +135,25 @@ export default function SemesterPlanGrid({
     }
   };
 
+  // Function to check if a course is duplicated across semester plans
+  const isCourseDuplicate = useCallback((courseId: string, currentPlanId: string) => {
+    // Find the course in the current plan
+    const currentPlan = semesterPlans.find(plan => plan._id === currentPlanId);
+    if (!currentPlan) return false;
+    
+    const currentCourse = currentPlan.courses.find(course => course._id === courseId);
+    if (!currentCourse) return false;
+
+    // Check if this course appears in any other plan
+    const isDuplicate = semesterPlans.some(plan => {
+      if (plan._id === currentPlanId) return false;
+      
+      return plan.courses.some(course => course._id === currentCourse._id);
+    });
+
+    return isDuplicate;
+  }, [semesterPlans]);
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -217,6 +236,7 @@ export default function SemesterPlanGrid({
         semesterPlansByYear={semesterPlansByYear}
         isLoading={isLoading}
         handleCreateSemesterPlan={handleCreateSemesterPlan}
+        isCourseDuplicate={isCourseDuplicate}
       />
       <DeleteZone onRemove={handleRemoveCourseFromSemsterPlan} />
       <SearchBlock />
