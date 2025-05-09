@@ -41,12 +41,12 @@ export default function CoursePlanBlock({
     setIsUpdating(allUpdating);
   }, [allUpdating]);
 
-  const InputInfo = useCallback(() => {
+  const openDetailsInput = useCallback(() => {
     setPopupPlan(plan);
     setShowForm(true); // Show the form when the block is clicked
   }, [plan, setPopupPlan, setShowForm]);
 
-  const ConfirmDelete = useCallback(() => {
+  const openDeleteConfirmation = useCallback(() => {
     setPopupPlan(plan);
     setShowDelete(true); // Show the delete confirmation
   }, [plan, setPopupPlan, setShowDelete]);
@@ -82,7 +82,7 @@ export default function CoursePlanBlock({
               <a
                 onClick={async (e) => {
                   e.stopPropagation();
-                  ConfirmDelete();
+                  openDeleteConfirmation();
                 }}
               >
                 <svg
@@ -100,7 +100,7 @@ export default function CoursePlanBlock({
               <a
                 onClick={async (e) => {
                   e.stopPropagation();
-                  InputInfo();
+                  openDetailsInput();
                 }}
               >
                 <svg
