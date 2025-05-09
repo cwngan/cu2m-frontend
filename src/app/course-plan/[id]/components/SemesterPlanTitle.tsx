@@ -37,26 +37,13 @@ export default function SemesterPlanTitle({
 
   return (
     <div
-      className="group relative flex w-full flex-col items-center justify-center rounded-t-lg border-t-1 border-neutral-300 bg-neutral-200 py-2 text-center"
+      className="group relative flex w-full flex-col items-center justify-center rounded-t-lg border-t-1 border-neutral-300 bg-neutral-200 py-2 text-center min-h-[56px]"
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
     >
-      <div className="flex items-center justify-center gap-2">
-        <div className="text-bold text-lg leading-none">
-          {plan.semester == SemesterTypes.AUTUMN
-            ? "Autumn"
-            : plan.semester == SemesterTypes.SPRING
-              ? "Spring"
-              : plan.semester == SemesterTypes.SUMMER
-                ? "Summer Session"
-                : `Semester ${plan.semester}`}
-        </div>
-        {/* Delete button */}
-        <div
-          className={clsx(
-            "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-all hover:bg-red-600",
-            showDelete && "opacity-100",
-          )}
+      {showDelete ? (
+        <button
+          className="flex items-center justify-center text-xl font-bold text-white bg-red-500 rounded-full w-8 h-8 mx-auto transition-all hover:bg-red-600 focus:outline-none"
           onClick={(e) => {
             e.stopPropagation();
             if (
@@ -66,16 +53,30 @@ export default function SemesterPlanTitle({
             }
           }}
         >
-          ×
-        </div>
-      </div>
-      <div className="mt-1 text-sm leading-none text-stone-700">
-        {totalUnits != 1 ? (
-          <span>{totalUnits} Units</span>
-        ) : (
-          <span>{totalUnits} Unit</span>
-        )}
-      </div>
+          &minus;
+        </button>
+      ) : (
+        <>
+          <div className="flex items-center justify-center gap-2">
+            <div className="text-bold text-lg leading-none">
+              {plan.semester == SemesterTypes.AUTUMN
+                ? "Autumn"
+                : plan.semester == SemesterTypes.SPRING
+                  ? "Spring"
+                  : plan.semester == SemesterTypes.SUMMER
+                    ? "Summer Session"
+                    : `Semester ${plan.semester}`}
+            </div>
+          </div>
+          <div className="mt-1 text-sm leading-none text-stone-700">
+            {totalUnits != 1 ? (
+              <span>{totalUnits} Units</span>
+            ) : (
+              <span>{totalUnits} Unit</span>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
