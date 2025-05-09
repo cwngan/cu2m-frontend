@@ -89,6 +89,11 @@ export default function SemesterPlan({
   );
   dropConnector(drop);
 
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  useEffect(() => {
+    setIsDuplicate(isCourseDuplicate(plan._id, semesterPlan._id));
+  }, [plan, semesterPlan, isCourseDuplicate]);
+
   return (
     <div className="relative flex items-center">
       {/* Left margin hover area */}
@@ -131,13 +136,6 @@ export default function SemesterPlan({
         <div className="flex h-128 w-full flex-col gap-5 overflow-x-visible overflow-y-auto rounded-xl p-4">
           {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
             semesterPlan.courses.map((course) => {
-              const isDuplicate = isCourseDuplicate(course._id, plan._id);
-              console.log("Course duplicate check:", {
-                courseCode: course.code,
-                courseId: course._id,
-                planId: plan._id,
-                isDuplicate,
-              });
               return (
                 <CourseBlock
                   course={course}
