@@ -120,7 +120,7 @@ export default function SemesterPlan({
             onSemesterPlanDeleted?.(semesterPlan._id);
           }}
         />
-        <div className="flex h-128 w-full flex-col gap-5 overflow-auto rounded-xl p-4">
+        <div className="flex h-128 w-full flex-col gap-5 overflow-y-auto overflow-x-visible rounded-xl p-4">
           {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
             semesterPlan.courses.map((course) => {
               const isDuplicate = isCourseDuplicate(course._id, plan._id);

@@ -139,10 +139,10 @@ export default function SemesterPlanGridContent({
   const maxYear = years.length > 0 ? Math.max(...years) : 0;
 
   return (
-    <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
+    <div className="mt-20 flex w-full items-start justify-center overflow-visible pb-18">
       <div
         ref={containerRef}
-        className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8"
+        className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-x-auto overflow-y-visible pt-8"
       >
         {isLoading ? (
           <div className="flex h-96 w-full items-center justify-center">

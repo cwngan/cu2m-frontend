@@ -4,6 +4,7 @@ import { useDrag } from "react-dnd";
 import clsx from "clsx";
 import { useState } from "react";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const levelColors: { [key: number]: string } = {
   1: "bg-green-800/30 text-gray-80",
@@ -31,6 +32,8 @@ export default function CourseBlock({
 }: CourseBlockProps) {
   const drag = useRef<HTMLDivElement>(null);
   const [didBounce, setDidBounce] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
 
   const [{ isDragging }, dragConnector] = useDrag(() => ({
     type: "COURSE",
@@ -64,37 +67,62 @@ export default function CourseBlock({
     );
   }, [course.code]);
 
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    if (isDuplicate) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setTooltipPosition({
+        top: rect.top - 40, // Position above the element
+        left: rect.left + (rect.width / 2), // Center horizontally
+      });
+      setShowTooltip(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
   return (
-    <div
-      ref={drag}
-      className={clsx(
-        "group flex transform flex-col items-center justify-center rounded-xl p-2 transition-all duration-150",
-        color,
-        isDragging ? "scale-105 opacity-50" : "",
-        didBounce && "animate-bounce",
-        isDuplicate && "ring-2 ring-red-500",
-      )}
-    >
-      <div className="flex items-center gap-1">
-        <span>{course.code}</span>
-        {isDuplicate && (
-          <div className="relative group">
-            <span className="font-bold text-red-500 cursor-help">!</span>
-            <div className="absolute bottom-full 
-            left-1/2 -translate-x-1/2 
-            mb-2 px-2 py-1 bg-gray-800
-             text-white text-sm rounded
-             opacity-0 group-hover:opacity-100
-              transition-opacity duration-200 
-              whitespace-nowrap z-50">
-              {warningType || "Course appears in another semester"}
-            </div>
-          </div>
+    <>
+      <div
+        ref={drag}
+        className={clsx(
+          "group flex transform flex-col items-center justify-center rounded-xl p-2 transition-all duration-150",
+          color,
+          isDragging ? "scale-105 opacity-50" : "",
+          didBounce && "animate-bounce",
+          isDuplicate && "ring-2 ring-red-500",
         )}
+      >
+        <div className="flex items-center gap-1">
+          <span>{course.code}</span>
+          {isDuplicate && (
+            <div 
+              className="relative group"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <span className="font-bold text-red-500 cursor-help">!</span>
+            </div>
+          )}
+        </div>
+        <div>
+          {course.units} Unit{course.units != 1 && "s"}
+        </div>
       </div>
-      <div>
-        {course.units} Unit{course.units != 1 && "s"}
-      </div>
-    </div>
+      {showTooltip && isDuplicate && createPortal(
+        <div 
+          className="fixed px-2 py-1 bg-gray-800 text-white text-sm rounded whitespace-nowrap z-50"
+          style={{
+            top: tooltipPosition.top,
+            left: tooltipPosition.left,
+            transform: 'translateX(-50%)',
+          }}
+        >
+          {warningType || "Course appears in another semester"}
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
