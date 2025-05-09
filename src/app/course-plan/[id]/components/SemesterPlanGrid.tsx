@@ -334,16 +334,25 @@ export default function SemesterPlanGrid({
       console.log("Fetching details for course codes:", courseCodes);
       const response = await apiClient.get("/api/courses/", {
         params: {
-          code: courseCodes,
+          code: courseCodes, // Pass each course code as a separate 'code' parameter
         },
         paramsSerializer: {
-          indexes: null, // This will make axios repeat the parameter name for each value
+          indexes: null, // This makes axios repeat the parameter name for each value: code=ENGG1110&code=CSCI1130
         },
       });
 
       console.log("API Response:", response.data);
       if (response.status === 200 && response.data.data) {
-        return response.data.data;
+        // Make sure we only return courses in the same order as requested
+        const courseMap = new Map(
+          response.data.data.map((course: CourseBasicInfo) => [
+            course.code,
+            course,
+          ]),
+        );
+        return courseCodes
+          .map((code) => courseMap.get(code))
+          .filter((course): course is CourseBasicInfo => course !== undefined);
       }
       return [];
     } catch (error) {
@@ -366,17 +375,28 @@ export default function SemesterPlanGrid({
 
           // Fetch course details for each semester plan
           const semesterPlansWithDetails = await Promise.all(
-            rawSemesterPlans.map(async (plan: SemesterPlanData) => {
-              console.log("Processing plan:", plan);
-              const courseDetails = await fetchCourseDetails(
-                plan.courses.map((course) => course.code),
-              );
-              console.log("Course details for plan:", courseDetails);
-              return {
-                ...plan,
-                courses: courseDetails,
-              };
-            }),
+            rawSemesterPlans.map(
+              async (plan: {
+                courses: Array<string | CourseBasicInfo>;
+                _id: string;
+                semester: number;
+                year: number;
+              }) => {
+                console.log("Processing plan:", plan);
+                // Handle both cases where courses might be strings or CourseBasicInfo objects
+                const courseCodes = Array.isArray(plan.courses)
+                  ? plan.courses.map((course: string | CourseBasicInfo) =>
+                      typeof course === "string" ? course : course.code,
+                    )
+                  : [];
+                const courseDetails = await fetchCourseDetails(courseCodes);
+                console.log("Course details for plan:", courseDetails);
+                return {
+                  ...plan,
+                  courses: courseDetails,
+                };
+              },
+            ),
           );
 
           console.log(
