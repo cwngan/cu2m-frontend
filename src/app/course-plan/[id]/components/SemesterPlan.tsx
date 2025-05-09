@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { SemesterPlanData } from "../types/SemesterPlan";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
@@ -25,7 +25,7 @@ interface SemesterPlanProps {
   handleAddCourseToSemesterPlan: (
     course: CourseBasicInfo,
     semesterPlanId: string,
-    sourcePlanId: string | null
+    sourcePlanId: string | null,
   ) => Promise<void>;
 }
 
@@ -55,17 +55,20 @@ export default function SemesterPlan({
     drop: async (item: {
       course: CourseBasicInfo;
       semesterPlanId: string | null;
+      setIsDragging: Dispatch<SetStateAction<boolean>> | null;
     }) => {
       // If dropping in the same plan, do nothing
       if (item.semesterPlanId === semesterPlan._id) {
         return undefined;
       }
-
+      if (item.setIsDragging !== null) {
+        item.setIsDragging(false);
+      }
       try {
         await handleAddCourseToSemesterPlan(
           item.course,
           semesterPlan._id,
-          item.semesterPlanId
+          item.semesterPlanId,
         );
         return { allowedDrop: true };
       } catch (error) {
@@ -91,8 +94,8 @@ export default function SemesterPlan({
         >
           <button
             className={clsx(
-              "flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-xl font-extrabold cursor-pointer opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
-              showLeftButton && "opacity-100"
+              "flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-600 text-xl font-extrabold text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
+              showLeftButton && "opacity-100",
             )}
             onClick={() => handleAddSemesterPlan?.(showAddButton.semester)}
             tabIndex={0}
@@ -119,15 +122,15 @@ export default function SemesterPlan({
             onSemesterPlanDeleted?.(semesterPlan._id);
           }}
         />
-        <div className="flex h-128 w-full flex-col gap-5 overflow-y-auto overflow-x-visible rounded-xl p-4">
+        <div className="flex h-128 w-full flex-col gap-5 overflow-x-visible overflow-y-auto rounded-xl p-4">
           {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
             semesterPlan.courses.map((course) => {
               const isDuplicate = isCourseDuplicate(course._id, plan._id);
-              console.log('Course duplicate check:', {
+              console.log("Course duplicate check:", {
                 courseCode: course.code,
                 courseId: course._id,
                 planId: plan._id,
-                isDuplicate
+                isDuplicate,
               });
               return (
                 <CourseBlock
@@ -157,8 +160,8 @@ export default function SemesterPlan({
         >
           <button
             className={clsx(
-              "flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-xl font-extrabold cursor-pointer opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
-              showRightButton && "opacity-100"
+              "flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-600 text-xl font-extrabold text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-700",
+              showRightButton && "opacity-100",
             )}
             onClick={() => {
               if (addSummerSession && handleAddSummerSession) {
