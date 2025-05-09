@@ -78,34 +78,42 @@ export default function SemesterPlanGrid({
   );
 
   const handleAddCourseToSemesterPlan = useCallback(
-    async (course: CourseBasicInfo, semesterPlanId: string, sourcePlanId: string | null) => {
+    async (
+      course: CourseBasicInfo,
+      semesterPlanId: string,
+      sourcePlanId: string | null,
+    ) => {
       try {
         // Get the current semester plan
-        const currentPlan = semesterPlans.find(plan => plan._id === semesterPlanId);
+        const currentPlan = semesterPlans.find(
+          (plan) => plan._id === semesterPlanId,
+        );
         if (!currentPlan) {
           console.error("Semester plan not found:", semesterPlanId);
           return;
         }
 
         // Remove any existing course with the same code
-        const filteredCourses = currentPlan.courses.filter(existingCourse => existingCourse.code !== course.code);
+        const filteredCourses = currentPlan.courses.filter(
+          (existingCourse) => existingCourse.code !== course.code,
+        );
         const updatedCourses = [...filteredCourses, course];
 
         const response = await apiClient.patch(
           `/api/semester-plans/${semesterPlanId}`,
           {
-            courses: updatedCourses.map(course => course.code),
-          }
+            courses: updatedCourses.map((course) => course.code),
+          },
         );
 
         if (response.status === 200) {
           // Update all semester plans to trigger re-render and warning checks
-          setSemesterPlans(prevPlans => {
-            return prevPlans.map(plan => {
+          setSemesterPlans((prevPlans) => {
+            return prevPlans.map((plan) => {
               if (plan._id === semesterPlanId) {
                 return {
                   ...plan,
-                  courses: updatedCourses
+                  courses: updatedCourses,
                 };
               }
               return plan;
@@ -124,28 +132,9 @@ export default function SemesterPlanGrid({
         alert("Failed to update semester plan");
       }
     },
-    [semesterPlans, handleRemoveCourseFromSemsterPlan]
+    [semesterPlans, handleRemoveCourseFromSemsterPlan],
   );
 
-  const handleCreateSemesterPlan = async (year: number, semester: number) => {
-    try {
-      const response = await apiClient.post("/api/semester-plans/", {
-        course_plan_id: coursePlanId,
-        year,
-        semester,
-      });
-
-      if (response.status === 200) {
-        const newPlan = response.data.data;
-        setSemesterPlans((prevPlans) => [...prevPlans, newPlan]);
-      } else {
-        throw new Error("Failed to create semester plan");
-      }
-    } catch (error) {
-      console.error("Error creating semester plan:", error);
-      alert("Failed to create semester plan");
-    }
-  };
 
   const fetchCourseDetails = async (
     courseCodes: string[],
@@ -186,23 +175,30 @@ export default function SemesterPlanGrid({
   };
 
   // Function to check if a course is duplicated across semester plans
-  const isCourseDuplicate = useCallback((courseId: string, currentPlanId: string) => {
-    // Find the course in the current plan
-    const currentPlan = semesterPlans.find(plan => plan._id === currentPlanId);
-    if (!currentPlan) return false;
-    
-    const currentCourse = currentPlan.courses.find(course => course._id === courseId);
-    if (!currentCourse) return false;
+  const isCourseDuplicate = useCallback(
+    (courseId: string, currentPlanId: string) => {
+      // Find the course in the current plan
+      const currentPlan = semesterPlans.find(
+        (plan) => plan._id === currentPlanId,
+      );
+      if (!currentPlan) return false;
 
-    // Check if this course appears in any other plan
-    const isDuplicate = semesterPlans.some(plan => {
-      if (plan._id === currentPlanId) return false;
-      
-      return plan.courses.some(course => course._id === currentCourse._id);
-    });
+      const currentCourse = currentPlan.courses.find(
+        (course) => course._id === courseId,
+      );
+      if (!currentCourse) return false;
 
-    return isDuplicate;
-  }, [semesterPlans]);
+      // Check if this course appears in any other plan
+      const isDuplicate = semesterPlans.some((plan) => {
+        if (plan._id === currentPlanId) return false;
+
+        return plan.courses.some((course) => course._id === currentCourse._id);
+      });
+
+      return isDuplicate;
+    },
+    [semesterPlans],
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -285,7 +281,7 @@ export default function SemesterPlanGrid({
         setSemesterPlans={setSemesterPlans}
         semesterPlansByYear={semesterPlansByYear}
         isLoading={isLoading}
-        handleCreateSemesterPlan={handleCreateSemesterPlan}
+        // handleCreateSemesterPlan={handleCreateSemesterPlan}
         isCourseDuplicate={isCourseDuplicate}
         handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
       />

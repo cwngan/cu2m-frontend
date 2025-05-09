@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { CourseBasicInfo } from '../types/Course';
+// import { CourseBasicInfo } from '../types/Course';
 
 export type WarningType = 'duplicate' | 'prerequisite' | 'not_for_taken';
 

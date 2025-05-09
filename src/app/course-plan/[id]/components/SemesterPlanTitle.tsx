@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
 import { apiClient } from "@/apiClient";
-import clsx from "clsx";
+// import clsx from "clsx";
 
 interface SemesterPlanTitleProps {
   plan: SemesterPlanData;

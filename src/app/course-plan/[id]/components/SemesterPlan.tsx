@@ -5,16 +5,16 @@ import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
 import { CourseBasicInfo } from "../types/Course";
 import clsx from "clsx";
-import { apiClient } from "@/apiClient";
+// import { apiClient } from "@/apiClient";
 
 interface SemesterPlanProps {
   plan: SemesterPlanData;
   addSummerSession: boolean;
   handleAddSummerSession?: () => void;
-  handleRemoveCourseFromSemsterPlan: (
-    courseId: string,
-    semesterPlanId: string,
-  ) => void;
+  // handleRemoveCourseFromSemsterPlan: (
+  //   courseId: string,
+  //   semesterPlanId: string,
+  // ) => void;
   onSemesterPlanDeleted?: (planId: string) => void;
   handleAddSemesterPlan?: (semester: number) => void;
   showAddButton?: {
@@ -34,7 +34,7 @@ export default function SemesterPlan({
   plan,
   addSummerSession,
   handleAddSummerSession,
-  handleRemoveCourseFromSemsterPlan,
+  // handleRemoveCourseFromSemsterPlan,
   onSemesterPlanDeleted,
   handleAddSemesterPlan,
   showAddButton,

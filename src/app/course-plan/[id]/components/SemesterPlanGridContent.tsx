@@ -10,7 +10,7 @@ export default function SemesterPlanGridContent({
   setSemesterPlans,
   semesterPlansByYear,
   isLoading,
-  handleCreateSemesterPlan,
+  // handleCreateSemesterPlan,
   isCourseDuplicate,
   handleAddCourseToSemesterPlan,
 }: {
@@ -19,12 +19,12 @@ export default function SemesterPlanGridContent({
   setSemesterPlans: React.Dispatch<React.SetStateAction<SemesterPlanData[]>>;
   semesterPlansByYear: { [year: number]: SemesterPlanData[] };
   isLoading: boolean;
-  handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
+  // handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
   isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
   handleAddCourseToSemesterPlan: (
     course: CourseBasicInfo,
     semesterPlanId: string,
-    sourcePlanId: string | null
+    sourcePlanId: string | null,
   ) => Promise<void>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -155,9 +155,9 @@ export default function SemesterPlanGridContent({
                 yearNumber={parseInt(yearNumber)}
                 plans={plans}
                 key={yearNumber}
-                handleRemoveCourseFromSemsterPlan={
-                  handleRemoveCourseFromSemsterPlan
-                }
+                // handleRemoveCourseFromSemsterPlan={
+                //   handleRemoveCourseFromSemsterPlan
+                // }
                 coursePlanId={coursePlanId}
                 isLastYear={parseInt(yearNumber) === maxYear}
                 onYearAdded={handleNewYearAdded}

@@ -8,10 +8,10 @@ import { CourseBasicInfo } from "../types/Course";
 interface SemesterPlanOfYearProps {
   yearNumber: number;
   plans: SemesterPlanData[];
-  handleRemoveCourseFromSemsterPlan: (
-    courseId: string,
-    semesterPlanId: string,
-  ) => void;
+  // handleRemoveCourseFromSemsterPlan: (
+  //   courseId: string,
+  //   semesterPlanId: string,
+  // ) => void;
   coursePlanId: string;
   isLastYear?: boolean;
   onYearAdded?: (newPlans: SemesterPlanData[]) => void;
@@ -27,7 +27,7 @@ interface SemesterPlanOfYearProps {
 export default function SemesterPlanOfYear({
   yearNumber,
   plans,
-  handleRemoveCourseFromSemsterPlan,
+  // handleRemoveCourseFromSemsterPlan,
   coursePlanId,
   isLastYear = false,
   onYearAdded,
@@ -112,12 +112,12 @@ export default function SemesterPlanOfYear({
   );
 
   // Always use the plans prop directly instead of local state
-  const hasSpring = plans.some(
-    (plan) => plan.semester === SemesterTypes.SPRING,
-  );
-  const hasAutumn = plans.some(
-    (plan) => plan.semester === SemesterTypes.AUTUMN,
-  );
+  // const hasSpring = plans.some(
+  //   (plan) => plan.semester === SemesterTypes.SPRING,
+  // );
+  // const hasAutumn = plans.some(
+  //   (plan) => plan.semester === SemesterTypes.AUTUMN,
+  // );
 
   // Refactored: Determine which plans have add buttons and their positions
   const getAddButtonConfig = (plan: SemesterPlanData) => {
@@ -191,9 +191,9 @@ export default function SemesterPlanOfYear({
                 !plans.some(p => p.semester === SemesterTypes.SUMMER) && plan.semester === SemesterTypes.SPRING
               }
               handleAddSummerSession={handleAddSummerSession}
-              handleRemoveCourseFromSemsterPlan={
-                handleRemoveCourseFromSemsterPlan
-              }
+              // handleRemoveCourseFromSemsterPlan={
+              //   handleRemoveCourseFromSemsterPlan
+              // }
               onSemesterPlanDeleted={handleSemesterPlanDeleted}
               handleAddSemesterPlan={handleAddSemesterPlan}
               showAddButton={getAddButtonConfig(plan)}
