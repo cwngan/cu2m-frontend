@@ -24,6 +24,8 @@ export default function SearchResultBlock({
   const [color, setColor] = useState<string>("bg-neutral-200");
 
   const handleCourseDetailFetch = () => {
+    setPopupDetail(null);
+    setShowPopupDetail(true);
     apiClient
       .get<CoursesResponseModel>(`/api/courses/?keywords=${res.code}`)
       .then((res) => {
@@ -33,7 +35,6 @@ export default function SearchResultBlock({
         }
 
         const detailCourse = response.data[0] as Course;
-        setShowPopupDetail(true);
         setPopupDetail(detailCourse);
       })
       .catch((err) => {
@@ -60,16 +61,23 @@ export default function SearchResultBlock({
           showPopupDetail &&
             popupDetail !== null &&
             res.code === popupDetail.code
-            ? "z-1099 scale-110"
+            ? "z-1099 scale-105"
             : "hover:z-999",
         )}
       >
-        <div className="group relative flex flex-row justify-between">
+        <div className="group relative flex flex-row items-center justify-between">
           <div className="text-sm">
             {res.code} - {res.units} {res.units !== 1 ? "Units" : "Unit"}
           </div>
           <CourseDetailButton
-            className="group relative opacity-0 transition-opacity group-hover:opacity-100"
+            className={clsx(
+              "group relative opacity-0 transition-opacity",
+              showPopupDetail &&
+                popupDetail != null &&
+                res.code == popupDetail.code
+                ? "opacity-100"
+                : "group-hover:opacity-100",
+            )}
             onClick={handleCourseDetailFetch}
           ></CourseDetailButton>
         </div>
