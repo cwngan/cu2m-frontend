@@ -3,6 +3,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useDragLayer } from "react-dnd";
 import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
+import { CourseBasicInfo } from "../types/Course";
 
 export default function SemesterPlanGridContent({
   coursePlanId,
@@ -11,6 +12,7 @@ export default function SemesterPlanGridContent({
   isLoading,
   handleCreateSemesterPlan,
   isCourseDuplicate,
+  handleAddCourseToSemesterPlan,
 }: {
   coursePlanId: string;
   semesterPlans: SemesterPlanData[];
@@ -19,6 +21,11 @@ export default function SemesterPlanGridContent({
   isLoading: boolean;
   handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
   isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
+  handleAddCourseToSemesterPlan: (
+    course: CourseBasicInfo,
+    semesterPlanId: string,
+    sourcePlanId: string | null
+  ) => Promise<void>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [, setIsDragging] = useState(false);
@@ -156,6 +163,7 @@ export default function SemesterPlanGridContent({
                 onYearAdded={handleNewYearAdded}
                 onPlanDeleted={handlePlanDeleted}
                 isCourseDuplicate={isCourseDuplicate}
+                handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
               />
             ))}
           </>

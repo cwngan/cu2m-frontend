@@ -3,6 +3,7 @@ import { SemesterPlanData, SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlan from "./SemesterPlan";
 import { useCallback } from "react";
 import { apiClient } from "@/apiClient";
+import { CourseBasicInfo } from "../types/Course";
 
 interface SemesterPlanOfYearProps {
   yearNumber: number;
@@ -16,6 +17,11 @@ interface SemesterPlanOfYearProps {
   onYearAdded?: (newPlans: SemesterPlanData[]) => void;
   onPlanDeleted?: (planId: string) => void;
   isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
+  handleAddCourseToSemesterPlan: (
+    course: CourseBasicInfo,
+    semesterPlanId: string,
+    sourcePlanId: string | null
+  ) => Promise<void>;
 }
 
 export default function SemesterPlanOfYear({
@@ -27,6 +33,7 @@ export default function SemesterPlanOfYear({
   onYearAdded,
   onPlanDeleted,
   isCourseDuplicate,
+  handleAddCourseToSemesterPlan,
 }: SemesterPlanOfYearProps) {
   const handleAddSemesterPlan = useCallback(
     async (semester: number) => {
@@ -159,6 +166,7 @@ export default function SemesterPlanOfYear({
               handleAddSemesterPlan={handleAddSemesterPlan}
               showAddButton={getAddButtonConfig(plan)}
               isCourseDuplicate={isCourseDuplicate}
+              handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
             />
           ))}
         </div>

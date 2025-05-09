@@ -22,6 +22,11 @@ interface SemesterPlanProps {
     position: "before" | "after";
   };
   isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
+  handleAddCourseToSemesterPlan: (
+    course: CourseBasicInfo,
+    semesterPlanId: string,
+    sourcePlanId: string | null
+  ) => Promise<void>;
 }
 
 // This component represents an individual year column in the course plan grid
@@ -34,6 +39,7 @@ export default function SemesterPlan({
   handleAddSemesterPlan,
   showAddButton,
   isCourseDuplicate,
+  handleAddCourseToSemesterPlan,
 }: SemesterPlanProps) {
   const [semesterPlan, setSemesterPlan] = useState<SemesterPlanData>(plan);
   const [showLeftButton, setShowLeftButton] = useState(false);
@@ -56,39 +62,12 @@ export default function SemesterPlan({
       }
 
       try {
-        // Update the semester plan with the new course
-        const updatedCourses = [...semesterPlan.courses, item.course];
-
-        const response = await apiClient.patch(
-          `/api/semester-plans/${semesterPlan._id}`,
-          {
-            courses: updatedCourses.map((course) => course.code),
-          },
+        await handleAddCourseToSemesterPlan(
+          item.course,
+          semesterPlan._id,
+          item.semesterPlanId
         );
-
-        if (response.status === 200) {
-          setSemesterPlan((prevPlan) => {
-            const updatedPlan = { ...prevPlan };
-            const courseIndex = updatedPlan.courses.findIndex(
-              (course) => course._id === item.course._id,
-            );
-            if (courseIndex === -1) {
-              updatedPlan.courses.push(item.course);
-            }
-            return updatedPlan;
-          });
-
-          // If the course was moved from another semester plan, remove it from there
-          if (item.semesterPlanId !== null) {
-            handleRemoveCourseFromSemsterPlan(
-              item.course._id,
-              item.semesterPlanId,
-            );
-          }
-          return { allowedDrop: true };
-        } else {
-          throw new Error("Failed to update semester plan");
-        }
+        return { allowedDrop: true };
       } catch (error) {
         console.error("Error updating semester plan:", error);
         alert("Failed to update semester plan");
@@ -157,7 +136,7 @@ export default function SemesterPlan({
                   key={course._id}
                   semesterPlanId={plan._id}
                   isDuplicate={isDuplicate}
-                  warningType={isDuplicate ? "Course is duplicated in another semester" : undefined}
+                  warningType={isDuplicate ? "Duplicated Course" : undefined}
                 />
               );
             })

@@ -74,7 +74,55 @@ export default function SemesterPlanGrid({
         alert("Failed to remove course from semester plan");
       }
     },
-    [setSemesterPlans], // Add setSemesterPlans to dependency array
+    [setSemesterPlans],
+  );
+
+  const handleAddCourseToSemesterPlan = useCallback(
+    async (course: CourseBasicInfo, semesterPlanId: string, sourcePlanId: string | null) => {
+      try {
+        // Get the current semester plan
+        const currentPlan = semesterPlans.find(plan => plan._id === semesterPlanId);
+        if (!currentPlan) {
+          console.error("Semester plan not found:", semesterPlanId);
+          return;
+        }
+
+        // Update the semester plan with the new course
+        const updatedCourses = [...currentPlan.courses, course];
+        const response = await apiClient.patch(
+          `/api/semester-plans/${semesterPlanId}`,
+          {
+            courses: updatedCourses.map(course => course.code),
+          }
+        );
+
+        if (response.status === 200) {
+          // Update all semester plans to trigger re-render and warning checks
+          setSemesterPlans(prevPlans => {
+            return prevPlans.map(plan => {
+              if (plan._id === semesterPlanId) {
+                return {
+                  ...plan,
+                  courses: [...plan.courses, course]
+                };
+              }
+              return plan;
+            });
+          });
+
+          // If the course was moved from another semester plan, remove it from there
+          if (sourcePlanId !== null) {
+            handleRemoveCourseFromSemsterPlan(course._id, sourcePlanId);
+          }
+        } else {
+          throw new Error("Failed to update semester plan");
+        }
+      } catch (error) {
+        console.error("Error updating semester plan:", error);
+        alert("Failed to update semester plan");
+      }
+    },
+    [semesterPlans, handleRemoveCourseFromSemsterPlan]
   );
 
   const handleCreateSemesterPlan = async (year: number, semester: number) => {
@@ -237,6 +285,7 @@ export default function SemesterPlanGrid({
         isLoading={isLoading}
         handleCreateSemesterPlan={handleCreateSemesterPlan}
         isCourseDuplicate={isCourseDuplicate}
+        handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
       />
       <DeleteZone onRemove={handleRemoveCourseFromSemsterPlan} />
       <SearchBlock />
