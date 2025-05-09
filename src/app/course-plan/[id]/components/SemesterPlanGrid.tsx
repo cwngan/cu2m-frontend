@@ -201,57 +201,18 @@ export default function SemesterPlanGrid({
   );
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+    const fetchDetailedSemesterPlans = async () => {
       try {
-        // Fetch semester plans
-        const response = await apiClient.get(
-          `/api/course-plans/${coursePlanId}`,
+        setIsLoading(true);
+        const detailedPlans = await Promise.all(
+          semesterPlans.map(async (plan) => {
+            const courseDetails = await fetchCourseDetails(plan.courses);
+            return {
+              ...plan,
+              courses: courseDetails,
+            };
+          }),
         );
-        console.log("Raw semester plans:", response.data.data.semester_plans);
-        if (response.status === 200 && response.data.data) {
-          const rawSemesterPlans = response.data.data.semester_plans || [];
-
-          // Fetch course details for each semester plan
-          const semesterPlansWithDetails = await Promise.all(
-            rawSemesterPlans.map(
-              async (plan: {
-                courses: Array<string | CourseBasicInfo>;
-                _id: string;
-                semester: number;
-                year: number;
-              }) => {
-                console.log("Processing plan:", plan);
-                // Handle both cases where courses might be strings or CourseBasicInfo objects
-                const courseCodes = Array.isArray(plan.courses)
-                  ? plan.courses.map((course: string | CourseBasicInfo) =>
-                      typeof course === "string" ? course : course.code,
-                    )
-                  : [];
-                const courseDetails = await fetchCourseDetails(courseCodes);
-                console.log("Course details for plan:", courseDetails);
-                return {
-                  ...plan,
-                  courses: courseDetails,
-                };
-              },
-            ),
-          );
-
-          console.log(
-            "Final semester plans with details:",
-            semesterPlansWithDetails,
-          );
-          // Sort semester plans by semester before setting state
-          const sortedPlans = [...semesterPlansWithDetails].sort(
-            (a, b) => a.semester - b.semester,
-          );
-          setSemesterPlans(sortedPlans);
-        }
-      } catch (error) {
-        console.error("Error fetching semester plans:", error);
-        alert("Failed to fetch semester plans");
-      } finally {
         setIsLoading(false);
       }
     };
