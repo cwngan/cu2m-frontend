@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, WheelEvent } from "react";
+import { useEffect, useRef, useState, WheelEvent } from "react";
 import SearchResultBlock from "./SearchResultBlock";
 import { apiClient } from "@/apiClient";
 import { Course, CourseRead } from "@/app/types/Models";
@@ -28,6 +28,13 @@ export default function SearchBlock() {
   const [popupDetail, setPopupDetail] = useState<Course | null>(null);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [hasUpdated, setHasUpdated] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(true);
+
+  useEffect(() => {
+    console.log("Current state: ", isDragging);
+    if (isDragging) setResultBlockOpen(false);
+    else setResultBlockOpen(true);
+  }, [isDragging]);
 
   const onClose = () => {
     setShowPopupDetail(false);
@@ -118,6 +125,7 @@ export default function SearchBlock() {
                   showPopupDetail={showPopupDetail}
                   setPopupDetail={setPopupDetail}
                   setShowPopupDetail={setShowPopupDetail}
+                  setIsDragging={setIsDragging}
                 />
               ))}
             {hasUpdated && searchResults.length == 0 && (

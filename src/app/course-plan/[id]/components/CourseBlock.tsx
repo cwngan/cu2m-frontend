@@ -24,8 +24,9 @@ export default function CourseBlock({
   return (
     <DraggableBlock
       blockType="COURSE"
-      dragItem={{ semesterPlanId, course }}
+      dragItem={{ semesterPlanId: semesterPlanId, course: course, setIsDragging: null }}
       className={clsx("flex flex-col items-center justify-center p-2", color)}
+      setIsDragging={null}
     >
       <div>{course.code}</div>
       <div>

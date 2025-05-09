@@ -13,6 +13,7 @@ interface SearchResultBlockProps {
   showPopupDetail: boolean;
   setPopupDetail: Dispatch<SetStateAction<Course | null>>;
   setShowPopupDetail: Dispatch<SetStateAction<boolean>>;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }
 export default function SearchResultBlock({
   res,
@@ -20,6 +21,7 @@ export default function SearchResultBlock({
   showPopupDetail,
   setPopupDetail,
   setShowPopupDetail,
+  setIsDragging,
 }: SearchResultBlockProps) {
   const [color, setColor] = useState<string>("bg-neutral-200");
 
@@ -54,7 +56,7 @@ export default function SearchResultBlock({
     <>
       <DraggableBlock
         blockType="COURSE"
-        dragItem={{ semesterPlanId: null, course: res }}
+        dragItem={{ semesterPlanId: null, course: res, setIsDragging: setIsDragging }}
         className={clsx(
           "group relative flex cursor-pointer flex-col gap-1 p-3 leading-none",
           color,
@@ -64,6 +66,7 @@ export default function SearchResultBlock({
             ? "z-1099 scale-105"
             : "hover:z-999",
         )}
+        setIsDragging={setIsDragging}
       >
         <div className="group relative flex flex-row items-center justify-between">
           <div className="text-sm">

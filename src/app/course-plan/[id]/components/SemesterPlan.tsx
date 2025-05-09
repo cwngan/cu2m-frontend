@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { SemesterPlanData } from "../types/SemesterPlan";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
@@ -33,10 +33,14 @@ export default function SemesterPlan({
     drop: (item: {
       course: CourseBasicInfo;
       semesterPlanId: string | null;
+      setIsDragging: Dispatch<SetStateAction<boolean>> | null
     }) => {
       // Prevent dropping on the same semester plan
       if (item.semesterPlanId === semesterPlan._id) {
         return;
+      }
+      if (item.setIsDragging !== null) {
+        item.setIsDragging(false);
       }
       // console.log("Dropped item:", item);
       // console.log("Dropped on plan:", plan);
