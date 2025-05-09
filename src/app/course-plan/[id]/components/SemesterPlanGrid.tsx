@@ -192,16 +192,10 @@ export default function SemesterPlanGrid({
       );
       if (!currentPlan) return false;
 
-      const currentCourse = currentPlan.courses.find(
-        (course) => course._id === courseId,
-      );
-      if (!currentCourse) return false;
-
       // Check if this course appears in any other plan
       const isDuplicate = detailedSemesterPlans.some((plan) => {
         if (plan._id === currentPlanId) return false;
-
-        return plan.courses.some((course) => course._id === currentCourse._id);
+        return plan.courses.some((course) => course._id === courseId);
       });
 
       return isDuplicate;

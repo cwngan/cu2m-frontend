@@ -89,9 +89,13 @@ export default function SemesterPlan({
   );
   dropConnector(drop);
 
-  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [isDuplicate, setIsDuplicate] = useState<boolean[] | null>(null);
   useEffect(() => {
-    setIsDuplicate(isCourseDuplicate(plan._id, semesterPlan._id));
+    setIsDuplicate(
+      plan.courses.map((course) =>
+        isCourseDuplicate(course._id, semesterPlan._id),
+      ),
+    );
   }, [plan, semesterPlan, isCourseDuplicate]);
 
   return (
@@ -135,13 +139,13 @@ export default function SemesterPlan({
         />
         <div className="flex h-128 w-full flex-col gap-5 overflow-x-visible overflow-y-auto rounded-xl p-4">
           {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
-            semesterPlan.courses.map((course) => {
+            semesterPlan.courses.map((course, idx) => {
               return (
                 <CourseBlock
                   course={course}
                   key={course._id}
                   semesterPlanId={plan._id}
-                  isDuplicate={isDuplicate}
+                  isDuplicate={isDuplicate === null ? false : isDuplicate[idx]}
                   warningType={isDuplicate ? "Duplicated Course" : undefined}
                 />
               );
