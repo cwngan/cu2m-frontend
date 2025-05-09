@@ -39,57 +39,6 @@ export default function SemesterPlanGridContent({
     setIsDragging(isItemDragging);
   }, [isItemDragging]);
 
-  const handleRemoveCourseFromSemsterPlan = useCallback(
-    async (courseId: string, semesterPlanId: string) => {
-      try {
-        // Get the current semester plan using fresh state
-        setSemesterPlans((prevPlans) => {
-          const currentPlan = prevPlans.find(
-            (plan) => plan._id === semesterPlanId,
-          );
-          if (!currentPlan) {
-            console.error("Semester plan not found:", semesterPlanId);
-            return prevPlans;
-          }
-
-          // Create updated courses array without the removed course
-          const updatedCourses = currentPlan.courses
-            .filter((course) => course._id !== courseId)
-            .map((course) => course.code);
-
-          // Update the semester plan in the backend
-          apiClient
-            .patch(`/api/semester-plans/${semesterPlanId}`, {
-              courses: updatedCourses,
-            })
-            .then((response) => {
-              if (response.status !== 200) {
-                throw new Error("Failed to update semester plan");
-              }
-            })
-            .catch((error) => {
-              console.error("Error updating semester plan:", error);
-              alert("Failed to update semester plan");
-            });
-
-          // Update the frontend state immediately
-          return prevPlans.map((plan) => {
-            if (plan._id === semesterPlanId) {
-              const updatedCourses = plan.courses.filter(
-                (course) => course._id !== courseId,
-              );
-              return { ...plan, courses: updatedCourses };
-            }
-            return plan;
-          });
-        });
-      } catch (error) {
-        console.error("Error removing course from semester plan:", error);
-        alert("Failed to remove course from semester plan");
-      }
-    },
-    [setSemesterPlans], // Add setSemesterPlans to dependency array
-  );
 
   const handleNewYearAdded = useCallback(
     (newPlans: SemesterPlanData[]) => {
