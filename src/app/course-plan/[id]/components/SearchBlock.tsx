@@ -4,6 +4,7 @@ import SearchResultBlock from "./SearchResultBlock";
 import { apiClient } from "@/apiClient";
 import { Course, CourseRead } from "@/app/types/Models";
 import CourseDetailBlock from "./CourseDetailBlock";
+import SearchResultLoadingBlock from "./SearchResultLoadingBlock";
 
 export default function SearchBlock() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -21,6 +22,7 @@ export default function SearchBlock() {
 
   const [showPopupDetail, setShowPopupDetail] = useState<boolean>(false);
   const [popupDetail, setPopupDetail] = useState<Course | null>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const onClose = () => {
     setShowPopupDetail(false);
@@ -34,8 +36,8 @@ export default function SearchBlock() {
           ref={formRef}
           onSubmit={(e) => {
             e.preventDefault();
-            // Simulate a search action
-            // To be replaced by an API call
+
+            setIsUpdating(true);
             const query = queryRef.current?.value;
             if (query) {
               console.log(`Searching for ${query}`);
@@ -49,6 +51,7 @@ export default function SearchBlock() {
 
                   setSearchResults(response.data);
                   setResultBlockOpen(true);
+                  setIsUpdating(false);
                 })
                 .catch((err) => {
                   console.error(err);
@@ -98,21 +101,39 @@ export default function SearchBlock() {
 
         {/* searchbox after opening up */}
 
-        {resultBlockOpen && (
+        {resultBlockOpen && !isUpdating && (
           <div
             ref={scrollContainerRef}
             onWheel={handleWheel}
             className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
           >
-            {searchResults.map((res) => (
-              <SearchResultBlock
-                key={res._id}
-                res={res}
-                popupDetail={popupDetail}
-                showPopupDetail={showPopupDetail}
-                setPopupDetail={setPopupDetail}
-                setShowPopupDetail={setShowPopupDetail}
-              />
+            {searchResults.length > 0 &&
+              searchResults.map((res) => (
+                <SearchResultBlock
+                  key={res._id}
+                  res={res}
+                  popupDetail={popupDetail}
+                  showPopupDetail={showPopupDetail}
+                  setPopupDetail={setPopupDetail}
+                  setShowPopupDetail={setShowPopupDetail}
+                />
+              ))}
+            {searchResults.length == 0 && (
+              <div className="flex h-16 w-full flex-col justify-center text-center text-xl">
+                No courses found!
+              </div>
+            )}
+          </div>
+        )}
+
+        {isUpdating && (
+          <div
+            ref={scrollContainerRef}
+            onWheel={handleWheel}
+            className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
+          >
+            {[...Array(8)].map((_, idx) => (
+              <SearchResultLoadingBlock key={idx} />
             ))}
           </div>
         )}
