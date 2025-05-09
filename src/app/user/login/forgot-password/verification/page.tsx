@@ -1,6 +1,23 @@
-export default function Page() {
+import axios from "axios";
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { email: string };
+}) {
+  const email = searchParams.email;
+
+  if (email) {
+    try {
+      await axios.post(
+        "/api/user/forgot-password",
+        { email },
+        { baseURL: process.env.API_URL },
+      );
+    } catch {}
+  }
   return (
-    <div className="container mx-auto flex h-screen flex-col items-center justify-center gap-8 pb-20">
+    <div className="relative container mx-auto flex h-screen flex-col items-center justify-center gap-8 pb-20">
       <h2 className="text-6xl">Forgot your password?</h2>
       <div className="flex h-[28rem] flex-col items-center justify-center gap-10 p-12 text-3xl">
         <div className="w-2xl text-center">
