@@ -43,14 +43,13 @@ export default function CourseDetailBlock({
                 {/* TODO: set opacity */}
                 <CourseDetailItem
                   key={"course-detail-item-units"}
-                  className="justify-center"
-                  span={1}
+                  className="justify-center col-span-1"
                 >
                   Units
                 </CourseDetailItem>
                 <CourseDetailItem
                   key={"course-detail-item-units-value"}
-                  span={3}
+                  className="col-span-3"
                 >
                   <div
                     className={clsx(
@@ -64,13 +63,12 @@ export default function CourseDetailBlock({
                 <CourseDetailItem
                   key={"course-detail-item-graded"}
                   className="justify-center"
-                  span={1}
                 >
                   Graded
                 </CourseDetailItem>
                 <CourseDetailItem
                   key={"course-detail-item-graded-value"}
-                  span={3}
+                  className="col-span-3"
                 >
                   <div
                     className={clsx(
@@ -83,14 +81,13 @@ export default function CourseDetailBlock({
                 </CourseDetailItem>
                 <CourseDetailItem
                   key={"course-detail-item-description"}
-                  className="justify-center"
-                  span={1}
+                  className="justify-center col-span-1"
                 >
                   Description
                 </CourseDetailItem>
                 <CourseDetailItem
                   key={"course-detail-item-description-value"}
-                  span={3}
+                  className="col-span-3"
                 >
                   {course.description.split("\n").map((str, index) => (
                     <span
@@ -104,15 +101,13 @@ export default function CourseDetailBlock({
                   <>
                     <CourseDetailItem
                       key={"course-detail-item-prerequisites"}
-                      className="justify-center"
-                      span={1}
+                      className="justify-center col-span-1"
                     >
                       Prerequisites
                     </CourseDetailItem>
                     <CourseDetailItem
-                      className="overflow-x-auto whitespace-nowrap"
                       key={"course-detail-item-prerequisites-value"}
-                      span={3}
+                      className="col-span-3"
                     >
                       {course.prerequisites === "" ? "-" : course.prerequisites}
                     </CourseDetailItem>
@@ -122,15 +117,13 @@ export default function CourseDetailBlock({
                   <>
                     <CourseDetailItem
                       key={"course-detail-item-prerequisites"}
-                      className="justify-center"
-                      span={1}
+                      className="justify-center col-span-1"
                     >
                       Prerequisites (Not parsed)
                     </CourseDetailItem>
                     <CourseDetailItem
-                      className="overflow-x-auto whitespace-nowrap"
+                      className="col-span-3"
                       key={"course-detail-item-prerequisites-value"}
-                      span={3}
                     >
                       {course.original}
                     </CourseDetailItem>
