@@ -5,6 +5,10 @@ import { apiClient } from "@/apiClient";
 import { Course, CourseRead } from "@/app/types/Models";
 import CourseDetailBlock from "./CourseDetailBlock";
 import SearchResultLoadingBlock from "./SearchResultLoadingBlock";
+import {
+  ArrowDownCircleIcon,
+  ArrowUpCircleIcon,
+} from "@heroicons/react/24/outline";
 
 export default function SearchBlock() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -23,6 +27,7 @@ export default function SearchBlock() {
   const [showPopupDetail, setShowPopupDetail] = useState<boolean>(false);
   const [popupDetail, setPopupDetail] = useState<Course | null>(null);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [hasUpdated, setHasUpdated] = useState<boolean>(false);
 
   const onClose = () => {
     setShowPopupDetail(false);
@@ -52,6 +57,7 @@ export default function SearchBlock() {
                   setSearchResults(response.data);
                   setResultBlockOpen(true);
                   setIsUpdating(false);
+                  setHasUpdated(true);
                 })
                 .catch((err) => {
                   console.error(err);
@@ -76,24 +82,20 @@ export default function SearchBlock() {
 
             {!resultBlockOpen && (
               <div
-                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-100 transition duration-150 hover:scale-110"
+                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-700 transition duration-150 hover:scale-110"
                 onClick={() => setResultBlockOpen(true)} // Close the form when clicking outside
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-                  <path d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0m-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z" />
-                </svg>
+                <ArrowUpCircleIcon className="size-6" />
               </div>
             )}
 
             {/* show lower arrow after opening, click to close the search result*/}
             {resultBlockOpen && (
               <div
-                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-100 transition duration-150 hover:scale-110"
+                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-700 transition duration-150 hover:scale-110"
                 onClick={() => setResultBlockOpen(false)} // Close the form when clicking outside
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293z" />
-                </svg>
+                <ArrowDownCircleIcon className="size-6" />
               </div>
             )}
           </div>
@@ -118,9 +120,14 @@ export default function SearchBlock() {
                   setShowPopupDetail={setShowPopupDetail}
                 />
               ))}
-            {searchResults.length == 0 && (
+            {hasUpdated && searchResults.length == 0 && (
               <div className="flex h-16 w-full flex-col justify-center text-center text-xl">
                 No courses found!
+              </div>
+            )}
+            {!hasUpdated && (
+              <div className="flex h-16 w-full flex-col justify-center text-center text-xl">
+                Search by course code, title or description...
               </div>
             )}
           </div>
