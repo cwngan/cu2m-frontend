@@ -79,8 +79,7 @@ export default function SearchBlock() {
             if (query) {
               console.log(`Searching for ${query}`);
               apiClient
-              //added [] to make the api work, may course conflict.
-                .get(`/api/courses?keywords[]=${query}&basic=true`)
+                .get(`/api/courses?keywords=${query}&basic=true`)
                 .then((res) => {
                   const response = res.data;
                   if (response.status === "ERROR" || response.data === null) {
