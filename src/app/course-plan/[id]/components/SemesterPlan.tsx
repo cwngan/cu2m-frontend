@@ -29,6 +29,10 @@ interface SemesterPlanProps {
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
+  getCourseWarningType: (
+    courseId: string,
+    currentPlanId: string,
+  ) => string | undefined;
 }
 
 // This component represents an individual year column in the course plan grid
@@ -42,15 +46,15 @@ export default function SemesterPlan({
   showAddButton,
   isCourseDuplicate,
   handleAddCourseToSemesterPlan,
+  getCourseWarningType,
 }: SemesterPlanProps) {
-  const [semesterPlan, setSemesterPlan] =
-    useState<SemesterPlanReadWithCourseDetails>(plan);
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(false);
 
-  useEffect(() => {
-    setSemesterPlan(plan);
-  }, [plan]);
+  const [isDuplicate, setIsDuplicate] = useState<boolean[] | null>(null);
+  const [warningTypes, setWarningTypes] = useState<(string | null)[] | null>(
+    null,
+  );
 
   const drop = useRef<HTMLDivElement>(null);
   const [{ isOver }, dropConnector] = useDrop(
@@ -62,7 +66,7 @@ export default function SemesterPlan({
         setIsDragging: Dispatch<SetStateAction<boolean>> | null;
       }) => {
         // If dropping in the same plan, do nothing
-        if (item.semesterPlanId === semesterPlan._id) {
+        if (item.semesterPlanId === plan._id) {
           return undefined;
         }
         if (item.setIsDragging !== null) {
@@ -71,9 +75,20 @@ export default function SemesterPlan({
         try {
           await handleAddCourseToSemesterPlan(
             item.course,
-            semesterPlan._id,
+            plan._id,
             item.semesterPlanId,
           );
+
+          // Immediately update the warning states after adding a course
+          setIsDuplicate(
+            plan.courses.map((c) => isCourseDuplicate(c._id, plan._id)),
+          );
+          setWarningTypes(
+            plan.courses.map(
+              (c) => getCourseWarningType(c._id, plan._id) || null,
+            ),
+          );
+
           return { allowedDrop: true };
         } catch (error) {
           console.error("Error updating semester plan:", error);
@@ -85,18 +100,31 @@ export default function SemesterPlan({
         isOver: !!monitor.isOver(),
       }),
     }),
-    [handleAddCourseToSemesterPlan],
+    [
+      handleAddCourseToSemesterPlan,
+      plan,
+      isCourseDuplicate,
+      getCourseWarningType,
+    ],
   );
   dropConnector(drop);
 
-  const [isDuplicate, setIsDuplicate] = useState<boolean[] | null>(null);
+  // Update warnings any time the plan changes
   useEffect(() => {
+    if (!plan?.courses) return;
+
     setIsDuplicate(
-      plan.courses.map((course) =>
-        isCourseDuplicate(course._id, semesterPlan._id),
+      plan.courses.map((course) => isCourseDuplicate(course._id, plan._id)),
+    );
+    setWarningTypes(
+      plan.courses.map(
+        (course) => getCourseWarningType(course._id, plan._id) || null,
       ),
     );
-  }, [plan, semesterPlan, isCourseDuplicate]);
+  }, [plan, isCourseDuplicate, getCourseWarningType]);
+
+  // Always use the plan prop directly for rendering
+  const hasAnyCourses = plan.courses && plan.courses.length > 0;
 
   return (
     <div className="relative flex items-center">
@@ -132,24 +160,22 @@ export default function SemesterPlan({
         )}
       >
         <SemesterPlanTitle
-          plan={semesterPlan}
+          plan={plan}
           onSemesterPlanDeleted={() => {
-            onSemesterPlanDeleted?.(semesterPlan._id);
+            onSemesterPlanDeleted?.(plan._id);
           }}
         />
         <div className="flex h-128 w-full flex-col gap-5 overflow-x-visible overflow-y-auto rounded-xl p-4">
-          {semesterPlan.courses && semesterPlan.courses.length > 0 ? (
-            semesterPlan.courses.map((course, idx) => {
-              return (
-                <CourseBlock
-                  course={course}
-                  key={course._id}
-                  semesterPlanId={plan._id}
-                  isDuplicate={isDuplicate === null ? false : isDuplicate[idx]}
-                  warningType={isDuplicate ? "Duplicated Course" : undefined}
-                />
-              );
-            })
+          {hasAnyCourses ? (
+            plan.courses.map((course, idx) => (
+              <CourseBlock
+                key={course._id}
+                course={course}
+                semesterPlanId={plan._id}
+                isDuplicate={isDuplicate?.[idx] ?? false}
+                warningType={warningTypes?.[idx] || undefined}
+              />
+            ))
           ) : (
             <div className="flex h-full items-center justify-center text-gray-400">
               No courses

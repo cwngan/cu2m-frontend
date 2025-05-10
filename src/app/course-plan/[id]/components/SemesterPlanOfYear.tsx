@@ -25,6 +25,7 @@ interface SemesterPlanOfYearProps {
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
+  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
 }
 
 export default function SemesterPlanOfYear({
@@ -37,6 +38,7 @@ export default function SemesterPlanOfYear({
   onPlanDeleted,
   isCourseDuplicate,
   handleAddCourseToSemesterPlan,
+  getCourseWarningType,
 }: SemesterPlanOfYearProps) {
   const handleAddSemesterPlan = useCallback(
     async (semester: number) => {
@@ -217,6 +219,7 @@ export default function SemesterPlanOfYear({
               showAddButton={getAddButtonConfig(plan)}
               isCourseDuplicate={isCourseDuplicate}
               handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
+              getCourseWarningType={getCourseWarningType}
             />
           ))}
         </div>

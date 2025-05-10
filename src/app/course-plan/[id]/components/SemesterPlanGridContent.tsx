@@ -15,6 +15,7 @@ export default function SemesterPlanGridContent({
   // handleCreateSemesterPlan,
   isCourseDuplicate,
   handleAddCourseToSemesterPlan,
+  getCourseWarningType,
 }: {
   coursePlanId: string;
   semesterPlans: SemesterPlanReadWithCourseDetails[] | null;
@@ -30,6 +31,7 @@ export default function SemesterPlanGridContent({
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
+  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -114,6 +116,7 @@ export default function SemesterPlanGridContent({
                 onPlanDeleted={handlePlanDeleted}
                 isCourseDuplicate={isCourseDuplicate}
                 handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
+                getCourseWarningType={getCourseWarningType}
               />
             ))}
           </>

@@ -32,7 +32,7 @@ export default function CourseBlock({
   }, [course.code]);
 
   const handleMouseEnter = (e: React.MouseEvent) => {
-    if (isDuplicate) {
+    if (warningType || isDuplicate) {
       const rect = e.currentTarget.getBoundingClientRect();
       setTooltipPosition({
         top: rect.top - 40, // Position above the element
@@ -44,6 +44,18 @@ export default function CourseBlock({
 
   const handleMouseLeave = () => {
     setShowTooltip(false);
+  };
+
+  const getWarningMessage = () => {
+    switch (warningType?.split(":")[0]) {
+      case "duplicate":
+        return "Duplicated course";
+      case "not_for_taken":
+        const conflictingCourse = warningType.split(":")[1];
+        return `This course cannot be taken with ${conflictingCourse}`;
+      default:
+        return warningType || "Warning";
+    }
   };
 
   return (
@@ -58,13 +70,13 @@ export default function CourseBlock({
         className={clsx(
           "group flex flex-col items-center justify-center p-2",
           color,
-          isDuplicate && "ring-2 ring-red-500",
+          (warningType || isDuplicate) && "ring-2 ring-red-500",
         )}
         setIsDragging={null}
       >
         <div className="flex items-center gap-1">
           <span>{course.code}</span>
-          {isDuplicate && (
+          {(warningType || isDuplicate) && (
             <div
               className="group relative"
               onMouseEnter={handleMouseEnter}
@@ -79,7 +91,7 @@ export default function CourseBlock({
         </div>
       </DraggableBlock>
       {showTooltip &&
-        isDuplicate &&
+        (warningType || isDuplicate) &&
         createPortal(
           <div
             className="fixed z-50 rounded bg-gray-800 px-2 py-1 text-sm whitespace-nowrap text-white"
@@ -89,7 +101,7 @@ export default function CourseBlock({
               transform: "translateX(-50%)",
             }}
           >
-            {warningType || "Course appears in another semester"}
+            {getWarningMessage()}
           </div>,
           document.body,
         )}
