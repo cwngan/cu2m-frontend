@@ -24,6 +24,7 @@ import { mount, MountOptions } from "cypress/react";
 import * as Router from "next/navigation";
 import { ReactNode } from "react";
 import "@/app/globals.css";
+import "cypress-real-events";
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
