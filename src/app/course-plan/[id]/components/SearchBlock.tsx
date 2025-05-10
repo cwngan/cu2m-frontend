@@ -1,5 +1,12 @@
 "use client";
-import { useEffect, useRef, useState, WheelEvent } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  WheelEvent,
+} from "react";
 import SearchResultBlock from "./SearchResultBlock";
 import { apiClient } from "@/apiClient";
 import { Course, CourseRead } from "@/app/types/Models";
@@ -10,11 +17,29 @@ import {
   ArrowUpCircleIcon,
 } from "@heroicons/react/24/outline";
 
+// Context for controlling open/close state externally if needed
+export const SearchBlockContext = createContext<{
+  isOpen?: boolean;
+  setIsOpen?: (open: boolean) => void;
+}>({});
+
 export default function SearchBlock() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const queryRef = useRef<HTMLInputElement>(null);
+  // Local state for open/close
   const [resultBlockOpen, setResultBlockOpen] = useState(false);
+  // Context support (if provided by parent)
+  const context = useContext(SearchBlockContext);
+  // Use context if available, otherwise fallback to local state
+  const isOpen =
+    context.isOpen !== undefined ? context.isOpen : resultBlockOpen;
+  const setIsOpen = context.setIsOpen || setResultBlockOpen;
+  // ---
+  // NOTE FOR FUTURE MERGE CONFLICTS:
+  // This block allows both local and context-based control of open/close state.
+  // If merging with a branch that uses only local state or only context, keep this dual approach for flexibility.
+  // ---
   const [searchResults, setSearchResults] = useState<CourseRead[]>([]);
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
@@ -54,7 +79,7 @@ export default function SearchBlock() {
             if (query) {
               console.log(`Searching for ${query}`);
               apiClient
-                .get(`/api/courses?keywords=${query}&basic=true`)
+                .get(`/api/courses?keywords[]=${query}&basic=true`)
                 .then((res) => {
                   const response = res.data;
                   if (response.status === "ERROR" || response.data === null) {
@@ -62,7 +87,7 @@ export default function SearchBlock() {
                   }
 
                   setSearchResults(response.data);
-                  setResultBlockOpen(true);
+                  setIsOpen(true);
                   setIsUpdating(false);
                   setHasUpdated(true);
                 })
@@ -86,31 +111,28 @@ export default function SearchBlock() {
               Go
             </button>
             {/* show upper arrow before opening, click to open the search result */}
-
-            {!resultBlockOpen && (
+            {!isOpen && (
               <div
-                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-700 transition duration-150 hover:scale-110"
-                onClick={() => setResultBlockOpen(true)} // Close the form when clicking outside
+                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-100 transition duration-150 hover:scale-110"
+                onClick={() => setIsOpen(true)}
               >
                 <ArrowUpCircleIcon className="size-6" />
               </div>
             )}
-
             {/* show lower arrow after opening, click to close the search result*/}
-            {resultBlockOpen && (
+            {isOpen && (
               <div
-                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-700 transition duration-150 hover:scale-110"
-                onClick={() => setResultBlockOpen(false)} // Close the form when clicking outside
+                className="hover: flex h-8 items-center justify-center rounded-lg text-slate-100 transition duration-150 hover:scale-110"
+                onClick={() => setIsOpen(false)}
               >
                 <ArrowDownCircleIcon className="size-6" />
               </div>
             )}
           </div>
         </form>
-
         {/* searchbox after opening up */}
 
-        {resultBlockOpen && !isUpdating && (
+        {isOpen && !isUpdating && (
           <div
             ref={scrollContainerRef}
             onWheel={handleWheel}

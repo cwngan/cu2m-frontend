@@ -1,5 +1,6 @@
 import {
   CoursePlanRead,
+  CoursePlanWithSemestersData,
   CourseRead,
   SemesterPlanRead,
   UserRead,
@@ -22,11 +23,10 @@ export interface CoursesResponseModel extends ApiResponseModel {
   data: CourseRead[] | null;
 }
 
-export interface CoursePlanWithSemestersData {
-  course_plan: CoursePlanRead;
-  semester_plans: SemesterPlanRead[];
-}
-
 export interface CoursePlanWithSemestersResponseModel extends ApiResponseModel {
   data: CoursePlanWithSemestersData | null;
+}
+
+export interface SemesterPlanResponseModel extends ApiResponseModel {
+  data: SemesterPlanRead | null;
 }

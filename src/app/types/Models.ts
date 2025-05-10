@@ -82,6 +82,20 @@ export interface SemesterPlan {
   created_at: Moment;
 }
 
+export interface SemesterPlanRead {
+  _id: string;
+  course_plan_id: string;
+  courses: string[];
+  semester: number;
+  year: number;
+  created_at: Moment;
+}
+
+export interface SemesterPlanReadWithCourseDetails
+  extends Omit<SemesterPlanRead, "courses"> {
+  courses: CourseRead[];
+}
+
 export interface CoursePlan {
   _id: string;
   description: string;
@@ -120,11 +134,7 @@ export interface CoursePlanUpdate {
   name?: string;
 }
 
-export interface SemesterPlanRead {
-  _id: string;
-  course_plan_id: string;
-  courses: string[];
-  semester: number;
-  year: number;
-  created_at: Moment;
+export interface CoursePlanWithSemestersData {
+  course_plan: CoursePlanRead;
+  semester_plans: SemesterPlanRead[];
 }
