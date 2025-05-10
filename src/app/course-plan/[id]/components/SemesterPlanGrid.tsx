@@ -21,7 +21,6 @@ interface SemesterPlanGridProps {
   coursePlanResponse: CoursePlanWithSemestersResponseModel;
 }
 
-// Main component that provides the DndProvider context
 export default function SemesterPlanGrid({
   coursePlanId,
   coursePlanResponse,
@@ -63,12 +62,10 @@ export default function SemesterPlanGrid({
             console.error("Error updating semester plan:", error);
             alert("Failed to update semester plan");
           });
-        // Get the current semester plan using fresh state
         setDetailedSemesterPlans((prevPlans) => {
           if (prevPlans === null) {
             throw new Error("Detailed semester plans are null");
           }
-          // Update the frontend state immediately
           return prevPlans.map((plan) => {
             if (plan._id === semesterPlanId) {
               return { ...plan, courses: updatedCourses };
@@ -94,7 +91,6 @@ export default function SemesterPlanGrid({
         throw new Error("Detailed semester plans are null");
       }
       try {
-        // Get the current semester plan
         const currentPlan = detailedSemesterPlans.find(
           (plan) => plan._id === semesterPlanId,
         );
@@ -103,7 +99,6 @@ export default function SemesterPlanGrid({
           return;
         }
 
-        // Find plans that might be affected by the change
         const potentiallyAffectedPlans = detailedSemesterPlans.filter(
           (plan) =>
             plan._id !== semesterPlanId &&
@@ -126,7 +121,6 @@ export default function SemesterPlanGrid({
           potentiallyAffectedPlans.map((p) => p._id),
         );
 
-        // Remove any existing course with the same code
         const filteredCourses = currentPlan.courses.filter(
           (existingCourse) => existingCourse.code !== course.code,
         );
@@ -140,15 +134,12 @@ export default function SemesterPlanGrid({
         );
 
         if (response.status === 200) {
-          // Update state to trigger re-renders
           setDetailedSemesterPlans((prevPlans) => {
             if (prevPlans === null) {
               throw new Error("Detailed semester plans are null");
             }
 
-            // Create a new array with all plans updated
             const newPlans = prevPlans.map((plan) => {
-              // If this is the target plan, update its courses
               if (plan._id === semesterPlanId) {
                 console.log("Updating target plan:", plan._id);
                 return {
@@ -156,8 +147,6 @@ export default function SemesterPlanGrid({
                   courses: updatedCourses,
                 };
               }
-
-              // If this plan might have conflicts, force a re-render
               if (
                 potentiallyAffectedPlans.some(
                   (affected) => affected._id === plan._id,
@@ -166,14 +155,12 @@ export default function SemesterPlanGrid({
                 console.log("Force updating affected plan:", plan._id);
                 return { ...plan };
               }
-
               return plan;
             });
 
             return newPlans;
           });
 
-          // If the course was moved from another semester plan, remove it from there
           if (sourcePlanId !== null) {
             handleRemoveCourseFromSemsterPlan(course.code, sourcePlanId);
           }
@@ -192,7 +179,6 @@ export default function SemesterPlanGrid({
     courseCodes: string[],
   ): Promise<CourseRead[]> => {
     try {
-      // If there are no course codes, return an empty array
       if (!courseCodes || courseCodes.length === 0) {
         return [];
       }
@@ -203,14 +189,13 @@ export default function SemesterPlanGrid({
         {
           params: {
             keywords: courseCodes,
-            strict: true, // Only match exact course codes
-            basic: true, // Only get basic course info
+            strict: true,
+            basic: true,
           },
         },
       );
       console.log("API Response:", response.data);
       if (response.status === 200 && response.data.data) {
-        // Make sure we only return courses in the same order as requested
         return response.data.data;
       }
       return [];
@@ -220,56 +205,11 @@ export default function SemesterPlanGrid({
     }
   };
 
-  // Function to check if a course is duplicated across semester plans
-  const isCourseDuplicate = useCallback(
-    (courseId: string, currentPlanId: string) => {
-      if (detailedSemesterPlans === null) {
-        throw new Error("Detailed semester plans are null");
-      }
-      // Find the course in the current plan
-      const currentPlan = detailedSemesterPlans.find(
-        (plan) => plan._id === currentPlanId,
-      );
-      if (!currentPlan) return false;
-
-      const currentCourse = currentPlan.courses.find(
-        (course) => course._id === courseId,
-      );
-      if (!currentCourse) return false;
-
-      // Check for not_for_taken violations
-      const notForTakenCourses =
-        currentCourse.not_for_taken?.split(",").map((code) => code.trim()) ||
-        [];
-      const hasNotForTakenViolation = detailedSemesterPlans.some((plan) => {
-        if (plan._id === currentPlanId) return false;
-        return plan.courses.some((course) =>
-          notForTakenCourses.includes(course.code || ""),
-        );
-      });
-
-      if (hasNotForTakenViolation) {
-        return true;
-      }
-
-      // Check if this course appears in any other plan
-      const isDuplicate = detailedSemesterPlans.some((plan) => {
-        if (plan._id === currentPlanId) return false;
-        return plan.courses.some((course) => course._id === courseId);
-      });
-
-      return isDuplicate;
-    },
-    [detailedSemesterPlans],
-  );
-
-  // Function to get the warning type for a course
   const getCourseWarningType = useCallback(
     (courseId: string, currentPlanId: string): string | undefined => {
       if (detailedSemesterPlans === null) {
         throw new Error("Detailed semester plans are null");
       }
-      // Find the course in the current plan
       const currentPlan = detailedSemesterPlans.find(
         (plan) => plan._id === currentPlanId,
       );
@@ -280,16 +220,13 @@ export default function SemesterPlanGrid({
       );
       if (!currentCourse) return undefined;
 
-      // Check for not_for_taken violations
       const notForTakenCourses =
         currentCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
         [];
 
-      // First check within the same semester plan
       for (const otherCourse of currentPlan.courses) {
-        if (otherCourse._id === courseId) continue; // Skip comparing with itself
+        if (otherCourse._id === courseId) continue;
 
-        // Check if this course conflicts with any other course in the same plan
         const otherNotForTaken =
           otherCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
           [];
@@ -302,26 +239,21 @@ export default function SemesterPlanGrid({
         }
       }
 
-      // Then check in other semester plans
       for (const plan of detailedSemesterPlans) {
         if (plan._id === currentPlanId) continue;
         for (const otherCourse of plan.courses) {
-          // Check if this course is in other course's not_for_taken list
           const otherNotForTaken =
-            otherCourse.not_for_taken
-              ?.split(" or ")
-              .map((code) => code.trim()) || [];
+            otherCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
+            [];
           if (otherNotForTaken.includes(currentCourse.code || "")) {
             return `not_for_taken:${otherCourse.code}`;
           }
-          // Check if other course is in this course's not_for_taken list
           if (notForTakenCourses.includes(otherCourse.code || "")) {
             return `not_for_taken:${otherCourse.code}`;
           }
         }
       }
 
-      // Check if this course appears in any other plan
       const isDuplicate = detailedSemesterPlans.some((plan) => {
         if (plan._id === currentPlanId) return false;
         return plan.courses.some((course) => course._id === courseId);
@@ -367,7 +299,6 @@ export default function SemesterPlanGrid({
       }
       plansByYear[plan.year].push(plan);
     });
-    // Sort plans by semester within each year
     Object.values(plansByYear).forEach((plans) => {
       plans.sort((a, b) => a.semester - b.semester);
     });
@@ -382,8 +313,6 @@ export default function SemesterPlanGrid({
         setSemesterPlans={setDetailedSemesterPlans}
         semesterPlansByYear={semesterPlansByYear}
         isLoading={isLoading}
-        // handleCreateSemesterPlan={handleCreateSemesterPlan}
-        isCourseDuplicate={isCourseDuplicate}
         handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
         getCourseWarningType={getCourseWarningType}
       />

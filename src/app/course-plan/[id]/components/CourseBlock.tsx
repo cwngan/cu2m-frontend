@@ -1,6 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import DraggableBlock from "@/app/components/DraggableBlock";
 import { getCourseColor } from "../utils";
@@ -9,19 +8,16 @@ import { CourseRead } from "@/app/types/Models";
 interface CourseBlockProps {
   semesterPlanId: string;
   course: CourseRead;
-  isDuplicate?: boolean;
   warningType?: string;
 }
 
 export default function CourseBlock({
   semesterPlanId,
   course,
-  isDuplicate = false,
   warningType,
 }: CourseBlockProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  //set the color of course block base on number of semester
   const [color, setColor] = useState<string>("bg-neutral-200");
 
   useEffect(() => {
@@ -32,11 +28,11 @@ export default function CourseBlock({
   }, [course.code]);
 
   const handleMouseEnter = (e: React.MouseEvent) => {
-    if (warningType || isDuplicate) {
+    if (warningType) {
       const rect = e.currentTarget.getBoundingClientRect();
       setTooltipPosition({
-        top: rect.top - 40, // Position above the element
-        left: rect.left + rect.width / 2, // Center horizontally
+        top: rect.top - 40,
+        left: rect.left + rect.width / 2,
       });
       setShowTooltip(true);
     }
@@ -70,13 +66,13 @@ export default function CourseBlock({
         className={clsx(
           "group flex flex-col items-center justify-center p-2",
           color,
-          (warningType || isDuplicate) && "ring-2 ring-red-500",
+          warningType && "ring-2 ring-red-500",
         )}
         setIsDragging={null}
       >
         <div className="flex items-center gap-1">
           <span>{course.code}</span>
-          {(warningType || isDuplicate) && (
+          {warningType && (
             <div
               className="group relative"
               onMouseEnter={handleMouseEnter}
@@ -91,7 +87,7 @@ export default function CourseBlock({
         </div>
       </DraggableBlock>
       {showTooltip &&
-        (warningType || isDuplicate) &&
+        warningType &&
         createPortal(
           <div
             className="fixed z-50 rounded bg-gray-800 px-2 py-1 text-sm whitespace-nowrap text-white"

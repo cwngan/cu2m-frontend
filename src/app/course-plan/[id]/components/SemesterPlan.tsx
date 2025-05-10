@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
@@ -7,23 +7,17 @@ import {
   CourseRead,
   SemesterPlanReadWithCourseDetails,
 } from "@/app/types/Models";
-// import { apiClient } from "@/apiClient";
 
 interface SemesterPlanProps {
   plan: SemesterPlanReadWithCourseDetails;
   addSummerSession: boolean;
   handleAddSummerSession?: () => void;
-  // handleRemoveCourseFromSemsterPlan: (
-  //   courseId: string,
-  //   semesterPlanId: string,
-  // ) => void;
   onSemesterPlanDeleted?: (planId: string) => void;
   handleAddSemesterPlan?: (semester: number) => void;
   showAddButton?: {
     semester: number;
     position: "before" | "after";
   };
-  isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
   handleAddCourseToSemesterPlan: (
     course: CourseRead,
     semesterPlanId: string,
@@ -35,26 +29,18 @@ interface SemesterPlanProps {
   ) => string | undefined;
 }
 
-// This component represents an individual year column in the course plan grid
 export default function SemesterPlan({
   plan,
   addSummerSession,
   handleAddSummerSession,
-  // handleRemoveCourseFromSemsterPlan,
   onSemesterPlanDeleted,
   handleAddSemesterPlan,
   showAddButton,
-  isCourseDuplicate,
   handleAddCourseToSemesterPlan,
   getCourseWarningType,
 }: SemesterPlanProps) {
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(false);
-
-  const [isDuplicate, setIsDuplicate] = useState<boolean[] | null>(null);
-  const [warningTypes, setWarningTypes] = useState<(string | null)[] | null>(
-    null,
-  );
 
   const drop = useRef<HTMLDivElement>(null);
   const [{ isOver }, dropConnector] = useDrop(
@@ -63,9 +49,8 @@ export default function SemesterPlan({
       drop: async (item: {
         course: CourseRead;
         semesterPlanId: string | null;
-        setIsDragging: Dispatch<SetStateAction<boolean>> | null;
+        setIsDragging: React.Dispatch<React.SetStateAction<boolean>> | null;
       }) => {
-        // If dropping in the same plan, do nothing
         if (item.semesterPlanId === plan._id) {
           return undefined;
         }
@@ -78,17 +63,6 @@ export default function SemesterPlan({
             plan._id,
             item.semesterPlanId,
           );
-
-          // Immediately update the warning states after adding a course
-          setIsDuplicate(
-            plan.courses.map((c) => isCourseDuplicate(c._id, plan._id)),
-          );
-          setWarningTypes(
-            plan.courses.map(
-              (c) => getCourseWarningType(c._id, plan._id) || null,
-            ),
-          );
-
           return { allowedDrop: true };
         } catch (error) {
           console.error("Error updating semester plan:", error);
@@ -100,35 +74,14 @@ export default function SemesterPlan({
         isOver: !!monitor.isOver(),
       }),
     }),
-    [
-      handleAddCourseToSemesterPlan,
-      plan,
-      isCourseDuplicate,
-      getCourseWarningType,
-    ],
+    [handleAddCourseToSemesterPlan, plan],
   );
   dropConnector(drop);
 
-  // Update warnings any time the plan changes
-  useEffect(() => {
-    if (!plan?.courses) return;
-
-    setIsDuplicate(
-      plan.courses.map((course) => isCourseDuplicate(course._id, plan._id)),
-    );
-    setWarningTypes(
-      plan.courses.map(
-        (course) => getCourseWarningType(course._id, plan._id) || null,
-      ),
-    );
-  }, [plan, isCourseDuplicate, getCourseWarningType]);
-
-  // Always use the plan prop directly for rendering
   const hasAnyCourses = plan.courses && plan.courses.length > 0;
 
   return (
     <div className="relative flex items-center">
-      {/* Left margin hover area */}
       {showAddButton?.position === "before" && (
         <div
           className="absolute -left-3 z-10 flex h-full w-6 items-center justify-center"
@@ -149,7 +102,6 @@ export default function SemesterPlan({
         </div>
       )}
 
-      {/* Main semester plan content */}
       <div
         ref={drop}
         data-semplan-id={plan._id}
@@ -167,13 +119,12 @@ export default function SemesterPlan({
         />
         <div className="flex h-128 w-full flex-col gap-5 overflow-x-visible overflow-y-auto rounded-xl p-4">
           {hasAnyCourses ? (
-            plan.courses.map((course, idx) => (
+            plan.courses.map((course) => (
               <CourseBlock
                 key={course._id}
                 course={course}
                 semesterPlanId={plan._id}
-                isDuplicate={isDuplicate?.[idx] ?? false}
-                warningType={warningTypes?.[idx] || undefined}
+                warningType={getCourseWarningType(course._id, plan._id)}
               />
             ))
           ) : (
@@ -184,7 +135,6 @@ export default function SemesterPlan({
         </div>
       </div>
 
-      {/* Right margin hover area */}
       {((addSummerSession && handleAddSummerSession) ||
         showAddButton?.position === "after") && (
         <div
