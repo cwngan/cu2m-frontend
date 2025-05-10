@@ -1,5 +1,9 @@
 "use client";
-import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
+import {
+  CoursePlanResponseModel,
+  CoursePlanWithSemestersResponseModel,
+  CoursesResponseModel,
+} from "@/app/types/ApiResponseModel";
 import {
   ReactFlow,
   Controls,
@@ -11,38 +15,65 @@ import {
   Edge,
   Node,
 } from "@xyflow/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import "@xyflow/react/dist/style.css";
 import GraphNode from "./GraphNode";
+import { apiClient } from "@/apiClient";
+import { craftGraphNode } from "../utils";
 
-const initialEdges: Edge[] = [{ id: "1-2", source: "1", target: "2", animated: true }];
-
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    data: { label: "Hello" },
-    type: "defaultNode",
-    position: { x: 0, y: 0 },
-  },
-  {
-    id: "2",
-    data: { label: "Test" },
-    type: "defaultNode",
-    position: { x: 100, y: 100 },
-  },
+const initialEdges: Edge[] = [
+  { id: "1-2", source: "1", target: "2", animated: true },
 ];
 
 const nodeTypes = { defaultNode: GraphNode };
 
 interface SemesterPlanGridProps {
   coursePlanId: string;
-  coursePlanResponse: CoursePlanResponseModel;
+  coursePlanResponse: CoursePlanWithSemestersResponseModel;
 }
 export default function GraphView({
   coursePlanResponse,
 }: SemesterPlanGridProps) {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+  const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
+
+  useEffect(() => {
+    if (coursePlanResponse.data === null) {
+      throw new Error("Course plan data not found");
+    }
+
+    const semesterPlans = coursePlanResponse.data.semester_plans;
+    const courses = semesterPlans
+      .map((semesterPlan) => semesterPlan.courses)
+      .flat();
+
+    apiClient
+      .get<CoursesResponseModel>("/api/courses", {
+        params: {
+          keywords: courses,
+          includes: [
+            "code",
+            "title",
+            "units",
+            "corequisites",
+            "prerequisites",
+            "not_for_taken",
+          ],
+        },
+      })
+      .then((response) => {
+        const detailedCourses = response.data.data;
+        if (detailedCourses === null) {
+          throw new Error("Course fetch failed");
+        }
+        setNodes(detailedCourses.map((course) => craftGraphNode(course)));
+        console.log(detailedCourses);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert(err);
+      });
+  }, [coursePlanResponse]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
