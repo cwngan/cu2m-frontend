@@ -29,7 +29,7 @@ export default function SearchResultBlock({
     setPopupDetail(null);
     setShowPopupDetail(true);
     apiClient
-      .get<CoursesResponseModel>(`/api/courses/?keywords=${res.code}`)
+      .get<CoursesResponseModel>(`/api/courses/?keywords[]=${res.code}`)
       .then((res) => {
         const response = res.data;
         if (response.status === "ERROR" || response.data === null) {
