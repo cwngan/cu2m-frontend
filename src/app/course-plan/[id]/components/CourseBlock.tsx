@@ -43,15 +43,26 @@ export default function CourseBlock({
   };
 
   const getWarningMessage = () => {
-    switch (warningType?.split(":")[0]) {
-      case "duplicate":
-        return "Duplicated course";
-      case "not_for_taken":
-        const conflictingCourse = warningType.split(":")[1];
-        return `This course cannot be taken with ${conflictingCourse}`;
-      default:
-        return warningType || "Warning";
-    }
+    if (!warningType) return "Warning";
+
+    const warnings = warningType.split(",");
+    const messages = warnings.map((warning) => {
+      const [type, detail] = warning.split(":");
+      switch (type) {
+        case "duplicate":
+          return "Duplicated course";
+        case "not_for_taken":
+          return `This course cannot be taken with ${detail}`;
+        case "prerequisite":
+          return "Prerequisite not satisfied";
+        case "corequisite":
+          return "Corequisite not satisfied";
+        default:
+          return warning;
+      }
+    });
+
+    return messages.join("\n");
   };
 
   return (
@@ -90,7 +101,7 @@ export default function CourseBlock({
         warningType &&
         createPortal(
           <div
-            className="fixed z-50 rounded bg-gray-800 px-2 py-1 text-sm whitespace-nowrap text-white"
+            className="fixed z-50 rounded bg-gray-800 px-2 py-1 text-sm whitespace-pre-line text-white"
             style={{
               top: tooltipPosition.top,
               left: tooltipPosition.left,

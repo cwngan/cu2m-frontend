@@ -24,7 +24,10 @@ type ASTNode =
 
 // Parse prerequisite string into an AST
 function parsePrerequisite(prereq: string): ASTNode {
-  const tokens = prereq.trim().split(/\s+/).filter((token) => token !== "");
+  const tokens = prereq
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token !== "");
   let index = 0;
 
   function parseExpression(): ASTNode {
@@ -74,7 +77,10 @@ function parsePrerequisite(prereq: string): ASTNode {
 }
 
 // Evaluate the AST against taken courses
-function evaluatePrerequisite(node: ASTNode, takenCourses: Set<string>): boolean {
+function evaluatePrerequisite(
+  node: ASTNode,
+  takenCourses: Set<string>,
+): boolean {
   switch (node.type) {
     case "course":
       return takenCourses.has(node.code);
@@ -110,9 +116,9 @@ export default function SemesterPlanGrid({
     [year: number]: SemesterPlanReadWithCourseDetails[];
   }>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [takenBeforeMap, setTakenBeforeMap] = useState<Map<string, Set<string>>>(
-    new Map(),
-  );
+  const [takenBeforeMap, setTakenBeforeMap] = useState<
+    Map<string, Set<string>>
+  >(new Map());
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
     async (courseCode: string | null, semesterPlanId: string) => {
@@ -288,34 +294,37 @@ export default function SemesterPlanGrid({
   const getCourseWarningType = useCallback(
     (courseId: string, currentPlanId: string): string | undefined => {
       if (detailedSemesterPlans === null) {
-        throw new Error("Detailed semester plans are null");
+        return undefined;
       }
+  
       const currentPlan = detailedSemesterPlans.find(
         (plan) => plan._id === currentPlanId,
       );
       if (!currentPlan) return undefined;
-
+  
       const currentCourse = currentPlan.courses.find(
         (course) => course._id === courseId,
       );
       if (!currentCourse) return undefined;
-
+  
       // Check for duplicate warning
       const isDuplicate = detailedSemesterPlans.some((plan) => {
         if (plan._id === currentPlanId) return false;
         return plan.courses.some((course) => course._id === courseId);
       });
       if (isDuplicate) return "duplicate";
-
+  
       // Check for not_for_taken warning
       const notForTakenCourses =
-        currentCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
-        [];
+        currentCourse.not_for_taken
+          ?.split(" or ")
+          .map((code: string) => code.trim()) || [];
       for (const otherCourse of currentPlan.courses) {
         if (otherCourse._id === courseId) continue;
         const otherNotForTaken =
-          otherCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
-          [];
+          otherCourse.not_for_taken
+            ?.split(" or ")
+            .map((code: string) => code.trim()) || [];
         if (
           otherNotForTaken.includes(currentCourse.code || "") ||
           notForTakenCourses.includes(otherCourse.code || "")
@@ -323,41 +332,49 @@ export default function SemesterPlanGrid({
           return `not_for_taken:${otherCourse.code}`;
         }
       }
-      for (const plan of detailedSemesterPlans) {
-        if (plan._id === currentPlanId) continue;
-        for (const otherCourse of plan.courses) {
-          const otherNotForTaken =
-            otherCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
-            [];
-          if (otherNotForTaken.includes(currentCourse.code || "")) {
-            return `not_for_taken:${otherCourse.code}`;
-          }
-          if (notForTakenCourses.includes(otherCourse.code || "")) {
-            return `not_for_taken:${otherCourse.code}`;
-          }
-        }
-      }
-
-      // Check for prerequisite warning
+  
       const takenBefore = takenBeforeMap.get(currentPlanId);
-      if (
-        takenBefore &&
-        currentCourse.prerequisites &&
-        !/permission|equivalent/i.test(currentCourse.prerequisites)
-      ) {
+      const warnings: string[] = [];
+  
+      // Check prerequisites
+      if (takenBefore && currentCourse.prerequisites) {
         try {
           const ast = parsePrerequisite(currentCourse.prerequisites);
           const isSatisfied = evaluatePrerequisite(ast, takenBefore);
           if (!isSatisfied) {
-            return "prerequisite";
+            warnings.push("prerequisite");
           }
         } catch (error) {
           console.error("Error parsing prerequisite:", error);
-          // Skip warning on parse error
+          warnings.push("prerequisite"); // Add warning if parsing fails
         }
       }
-
-      return undefined;
+  
+      // Check corequisites
+      if (currentCourse.corequisites) {
+        try {
+          const ast = parsePrerequisite(currentCourse.corequisites);
+          const currentCourses = new Set(
+            currentPlan.courses
+              .map((c) => c.code)
+              .filter((code): code is string => code !== null),
+          );
+          const availableCourses = new Set([
+            ...(takenBefore || []),
+            ...currentCourses,
+          ]);
+          const isSatisfied = evaluatePrerequisite(ast, availableCourses);
+          if (!isSatisfied) {
+            warnings.push("corequisite");
+          }
+        } catch (error) {
+          console.error("Error parsing corequisite:", error);
+          warnings.push("corequisite"); // Add warning if parsing fails
+        }
+      }
+  
+      // Return combined warnings or undefined if none
+      return warnings.length > 0 ? warnings.join(",") : undefined;
     },
     [detailedSemesterPlans, takenBeforeMap],
   );
@@ -394,7 +411,7 @@ export default function SemesterPlanGrid({
       return a.semester - b.semester;
     });
     const map = new Map<string, Set<string>>();
-    let takenCourses = new Set<string>();
+    const takenCourses = new Set<string>();
     for (const plan of sortedPlans) {
       map.set(plan._id, new Set(takenCourses));
       for (const course of plan.courses) {
@@ -404,7 +421,8 @@ export default function SemesterPlanGrid({
     setTakenBeforeMap(map);
 
     // Group plans by year
-    const plansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] } = {};
+    const plansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] } =
+      {};
     detailedSemesterPlans.forEach((plan) => {
       if (!plansByYear[plan.year]) {
         plansByYear[plan.year] = [];
