@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# cu2m Frontend
 
-## Getting Started
+## Development
 
-First, run the development server:
+### Through Docker Compose Container (Recommended)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This utilizes the Docker Container in [cu2m](https://github.com/cwngan/cu2m) repo where this current repo is used as a submodule. Follow the instruction at [cu2m](https://github.com/cwngan/cu2m) for starting up a development server at http://localhost/.
+
+### Directly on Host Computer
+
+1. Run the following command to install all related node modules.
+
+```sh
+yarn
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Run the following command to start up the development server.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+yarn dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This command should start a development server at http://localhost:3000/
 
-## Learn More
+### Environment Setup
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env` file at the root directory and make sure to include the following two variables: `API_URL` and `NEXT_PUBLIC_API_URL`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Since `API_URL` is used server side, use http://cu2m-backend:5000/ if you are running the development server through the [cu2m](https://github.com/cwngan/cu2m) container. Otherwise, it should be set to the actual URL to the backend server (eg. http://localhost:8080).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`NEXT_PUBLIC_API_URL` should be set to the actual URL to the backend server disregarding the development mode.
 
-## Deploy on Vercel
+## Production
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Check [cu2m](https://github.com/cwngan/cu2m) for more information.
