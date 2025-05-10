@@ -132,7 +132,7 @@ export default function SemesterPlanOfYear({
    * 2. Autumn and Spring are the main semesters, Summer is optional
    * 3. When adding a new semester, we need to maintain the correct order:
    *    - Autumn should come before Spring
-   *    - Summer can be added between Autumn and Spring
+   *    - Summer should be added after Spring
    *
    * @param plan The current semester plan being rendered
    * @returns Configuration for the add button, or undefined if no button should be shown
@@ -155,7 +155,7 @@ export default function SemesterPlanOfYear({
         return { semester: SemesterTypes.AUTUMN, position: "before" as const };
       }
       if (plan.semester === SemesterTypes.SUMMER) {
-        // If only Summer exists, we can add Spring after it
+        // If only Summer exists, we can add Spring before it
         return { semester: SemesterTypes.SPRING, position: "before" as const };
       }
     }
