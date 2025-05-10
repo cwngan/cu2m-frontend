@@ -1,4 +1,9 @@
-import { CoursePlanRead, CourseRead, UserRead } from "./Models";
+import {
+  CoursePlanRead,
+  CourseRead,
+  SemesterPlanRead,
+  UserRead,
+} from "./Models";
 
 export interface ApiResponseModel {
   status: "OK" | "ERROR";
@@ -10,9 +15,18 @@ export interface UserResponseModel extends ApiResponseModel {
 }
 
 export interface CoursePlanResponseModel extends ApiResponseModel {
-  data: CoursePlanRead | CoursePlanRead[] | null;
+  data: CoursePlanRead[] | null;
 }
 
 export interface CoursesResponseModel extends ApiResponseModel {
   data: CourseRead[] | null;
+}
+
+export interface CoursePlanWithSemestersData {
+  course_plan: CoursePlanRead;
+  semester_plans: SemesterPlanRead[];
+}
+
+export interface CoursePlanWithSemestersResponseModel extends ApiResponseModel {
+  data: CoursePlanWithSemestersData | null;
 }
