@@ -44,27 +44,34 @@ export default function CourseBlock({
 
   const getWarningMessage = () => {
     if (!warningType) return "Warning";
-
+  
     const warnings = warningType.split(",");
     const messages = warnings.map((warning) => {
-      const [type, detail] = warning.split(":");
-      switch (type) {
-        case "duplicate":
-          return "Duplicated course";
-        case "not_for_taken":
-          return `This course cannot be taken with ${detail}`;
-        case "prerequisite":
-          return "Prerequisite not satisfied";
-        case "corequisite":
-          return "Corequisite not satisfied";
-        default:
-          return warning;
+      if (warning.includes(":")) {
+        const [type, details] = warning.split(":");
+        const courseCodes = details.split("|");
+        if (type === "not_for_taken_previous") {
+          return `Cannot be taken after ${courseCodes.join(", ")}`;
+        } else {
+          return warning; // Fallback for unrecognized types
+        }
+      } else {
+        switch (warning) {
+          case "duplicate":
+            return "Duplicated course";
+          case "prerequisite":
+            return "Prerequisite not satisfied";
+          case "corequisite":
+            return "Corequisite not satisfied";
+          default:
+            return warning;
+        }
       }
     });
-
+  
     return messages.join("\n");
   };
-
+  
   return (
     <>
       <DraggableBlock

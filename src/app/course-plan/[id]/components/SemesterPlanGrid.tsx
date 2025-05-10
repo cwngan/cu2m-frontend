@@ -307,34 +307,30 @@ export default function SemesterPlanGrid({
       );
       if (!currentCourse) return undefined;
   
+      const warnings: string[] = [];
+  
       // Check for duplicate warning
       const isDuplicate = detailedSemesterPlans.some((plan) => {
         if (plan._id === currentPlanId) return false;
         return plan.courses.some((course) => course._id === courseId);
       });
-      if (isDuplicate) return "duplicate";
+      if (isDuplicate) {
+        warnings.push("duplicate");
+      }
   
-      // Check for not_for_taken warning
+      // Check for not_for_taken in previous semesters only
+      const takenBefore = takenBeforeMap.get(currentPlanId);
       const notForTakenCourses =
         currentCourse.not_for_taken
           ?.split(" or ")
-          .map((code: string) => code.trim()) || [];
-      for (const otherCourse of currentPlan.courses) {
-        if (otherCourse._id === courseId) continue;
-        const otherNotForTaken =
-          otherCourse.not_for_taken
-            ?.split(" or ")
-            .map((code: string) => code.trim()) || [];
-        if (
-          otherNotForTaken.includes(currentCourse.code || "") ||
-          notForTakenCourses.includes(otherCourse.code || "")
-        ) {
-          return `not_for_taken:${otherCourse.code}`;
+          .map((code) => code.trim()) || [];
+  
+      if (takenBefore) {
+        const notForTakenPrevious = notForTakenCourses.filter(code => takenBefore.has(code));
+        if (notForTakenPrevious.length > 0) {
+          warnings.push(`not_for_taken_previous:${notForTakenPrevious.join('|')}`);
         }
       }
-  
-      const takenBefore = takenBeforeMap.get(currentPlanId);
-      const warnings: string[] = [];
   
       // Check prerequisites
       if (takenBefore && currentCourse.prerequisites) {
@@ -346,7 +342,7 @@ export default function SemesterPlanGrid({
           }
         } catch (error) {
           console.error("Error parsing prerequisite:", error);
-          warnings.push("prerequisite"); // Add warning if parsing fails
+          warnings.push("prerequisite");
         }
       }
   
@@ -357,7 +353,7 @@ export default function SemesterPlanGrid({
           const currentCourses = new Set(
             currentPlan.courses
               .map((c) => c.code)
-              .filter((code): code is string => code !== null),
+              .filter((code) => code !== null),
           );
           const availableCourses = new Set([
             ...(takenBefore || []),
@@ -369,16 +365,14 @@ export default function SemesterPlanGrid({
           }
         } catch (error) {
           console.error("Error parsing corequisite:", error);
-          warnings.push("corequisite"); // Add warning if parsing fails
+          warnings.push("corequisite");
         }
       }
   
-      // Return combined warnings or undefined if none
       return warnings.length > 0 ? warnings.join(",") : undefined;
     },
     [detailedSemesterPlans, takenBeforeMap],
   );
-
   useEffect(() => {
     const fetchDetailedSemesterPlans = async () => {
       try {
