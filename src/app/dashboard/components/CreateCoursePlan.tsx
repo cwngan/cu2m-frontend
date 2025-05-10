@@ -4,7 +4,7 @@ import InputForm from "./InputForm";
 export default function CreateCoursePlan() {
   const [showForm, setShowForm] = useState(false);
 
-  const InputInfo = () => {
+  const inputInfo = () => {
     setShowForm(true); // Show the form when the block is clicked
   };
 
@@ -16,7 +16,7 @@ export default function CreateCoursePlan() {
     <>
       {/* Create Course Plan Block */}
       <div
-        onClick={InputInfo}
+        onClick={inputInfo}
         className="group flex h-52 w-42 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-zinc-100 transition delay-10 duration-300 ease-in-out hover:scale-110 hover:bg-amber-200 hover:shadow-lg"
       >
         <div className="flex h-40 w-40 items-center justify-center text-9xl font-light text-gray-400 group-hover:hidden">
@@ -28,25 +28,14 @@ export default function CreateCoursePlan() {
       </div>
 
       {/* Input Form */}
-      {showForm && (
-        <div
-          className="fixed top-0 right-0 z-50 flex h-full w-full items-center justify-center"
-          onClick={() => setShowForm(false)} // Close the form when clicking outside
-        >
-          <div
-            className="animate-fade-in-up relative translate-y-0 transform opacity-100 transition-all duration-500 ease-in-out"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the form
-          >
-            {/* Pass the handleCloseForm function as a prop */}
-            <InputForm
-              mode="add"
-              plan={null}
-              onClose={handleCloseForm}
-              handleBlockChange={null}
-            />
-          </div>
-        </div>
-      )}
+      {/* Pass the handleCloseForm function as a prop */}
+      <InputForm
+        mode="add"
+        plan={null}
+        onClose={handleCloseForm}
+        handleBlockChange={null}
+        isOpen={showForm}
+      />
     </>
   );
 }
