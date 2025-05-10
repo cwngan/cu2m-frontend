@@ -24,8 +24,10 @@ describe("<SortDropdown />", () => {
         <SortDropdown sortBy="name" setSortBy={() => {}} />
       </AppRouterContext.Provider>,
     );
-    cy.get("select").should("exist");
-    cy.get("select").should("have.value", "name");
+    cy.get("select[name='sort_by']").should("exist");
+    cy.get("select[name='sort_by']").should("have.value", "name");
+    cy.get("select[name='sort_by'] option").contains("Name");
+    cy.get("select[name='sort_by'] option").contains("Last edit");
   });
 
   it("changes sort order", () => {
