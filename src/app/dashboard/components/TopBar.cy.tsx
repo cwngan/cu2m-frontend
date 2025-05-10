@@ -2,7 +2,7 @@ import React from "react";
 import TopBar from "./TopBar";
 
 before(() => {
-  cy.intercept("GET", "/api/user/me", { fixture: "testuser.json" }).as(
+  cy.intercept("GET", "/api/user/me", { fixture: "test_user.json" }).as(
     "getUser",
   );
 });
