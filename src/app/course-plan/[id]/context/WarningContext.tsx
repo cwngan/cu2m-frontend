@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+"use client";
+import React, { createContext, useContext, useState, useCallback } from "react";
 // import { CourseBasicInfo } from '../types/Course';
 
-export type WarningType = 'duplicate' | 'prerequisite' | 'not_for_taken';
+export type WarningType = "duplicate" | "prerequisite" | "not_for_taken";
 
 interface Warning {
   courseId: string;
@@ -23,10 +24,10 @@ export function WarningProvider({ children }: { children: React.ReactNode }) {
   const [warnings, setWarnings] = useState<Warning[]>([]);
 
   const addWarning = useCallback((warning: Warning) => {
-    setWarnings(prev => {
+    setWarnings((prev) => {
       // Check if warning already exists
-      const exists = prev.some(w => 
-        w.courseId === warning.courseId && w.type === warning.type
+      const exists = prev.some(
+        (w) => w.courseId === warning.courseId && w.type === warning.type,
       );
       if (exists) return prev;
       return [...prev, warning];
@@ -34,27 +35,32 @@ export function WarningProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeWarning = useCallback((courseId: string, type: WarningType) => {
-    setWarnings(prev => 
-      prev.filter(w => !(w.courseId === courseId && w.type === type))
+    setWarnings((prev) =>
+      prev.filter((w) => !(w.courseId === courseId && w.type === type)),
     );
   }, []);
 
-  const getWarningsForCourse = useCallback((courseId: string) => {
-    return warnings.filter(w => w.courseId === courseId);
-  }, [warnings]);
+  const getWarningsForCourse = useCallback(
+    (courseId: string) => {
+      return warnings.filter((w) => w.courseId === courseId);
+    },
+    [warnings],
+  );
 
   const clearWarnings = useCallback(() => {
     setWarnings([]);
   }, []);
 
   return (
-    <WarningContext.Provider value={{
-      warnings,
-      addWarning,
-      removeWarning,
-      getWarningsForCourse,
-      clearWarnings,
-    }}>
+    <WarningContext.Provider
+      value={{
+        warnings,
+        addWarning,
+        removeWarning,
+        getWarningsForCourse,
+        clearWarnings,
+      }}
+    >
       {children}
     </WarningContext.Provider>
   );
@@ -63,7 +69,7 @@ export function WarningProvider({ children }: { children: React.ReactNode }) {
 export function useWarnings() {
   const context = useContext(WarningContext);
   if (context === undefined) {
-    throw new Error('useWarnings must be used within a WarningProvider');
+    throw new Error("useWarnings must be used within a WarningProvider");
   }
   return context;
-} 
+}
