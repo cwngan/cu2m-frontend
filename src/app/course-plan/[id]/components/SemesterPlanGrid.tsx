@@ -35,11 +35,95 @@ export default function SemesterPlanGrid({
   }>({});
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchCourseDetails = useCallback(async (
+    courseCodes: string[],
+  ): Promise<CourseRead[]> => {
+    try {
+      if (!courseCodes || courseCodes.length === 0) {
+        return [];
+      }
+
+      const response = await apiClient.get<CoursesResponseModel>(
+        "/api/courses/",
+        {
+          params: {
+            keywords: courseCodes,
+            strict: true,
+            basic: true,
+          },
+        },
+      );
+      if (response.status === 200 && response.data.data) {
+        return response.data.data;
+      }
+      return [];
+    } catch (error: unknown) {
+      console.error("Error fetching course details:", error);
+      return [];
+    }
+  }, []);
+
   const handleRemoveCourseFromSemsterPlan = useCallback(
     async (courseCode: string | null, semesterPlanId: string) => {
-      if (detailedSemesterPlans === null) {
-        throw new Error("Detailed semester plans are null");
+      if (!courseCode) {
+        console.error("No course code provided for removal");
+        return;
       }
+
+      if (detailedSemesterPlans === null) {
+        try {
+          const response = await apiClient.get(`/api/semester-plans/${semesterPlanId}`);
+          if (response.status !== 200) {
+            throw new Error("Failed to fetch semester plan");
+          }
+          const currentPlan = response.data.data;
+          if (!currentPlan) {
+            throw new Error("Semester plan not found: " + semesterPlanId);
+          }
+          
+          const updatedCourses = currentPlan.courses.filter(
+            (code: string) => code !== courseCode
+          );
+          
+          const payload = {
+            courses: updatedCourses,
+          };
+          
+          const updateResponse = await apiClient
+            .patch(`/api/semester-plans/${semesterPlanId}`, payload);
+          
+          if (updateResponse.status !== 200) {
+            throw new Error(`Failed to update semester plan: ${updateResponse.data.error || 'Unknown error'}`);
+          }
+
+          // Fetch fresh data for all semester plans
+          const freshPlans = await Promise.all(
+            semesterPlans.map(async (plan) => {
+              const response = await apiClient.get(`/api/semester-plans/${plan._id}`);
+              if (response.status !== 200) {
+                throw new Error(`Failed to fetch semester plan ${plan._id}`);
+              }
+              const courseDetails = await fetchCourseDetails(response.data.data.courses);
+              return {
+                ...response.data.data,
+                courses: courseDetails,
+              };
+            })
+          );
+          setDetailedSemesterPlans(freshPlans);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            alert(`Failed to remove course: ${error.message}`);
+          } else if (typeof error === 'object' && error !== null && 'response' in error) {
+            const axiosError = error as { response?: { data?: { error?: string } } };
+            alert(`Failed to remove course: ${axiosError.response?.data?.error || 'Unknown error'}`);
+          } else {
+            alert("Failed to remove course from semester plan");
+          }
+        }
+        return;
+      }
+
       try {
         const currentPlan = detailedSemesterPlans.find(
           (plan) => plan._id === semesterPlanId,
@@ -47,41 +131,50 @@ export default function SemesterPlanGrid({
         if (!currentPlan) {
           throw new Error("Semester plan not found: " + semesterPlanId);
         }
-        const updatedCourses = currentPlan.courses.filter(
-          (course) => course.code !== courseCode,
+        
+        const currentCourseCodes = currentPlan.courses.map(course => course.code);
+        const updatedCourseCodes = currentCourseCodes.filter(
+          (code: string | null): code is string => code !== null && code !== courseCode
         );
-        await apiClient
-          .patch(`/api/semester-plans/${semesterPlanId}`, {
-            courses: updatedCourses.map((course) => course.code),
-          })
-          .then((response) => {
+        
+        const payload = {
+          courses: updatedCourseCodes,
+        };
+        
+        const updateResponse = await apiClient
+          .patch(`/api/semester-plans/${semesterPlanId}`, payload);
+        
+        if (updateResponse.status !== 200) {
+          throw new Error(`Failed to update semester plan: ${updateResponse.data.error || 'Unknown error'}`);
+        }
+
+        // Fetch fresh data for all semester plans
+        const freshPlans = await Promise.all(
+          semesterPlans.map(async (plan) => {
+            const response = await apiClient.get(`/api/semester-plans/${plan._id}`);
             if (response.status !== 200) {
-              throw new Error("Failed to update semester plan");
+              throw new Error(`Failed to fetch semester plan ${plan._id}`);
             }
+            const courseDetails = await fetchCourseDetails(response.data.data.courses);
+            return {
+              ...response.data.data,
+              courses: courseDetails,
+            };
           })
-          .catch((error) => {
-            console.error("Error updating semester plan:", error);
-            alert("Failed to update semester plan");
-          });
-        // Get the current semester plan using fresh state
-        setDetailedSemesterPlans((prevPlans) => {
-          if (prevPlans === null) {
-            throw new Error("Detailed semester plans are null");
-          }
-          // Update the frontend state immediately
-          return prevPlans.map((plan) => {
-            if (plan._id === semesterPlanId) {
-              return { ...plan, courses: updatedCourses };
-            }
-            return plan;
-          });
-        });
-      } catch (error) {
-        console.error("Error removing course from semester plan:", error);
-        alert("Failed to remove course from semester plan");
+        );
+        setDetailedSemesterPlans(freshPlans);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          alert(`Failed to remove course: ${error.message}`);
+        } else if (typeof error === 'object' && error !== null && 'response' in error) {
+          const axiosError = error as { response?: { data?: { error?: string } } };
+          alert(`Failed to remove course: ${axiosError.response?.data?.error || 'Unknown error'}`);
+        } else {
+          alert("Failed to remove course from semester plan");
+        }
       }
     },
-    [detailedSemesterPlans],
+    [detailedSemesterPlans, semesterPlans, fetchCourseDetails],
   );
 
   const handleAddCourseToSemesterPlan = useCallback(
@@ -148,38 +241,6 @@ export default function SemesterPlanGrid({
     [detailedSemesterPlans, handleRemoveCourseFromSemsterPlan],
   );
 
-  const fetchCourseDetails = async (
-    courseCodes: string[],
-  ): Promise<CourseRead[]> => {
-    try {
-      // If there are no course codes, return an empty array
-      if (!courseCodes || courseCodes.length === 0) {
-        return [];
-      }
-
-      console.log("Fetching details for course codes:", courseCodes);
-      const response = await apiClient.get<CoursesResponseModel>(
-        "/api/courses/",
-        {
-          params: {
-            keywords: courseCodes,
-            strict: true, // Only match exact course codes
-            basic: true, // Only get basic course info
-          },
-        },
-      );
-      console.log("API Response:", response.data);
-      if (response.status === 200 && response.data.data) {
-        // Make sure we only return courses in the same order as requested
-        return response.data.data;
-      }
-      return [];
-    } catch (error) {
-      console.error("Error fetching course details:", error);
-      return [];
-    }
-  };
-
   // Function to check if a course is duplicated across semester plans
   const isCourseDuplicate = useCallback(
     (courseId: string, currentPlanId: string) => {
@@ -224,7 +285,7 @@ export default function SemesterPlanGrid({
     };
 
     fetchDetailedSemesterPlans();
-  }, [semesterPlans]);
+  }, [semesterPlans, fetchCourseDetails]);
 
   useEffect(() => {
     if (detailedSemesterPlans === null) {
