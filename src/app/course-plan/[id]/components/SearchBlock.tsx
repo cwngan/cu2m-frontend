@@ -45,7 +45,6 @@ export default function SearchBlock() {
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollLeft += event.deltaY; // Scroll horizontally
-      event.preventDefault(); // Prevent default vertical scroll
     }
   };
 
@@ -136,7 +135,7 @@ export default function SearchBlock() {
           <div
             ref={scrollContainerRef}
             onWheel={handleWheel}
-            className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
+            className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto overflow-y-hidden overscroll-contain rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
           >
             {searchResults.length > 0 &&
               searchResults.map((res) => (
