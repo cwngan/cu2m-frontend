@@ -27,7 +27,10 @@ export default function SemesterPlanGridContent({
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
-  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
+  getCourseWarningType: (
+    courseId: string,
+    currentPlanId: string,
+  ) => string | undefined;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 

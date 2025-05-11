@@ -20,7 +20,10 @@ interface SemesterPlanOfYearProps {
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
-  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
+  getCourseWarningType: (
+    courseId: string,
+    currentPlanId: string,
+  ) => string | undefined;
 }
 
 export default function SemesterPlanOfYear({
