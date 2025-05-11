@@ -42,7 +42,7 @@ export function craftGraphEdge(edgeInfo: CourseEdgeInfo): Edge {
     id: `${source}-${target}`,
     source,
     target,
-    type: "default",
+    type: "defaultEdge",
     animated: conflict,
     data: { fulfilled, conflict },
     markerEnd: { type: MarkerType.Arrow, strokeWidth: 2, color },
@@ -146,8 +146,9 @@ export function computeCourseWarnings(
 
   // Check for duplicates
   const courseInstances = allCourses.filter(
-    (c) => c.code === course.code && 
-           (c.year !== course.year || c.semester !== course.semester)
+    (c) =>
+      c.code === course.code &&
+      (c.year !== course.year || c.semester !== course.semester),
   );
   if (courseInstances.length > 0) {
     warnings.push("duplicate");
@@ -171,7 +172,10 @@ export function computeCourseWarnings(
   if (course.corequisites) {
     try {
       const ast = parsePrerequisite(course.corequisites);
-      const availableCourses = new Set([...preconditions, ...currentSemesterCourses]);
+      const availableCourses = new Set([
+        ...preconditions,
+        ...currentSemesterCourses,
+      ]);
       const isSatisfied = evaluatePrerequisite(ast, availableCourses);
       if (!isSatisfied) {
         warnings.push("corequisite");
@@ -183,8 +187,11 @@ export function computeCourseWarnings(
   }
 
   // Check anti-requisites (not_for_taken)
-  const notForTakenCourses = course.not_for_taken?.split(" or ").map(code => code.trim()) || [];
-  const notForTakenPrevious = notForTakenCourses.filter(code => preconditions.has(code));
+  const notForTakenCourses =
+    course.not_for_taken?.split(" or ").map((code) => code.trim()) || [];
+  const notForTakenPrevious = notForTakenCourses.filter((code) =>
+    preconditions.has(code),
+  );
   if (notForTakenPrevious.length > 0) {
     warnings.push("not_for_taken");
   }
@@ -192,7 +199,10 @@ export function computeCourseWarnings(
   return warnings;
 }
 
-export function buildEdges(courses: CourseExtend[]): { edges: CourseEdgeInfo[], warnings: Map<string, string[]> } {
+export function buildEdges(courses: CourseExtend[]): {
+  edges: CourseEdgeInfo[];
+  warnings: Map<string, string[]>;
+} {
   const mapper: Map<number, CourseExtend[]> = new Map();
   courses.forEach((course) => {
     const key = pairToMagicNumber(course.year, course.semester);
@@ -201,7 +211,9 @@ export function buildEdges(courses: CourseExtend[]): { edges: CourseEdgeInfo[], 
     mapper.set(key, coursesInSemester);
   });
 
-  const keys = Array.from(mapper.keys()).sort((lhs: number, rhs: number) => lhs - rhs);
+  const keys = Array.from(mapper.keys()).sort(
+    (lhs: number, rhs: number) => lhs - rhs,
+  );
   let preconditions: Map<string, boolean> = new Map();
   const codeToNodeIdentifiers: Map<string, string[]> = new Map();
   let resultEdgeInfo: CourseEdgeInfo[] = [];
@@ -217,17 +229,29 @@ export function buildEdges(courses: CourseExtend[]): { edges: CourseEdgeInfo[], 
       coursesInSemester.map((course) => {
         if (!course.code) throw new Error(`Course code is null`);
         return [course.code, true];
-      })
+      }),
     );
-    const currentSemesterCourses = new Set(coursesInSemester.map(c => c.code!).filter(Boolean));
+    const currentSemesterCourses = new Set(
+      coursesInSemester.map((c) => c.code!).filter(Boolean),
+    );
 
     coursesInSemester.forEach((course) => {
-      const subEdges = buildSubEdges(course, preconditions, currentConditions, codeToNodeIdentifiers);
+      const subEdges = buildSubEdges(
+        course,
+        preconditions,
+        currentConditions,
+        codeToNodeIdentifiers,
+      );
       resultEdgeInfo = resultEdgeInfo.concat(subEdges);
 
       const nodeId = craftNodeIdentifier(course);
       const preconditionsSet = new Set(preconditions.keys());
-      const warnings = computeCourseWarnings(course, courses, preconditionsSet, currentSemesterCourses);
+      const warnings = computeCourseWarnings(
+        course,
+        courses,
+        preconditionsSet,
+        currentSemesterCourses,
+      );
       warningsMap.set(nodeId, warnings);
     });
 
@@ -254,40 +278,56 @@ function buildSubEdges(
     return [];
   }
 
-  const prerequisiteResult: ParseResult = course.prerequisites 
-    ? evaluteBooleanExpression(course.prerequisites, preconditions, EvaluateMode.Pre)
+  const prerequisiteResult: ParseResult = course.prerequisites
+    ? evaluteBooleanExpression(
+        course.prerequisites,
+        preconditions,
+        EvaluateMode.Pre,
+      )
     : { verdict: true, relations: [] };
 
   const corequisiteResult: ParseResult = course.corequisites
-    ? evaluteBooleanExpression(course.corequisites, new Map([...currentConditions, ...preconditions]), EvaluateMode.Co)
+    ? evaluteBooleanExpression(
+        course.corequisites,
+        new Map([...currentConditions, ...preconditions]),
+        EvaluateMode.Co,
+      )
     : { verdict: true, relations: [] };
 
   const antirequisiteResult: ParseResult = course.not_for_taken
-    ? evaluteBooleanExpression(course.not_for_taken, preconditions, EvaluateMode.Anti)
+    ? evaluteBooleanExpression(
+        course.not_for_taken,
+        preconditions,
+        EvaluateMode.Anti,
+      )
     : { verdict: true, relations: [] };
 
-  const fulfilled = (prerequisiteResult.verdict || corequisiteResult.verdict) && antirequisiteResult.verdict;
+  const fulfilled =
+    (prerequisiteResult.verdict || corequisiteResult.verdict) &&
+    antirequisiteResult.verdict;
   const selfNodeIdentifier = craftNodeIdentifier(course);
 
-  const prerequisiteEdges: CourseEdgeInfo[] = prerequisiteResult.relations.flatMap((relation) => {
-    const nodeIdentifiers = codeToNodeIdentifiers.get(relation) || [];
-    return nodeIdentifiers.map((nodeIdentifier) => ({
-      source: nodeIdentifier,
-      target: selfNodeIdentifier,
-      fulfilled,
-      conflict: false,
-    }));
-  });
+  const prerequisiteEdges: CourseEdgeInfo[] =
+    prerequisiteResult.relations.flatMap((relation) => {
+      const nodeIdentifiers = codeToNodeIdentifiers.get(relation) || [];
+      return nodeIdentifiers.map((nodeIdentifier) => ({
+        source: nodeIdentifier,
+        target: selfNodeIdentifier,
+        fulfilled,
+        conflict: false,
+      }));
+    });
 
-  const corequisiteEdges: CourseEdgeInfo[] = corequisiteResult.relations.flatMap((relation) => {
-    const nodeIdentifiers = codeToNodeIdentifiers.get(relation) || [];
-    return nodeIdentifiers.map((nodeIdentifier) => ({
-      source: nodeIdentifier,
-      target: selfNodeIdentifier,
-      fulfilled,
-      conflict: false,
-    }));
-  });
+  const corequisiteEdges: CourseEdgeInfo[] =
+    corequisiteResult.relations.flatMap((relation) => {
+      const nodeIdentifiers = codeToNodeIdentifiers.get(relation) || [];
+      return nodeIdentifiers.map((nodeIdentifier) => ({
+        source: nodeIdentifier,
+        target: selfNodeIdentifier,
+        fulfilled,
+        conflict: false,
+      }));
+    });
 
   const antirequisiteEdges: CourseEdgeInfo[] = antirequisiteResult.verdict
     ? []
@@ -302,4 +342,4 @@ function buildSubEdges(
       });
 
   return [...prerequisiteEdges, ...corequisiteEdges, ...antirequisiteEdges];
-};
+}

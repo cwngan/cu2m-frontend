@@ -7,20 +7,18 @@ import {
   ReactFlow,
   Controls,
   Background,
-  applyEdgeChanges,
-  applyNodeChanges,
-  OnNodesChange,
-  OnEdgesChange,
   Edge,
   Node,
+  useNodesState,
+  useEdgesState,
 } from "@xyflow/react";
 import {
   useState,
-  useCallback,
   useEffect,
   createContext,
   Dispatch,
   SetStateAction,
+  useCallback,
 } from "react";
 import GraphNode from "./GraphNode";
 import { apiClient } from "@/apiClient";
@@ -29,8 +27,10 @@ import { CourseExtend } from "../types/CourseExtend";
 import { CourseRead } from "@/app/types/Models";
 import "@xyflow/react/dist/style.css";
 import "@/app/globals.css";
+import GraphEdge from "./GraphEdge";
 
 const nodeTypes = { defaultNode: GraphNode };
+const edgeTypes = { defaultEdge: GraphEdge };
 
 export const FocusedNodesContext = createContext<{
   nodes: Set<string>;
@@ -48,8 +48,10 @@ interface SemesterPlanGridProps {
 export default function GraphView({
   coursePlanResponse,
 }: SemesterPlanGridProps) {
-  const [nodes, setNodes] = useState<Node<CourseExtend>[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<CourseExtend>>(
+    [],
+  );
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [focusedNodes, setFocusedNodes] = useState<Set<string>>(
     new Set<string>(),
   );
@@ -156,18 +158,11 @@ export default function GraphView({
         console.error(err);
         alert("Failed to fetch course data");
       });
-  }, [coursePlanResponse]);
+  }, [coursePlanResponse, setEdges, setNodes]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) =>
-      setNodes((nds) => applyNodeChanges(changes, nds) as Node<CourseExtend>[]),
-    [],
-  );
-
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [],
-  );
+  const handlePaneClick = useCallback(() => {
+    setFocusedNodes(new Set<string>());
+  }, []);
 
   return (
     <FocusedNodesContext.Provider
@@ -179,11 +174,10 @@ export default function GraphView({
           onNodesChange={onNodesChange}
           edges={edges}
           onEdgesChange={onEdgesChange}
-          onPaneClick={() => {
-            setFocusedNodes(new Set<string>());
-          }}
+          onPaneClick={handlePaneClick}
           fitView
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
         >
           <Background />
           <Controls />

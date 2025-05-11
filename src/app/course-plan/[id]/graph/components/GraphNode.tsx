@@ -6,7 +6,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import clsx from "clsx";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { getCourseColor } from "../../utils";
 import { CourseExtend } from "../types/CourseExtend";
 import { FocusedNodesContext } from "./GraphView";
@@ -27,6 +27,13 @@ export default function GraphNode({
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const reactFlowInstance = useReactFlow();
   const focusedNodes = useContext(FocusedNodesContext);
+  const incomers = useRef<Node[]>([]);
+
+  useEffect(() => {
+    const nodes = reactFlowInstance.getNodes();
+    const edges = reactFlowInstance.getEdges();
+    incomers.current = getIncomers({ id }, nodes, edges);
+  }, [id, reactFlowInstance]);
 
   useEffect(() => {
     if (!course.code) {
@@ -39,7 +46,7 @@ export default function GraphNode({
     setCourse(data);
   }, [data]);
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     if (data.warnings && data.warnings.length > 0) {
       const node = reactFlowInstance.getNode(id);
       if (node) {
@@ -65,13 +72,13 @@ export default function GraphNode({
         setShowTooltip(true);
       }
     }
-  };
+  }, [data.warnings, id, reactFlowInstance]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setShowTooltip(false);
-  };
+  }, []);
 
-  const getWarningMessage = (): string => {
+  const getWarningMessage = useCallback((): string => {
     if (!data.warnings || data.warnings.length === 0) return "";
     return data.warnings
       .map((warning) => {
@@ -89,33 +96,26 @@ export default function GraphNode({
         }
       })
       .join("\n");
-  };
+  }, [data.warnings]);
 
   useEffect(() => {
-    if (course.code === null) {
-      throw new Error("Course code not found");
-    }
     if (focusedNodes.nodes.has(id)) {
-      const incomers = getIncomers(
-        { id },
-        reactFlowInstance.getNodes(),
-        reactFlowInstance.getEdges(),
-      );
-      const shouldUpdate = incomers.some((node) => {
+      const shouldUpdate = incomers.current.some((node) => {
         return !focusedNodes.nodes.has(node.id);
       });
       if (shouldUpdate) {
         focusedNodes.setNodes((prev) => {
-          return new Set([...prev, ...incomers.map((node) => node.id)]);
+          return new Set([...prev, ...incomers.current.map((node) => node.id)]);
         });
       }
     }
-  }, [focusedNodes, course.code, id, reactFlowInstance]);
+  }, [focusedNodes, id]);
 
   return (
     <>
       <div
         onClick={() => {
+          console.log("clicked node", id);
           focusedNodes.setNodes(new Set<string>([id]));
         }}
         className={clsx(
