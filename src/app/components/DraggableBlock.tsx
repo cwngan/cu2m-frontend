@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import {
   Dispatch,
-  ReactNode,
+  HTMLAttributes,
   SetStateAction,
   useEffect,
   useRef,
@@ -13,19 +13,14 @@ import { useDrag } from "react-dnd";
 //   allowedDrop?: boolean;
 // }
 
-export default function DraggableBlock<ItemType>({
-  children,
-  blockType,
-  dragItem,
-  className,
-  setIsDragging,
-}: {
-  children: ReactNode;
-  blockType: string;
-  dragItem: ItemType;
-  className?: string;
-  setIsDragging: Dispatch<SetStateAction<boolean>> | null;
-}) {
+export default function DraggableBlock<ItemType>(
+  props: {
+    blockType: string;
+    dragItem: ItemType;
+    setIsDragging: Dispatch<SetStateAction<boolean>> | null;
+  } & HTMLAttributes<HTMLDivElement>,
+) {
+  const { children, blockType, dragItem, className, setIsDragging } = props;
   const drag = useRef<HTMLDivElement>(null);
   // const [didBounce, setDidBounce] = useState(false);
 
@@ -54,6 +49,7 @@ export default function DraggableBlock<ItemType>({
   return (
     <div
       ref={drag}
+      {...props}
       className={clsx(
         "transform rounded-lg transition-transform duration-200 hover:scale-105 hover:transition active:scale-100",
         isDragging ? "scale-105 opacity-50" : "",
