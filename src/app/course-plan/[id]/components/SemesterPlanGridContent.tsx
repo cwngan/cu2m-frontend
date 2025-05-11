@@ -12,9 +12,8 @@ export default function SemesterPlanGridContent({
   setSemesterPlans,
   semesterPlansByYear,
   isLoading,
-  // handleCreateSemesterPlan,
-  isCourseDuplicate,
   handleAddCourseToSemesterPlan,
+  getCourseWarningType,
 }: {
   coursePlanId: string;
   semesterPlans: SemesterPlanReadWithCourseDetails[] | null;
@@ -23,13 +22,12 @@ export default function SemesterPlanGridContent({
   >;
   semesterPlansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] };
   isLoading: boolean;
-  // handleCreateSemesterPlan: (year: number, semester: number) => Promise<void>;
-  isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
   handleAddCourseToSemesterPlan: (
     course: CourseRead,
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
+  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -47,14 +45,12 @@ export default function SemesterPlanGridContent({
 
   const handleCreateInitialYearPlan = useCallback(async () => {
     try {
-      // Create Autumn semester
       const autumnResponse = await apiClient.post("/api/semester-plans/", {
         course_plan_id: coursePlanId,
         year: 1,
         semester: SemesterTypes.AUTUMN,
       });
 
-      // Create Spring semester
       const springResponse = await apiClient.post("/api/semester-plans/", {
         course_plan_id: coursePlanId,
         year: 1,
@@ -105,15 +101,12 @@ export default function SemesterPlanGridContent({
                 yearNumber={parseInt(yearNumber)}
                 plans={plans}
                 key={yearNumber}
-                // handleRemoveCourseFromSemsterPlan={
-                //   handleRemoveCourseFromSemsterPlan
-                // }
                 coursePlanId={coursePlanId}
                 isLastYear={parseInt(yearNumber) === maxYear}
                 onYearAdded={handleNewYearAdded}
                 onPlanDeleted={handlePlanDeleted}
-                isCourseDuplicate={isCourseDuplicate}
                 handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
+                getCourseWarningType={getCourseWarningType}
               />
             ))}
           </>
