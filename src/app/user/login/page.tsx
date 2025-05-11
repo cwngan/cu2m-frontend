@@ -5,11 +5,11 @@ import Button from "../components/SubmitButton";
 import "@/app/background.css";
 import { apiClient } from "@/apiClient";
 import { useState } from "react";
-import clsx from "clsx";
+import AlertBanner from "@/app/components/AlertBanner";
 
 export default function Page() {
-  const[alertBanner, setAlertBanner] = useState(false);
-  const[bannerVisible, setBannerVisible] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+
   return (
     <div className="relative z-40 container mx-auto flex h-screen w-screen flex-col items-center justify-center gap-8">
       <h2 className="z-40 text-4xl">Login</h2>
@@ -29,14 +29,12 @@ export default function Page() {
               if (res.status === 200) {
                 window.location.href = "/dashboard";
               } else {
-                setAlertBanner(true);
-                setTimeout(() => setBannerVisible(true), 10);
+                setShowAlert(true);
               }
             })
             .catch((err) => {
               console.error(err);
-              setAlertBanner(true);
-              setTimeout(() => setBannerVisible(true), 10);
+              setShowAlert(true);
             });
         }}
       >
@@ -70,18 +68,12 @@ export default function Page() {
             <Button text="Login" />
           </div>
         </div>
-        {/* alert block */}
-        {alertBanner && (
-          <div className={clsx("absolute left-1/2 -translate-x-1/2 p-3 z-50 flex justify-center items-center transition duration-600 ease-in-out transform", bannerVisible ? "opacity-100 scale-100" : "opacity-0 scale-90")}
-                onClick={() => { setAlertBanner(false); setBannerVisible(false) }}>
-            <div className="flex items-center gap-2 mt-4 max-w-md rounded-xl bg-red-100 p-4 text-red-700">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor">
-              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
-              </svg>
-              <p>Login failed, please try again.</p>
-            </div>
-          </div>
-        )}
+        <AlertBanner
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          message="Login failed, please try again."
+          type="error"
+        />
       </form>
     </div>
   );
