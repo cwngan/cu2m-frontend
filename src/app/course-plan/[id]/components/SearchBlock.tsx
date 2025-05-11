@@ -3,6 +3,7 @@ import {
   createContext,
   Dispatch,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -54,7 +55,6 @@ export default function SearchBlock({
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollLeft += event.deltaY; // Scroll horizontally
-      event.preventDefault(); // Prevent default vertical scroll
     }
   };
 
@@ -78,6 +78,31 @@ export default function SearchBlock({
     }
   }, [resultBlockOpen, revertChanges, isDragging]);
 
+  const fetchCourses = useCallback(() => {
+    setIsUpdating(true);
+    const query = queryRef.current?.value;
+    if (query) {
+      console.log(`Searching for ${query}`);
+      apiClient
+        .get(`/api/courses?keywords[]=${query}&basic=true`)
+        .then((res) => {
+          const response = res.data;
+          if (response.status === "ERROR" || response.data === null) {
+            throw new Error(response.error);
+          }
+
+          setSearchResults(response.data);
+          setIsOpen(true);
+          setIsUpdating(false);
+          setHasUpdated(true);
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Course fetch failed");
+        });
+    }
+  }, [queryRef, setSearchResults, setIsOpen, setIsUpdating, setHasUpdated]);
+
   return (
     // the whole search block
     <div className="fixed bottom-0 left-0 z-50 w-full">
@@ -86,29 +111,7 @@ export default function SearchBlock({
           ref={formRef}
           onSubmit={(e) => {
             e.preventDefault();
-
-            setIsUpdating(true);
-            const query = queryRef.current?.value;
-            if (query) {
-              console.log(`Searching for ${query}`);
-              apiClient
-                .get(`/api/courses?keywords[]=${query}&basic=true`)
-                .then((res) => {
-                  const response = res.data;
-                  if (response.status === "ERROR" || response.data === null) {
-                    throw new Error(response.error);
-                  }
-
-                  setSearchResults(response.data);
-                  setIsOpen(true);
-                  setIsUpdating(false);
-                  setHasUpdated(true);
-                })
-                .catch((err) => {
-                  console.error(err);
-                  alert("Course fetch failed");
-                });
-            }
+            fetchCourses();
           }}
         >
           {/* searchbox before opening up */}
@@ -119,6 +122,7 @@ export default function SearchBlock({
               className="h-8 w-32 border p-2 duration-150 hover:bg-neutral-100 hover:transition"
               required
               ref={queryRef}
+              onChange={fetchCourses}
             />
             <button type="submit" className="cursor-pointer">
               Go
@@ -149,7 +153,7 @@ export default function SearchBlock({
           <div
             ref={scrollContainerRef}
             onWheel={handleWheel}
-            className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
+            className="z-10 flex max-h-64 w-full flex-row gap-4 overflow-x-auto overflow-y-hidden overscroll-contain rounded-tr-xl border border-stone-400 bg-white p-4 whitespace-nowrap shadow-lg"
           >
             {searchResults.length > 0 &&
               searchResults.map((res) => (
