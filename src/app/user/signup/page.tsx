@@ -4,13 +4,24 @@ import Button from "../components/SubmitButton";
 import { useRouter } from "next/navigation";
 import "@/app/background.css";
 import { apiClient } from "@/apiClient";
+import { useState } from "react";
+import AlertBanner from "@/app/components/AlertBanner";
 
 export default function Page() {
   const router = useRouter();
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
   return (
     <div className="relative z-40 container mx-auto flex h-screen flex-col items-center justify-center gap-8">
       <h2 className="z-40 text-4xl">Sign up</h2>
-      {/* Directly redirect to dashboard for development use */}
+      <AlertBanner
+        show={showAlert}
+        onClose={() => setShowAlert(false)}
+        message={alertMessage}
+        type="error"
+        autoHideDuration={5000}
+      />
       <form
         className="z-40"
         action="/dashboard"
@@ -26,12 +37,18 @@ export default function Page() {
               if (res.status >= 200 && res.status < 300) {
                 router.push("/dashboard");
               } else {
-                alert("Signup failed");
+                setAlertMessage(
+                  "Signup failed. Please check your information and try again.",
+                );
+                setShowAlert(true);
               }
             })
             .catch((err) => {
               console.error(err);
-              alert("Signup failed");
+              setAlertMessage(
+                "Signup failed. Please check your information and try again.",
+              );
+              setShowAlert(true);
             });
         }}
       >

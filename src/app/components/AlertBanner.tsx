@@ -52,14 +52,14 @@ export default function AlertBanner({
   return (
     <div
       className={clsx(
-        "absolute left-1/2 z-50 flex -translate-x-1/2 transform items-center justify-center p-3 transition duration-600 ease-in-out",
+        "fixed top-4 right-4 z-50 flex transform items-center justify-center transition duration-600 ease-in-out",
         bannerVisible ? "scale-100 opacity-100" : "scale-90 opacity-0",
       )}
       onClick={onClose}
     >
       <div
         className={clsx(
-          "mt-4 flex max-w-md items-center gap-2 rounded-xl p-4",
+          "flex items-center gap-2 rounded-xl p-4",
           getTypeStyles(),
         )}
       >
