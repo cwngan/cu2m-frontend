@@ -92,8 +92,8 @@ export default function SearchBlock() {
 
   return (
     // the whole search block
-    <div className="fixed bottom-0 left-0 z-50 w-full">
-      <div className="container mx-auto flex flex-col items-start justify-start px-4">
+    <div className="pointer-events-none fixed bottom-0 left-0 z-50 w-full">
+      <div className="container mx-auto flex flex-col items-start justify-start px-4 [&_*]:pointer-events-auto">
         <form
           ref={formRef}
           onSubmit={(e) => {
