@@ -235,6 +235,14 @@ export function buildEdges(courses: CourseExtend[]): {
       coursesInSemester.map((c) => c.code!).filter(Boolean),
     );
 
+    for (const course of coursesInSemester) {
+      if (!course.code) throw new Error(`Course code is null`);
+      const nodeIdentifier = craftNodeIdentifier(course);
+      const nodeIdentifiers = codeToNodeIdentifiers.get(course.code) || [];
+      nodeIdentifiers.push(nodeIdentifier);
+      codeToNodeIdentifiers.set(course.code, nodeIdentifiers);
+    }
+
     coursesInSemester.forEach((course) => {
       const subEdges = buildSubEdges(
         course,
@@ -256,13 +264,6 @@ export function buildEdges(courses: CourseExtend[]): {
     });
 
     preconditions = new Map([...preconditions, ...currentConditions]);
-    coursesInSemester.forEach((course) => {
-      if (!course.code) throw new Error(`Course code is null`);
-      const nodeIdentifier = craftNodeIdentifier(course);
-      const nodeIdentifiers = codeToNodeIdentifiers.get(course.code) || [];
-      nodeIdentifiers.push(nodeIdentifier);
-      codeToNodeIdentifiers.set(course.code, nodeIdentifiers);
-    });
   }
 
   return { edges: resultEdgeInfo, warnings: warningsMap };
