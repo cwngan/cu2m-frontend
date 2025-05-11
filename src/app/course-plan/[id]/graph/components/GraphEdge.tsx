@@ -1,5 +1,5 @@
 import { getBezierPath, type EdgeProps, type Edge } from "@xyflow/react";
-import clsx from "clsx";
+// import clsx from "clsx";
 
 type GraphEdgeData = { fulfilled: boolean; conflict: boolean };
 type GraphEdge = Edge<GraphEdgeData>;
@@ -24,12 +24,15 @@ export default function GraphEdge({
       <path
         id={id}
         markerEnd={markerEnd}
-        className={clsx(
-          data?.conflict
-            ? "stroke-rose-500 stroke-4"
-            : "stroke-zinc-400 stroke-2",
-          "fill-none",
-        )} // TailwindCSS classes
+        style={{
+          stroke: data?.conflict
+            ? "#e11d48"
+            : data?.fulfilled
+              ? "#16a34a"
+              : "#a1a1aa",
+          strokeWidth: data?.conflict ? 4 : 2,
+          fill: "none",
+        }}
         d={edgePath}
       />
     </g>

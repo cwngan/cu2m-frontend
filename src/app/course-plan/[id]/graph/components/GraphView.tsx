@@ -13,7 +13,6 @@ import {
   OnEdgesChange,
   Edge,
   Node,
-  MarkerType,
 } from "@xyflow/react";
 import { useState, useCallback, useEffect } from "react";
 import GraphNode from "./GraphNode";
@@ -42,12 +41,12 @@ export default function GraphView({
     if (coursePlanResponse.data === null) {
       throw new Error("Course plan data not found");
     }
-
+  
     const semesterPlans = coursePlanResponse.data.semester_plans;
     const courses = semesterPlans
       .map((semesterPlan) => semesterPlan.courses)
       .flat();
-
+  
     apiClient
       .get<CoursesResponseModel>("/api/courses", {
         params: {
@@ -69,20 +68,15 @@ export default function GraphView({
         if (detailedCourses === null) {
           throw new Error("Course fetch failed");
         }
-
-        // Course code guarantees to return non-null values
+  
         const courseMap = new Map<string, CourseRead>(
           detailedCourses.map((course) => [course.code!, course]),
         );
-
-        // Caches the last occurance of the course code in semester plans
+  
         const cacheIndex = new Map<string, number>();
-
-        // Filters out courses that are not in the course list
         const newNodes = courses
           .filter((courseCode) => courseMap.get(courseCode) !== undefined)
           .map((courseCode) => {
-            // Variable course is guaranteed to be defined because of the filter
             const course = courseMap.get(courseCode)!;
             const semesterPlanIndex = semesterPlans.findIndex(
               (semesterPlan, index) =>
@@ -96,15 +90,48 @@ export default function GraphView({
                 `Fail to craft node with course code ${courseCode} because it was not found`,
               );
             }
-
             return craftGraphNode(course, semesterPlan);
           });
+  
+        // Group nodes by semester
+        const semesterGroups = new Map<string, Node[]>();
+        newNodes.forEach((node) => {
+          const key = `${node.data.year}-${node.data.semester}`;
+          const group = semesterGroups.get(key) || [];
+          group.push(node);
+          semesterGroups.set(key, group);
+        });
+  
+        // Sort semester keys
+        const sortedKeys = Array.from(semesterGroups.keys()).sort((a, b) => {
+          const [yearA, semA] = a.split('-').map(Number);
+          const [yearB, semB] = b.split('-').map(Number);
+          if (yearA !== yearB) return yearA - yearB;
+          return semA - semB;
+        });
+  
+        // Assign positions
+        const verticalSpacing = 100; // Adjust as needed
+        const horizontalSpacing = 150; // Adjust as needed
+        let currentY = 0;
+  
+        sortedKeys.forEach((key) => {
+          const nodesInSemester = semesterGroups.get(key)!;
+          nodesInSemester.forEach((node, index) => {
+            node.position = {
+              x: index * horizontalSpacing,
+              y: currentY,
+            };
+          });
+          currentY += verticalSpacing;
+        });
+  
         setNodes(newNodes);
-
+  
         const newEdgeInfo = buildEdges(
           newNodes.map((node) => node.data as CourseExtend),
-        ); // node.data is guaranteed to be CourseExtend from craftGraphNode
-
+        );
+  
         const newEdges = newEdgeInfo.map((edgeInfo) => {
           const { source, target, fulfilled, conflict } = edgeInfo;
           const edge: Edge = {
@@ -113,14 +140,10 @@ export default function GraphView({
             target,
             type: "defaultEdge",
             animated: conflict,
-            // markerEnd: {
-            //   type: MarkerType.Arrow,
-            // },
             data: { fulfilled, conflict },
           };
           return edge;
         });
-        console.log(newEdges);
         setEdges(newEdges);
       })
       .catch((err) => {
