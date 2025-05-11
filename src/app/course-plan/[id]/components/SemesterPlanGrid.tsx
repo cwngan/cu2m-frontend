@@ -484,7 +484,10 @@ export default function SemesterPlanGrid({
         getCourseWarningType={getCourseWarningType}
         setIsDragging={setIsDragging}
       />
-      <DeleteZone onRemove={handleRemoveCourseFromSemsterPlan} />
+      <DeleteZone
+        setIsDragging={setIsDragging}
+        onRemove={handleRemoveCourseFromSemsterPlan}
+      />
       <SearchBlock isDragging={isDragging} setIsDragging={setIsDragging} />
     </DndProvider>
   );

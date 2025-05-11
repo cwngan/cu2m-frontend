@@ -1,4 +1,4 @@
-import { useContext, useRef } from "react";
+import { Dispatch, SetStateAction, useContext, useRef } from "react";
 import { useDrop } from "react-dnd";
 import { CourseRead } from "@/app/types/Models";
 import clsx from "clsx";
@@ -6,8 +6,10 @@ import { SearchBlockContext } from "./SearchBlock";
 
 export default function DeleteZone({
   onRemove,
+  setIsDragging,
 }: {
   onRemove: (courseCode: string | null, semesterPlanId: string) => void;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }) {
   const deleteRef = useRef<HTMLDivElement>(null);
   const { isOpen: isSearchBlockOpen } = useContext(SearchBlockContext);
@@ -16,6 +18,7 @@ export default function DeleteZone({
     () => ({
       accept: "COURSE",
       drop: (item: { course: CourseRead; semesterPlanId: string }) => {
+        setIsDragging(false);
         onRemove(item.course.code, item.semesterPlanId);
       },
       collect: (monitor) => ({
