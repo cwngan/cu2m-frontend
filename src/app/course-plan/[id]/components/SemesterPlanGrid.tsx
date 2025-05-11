@@ -167,6 +167,35 @@ export default function SemesterPlanGrid({
     [detailedSemesterPlans],
   );
 
+  const fetchCourseDetails = useCallback(
+    async (courseCodes: string[]): Promise<CourseRead[]> => {
+      try {
+        if (!courseCodes || courseCodes.length === 0) {
+          return [];
+        }
+        console.log("Fetching details for course codes:", courseCodes);
+        const response = await apiClient.get<CoursesResponseModel>(
+          "/api/courses/",
+          {
+            params: {
+              keywords: courseCodes,
+              strict: true,
+            },
+          },
+        );
+        console.log("API Response:", response.data);
+        if (response.status === 200 && response.data.data) {
+          return response.data.data;
+        }
+        return [];
+      } catch (error) {
+        console.error("Error fetching course details:", error);
+        return [];
+      }
+    },
+    [apiClient],
+  );
+
   const handleAddCourseToSemesterPlan = useCallback(
     async (
       course: CourseRead,
@@ -176,7 +205,18 @@ export default function SemesterPlanGrid({
       if (detailedSemesterPlans === null) {
         throw new Error("Detailed semester plans are null");
       }
+      if (course.code === null) {
+        console.error("Cannot add course with null code");
+        return;
+      }
       try {
+        const fullCourseDetails = await fetchCourseDetails([course.code]);
+        if (fullCourseDetails.length === 0) {
+          console.error("Failed to fetch full course details for", course.code);
+          return;
+        }
+        const fullCourse = fullCourseDetails[0];
+
         const currentPlan = detailedSemesterPlans.find(
           (plan) => plan._id === semesterPlanId,
         );
@@ -192,25 +232,20 @@ export default function SemesterPlanGrid({
               existingCourse.not_for_taken
                 ?.split(" or ")
                 .map((code) => code.trim())
-                .includes(course.code || ""),
+                .includes(fullCourse.code || ""),
             ) ||
               plan.courses.some((existingCourse) =>
-                course.not_for_taken
+                fullCourse.not_for_taken
                   ?.split(" or ")
                   .map((code) => code.trim())
                   .includes(existingCourse.code || ""),
               )),
         );
 
-        console.log(
-          "Affected plans:",
-          potentiallyAffectedPlans.map((p) => p._id),
-        );
-
         const filteredCourses = currentPlan.courses.filter(
-          (existingCourse) => existingCourse.code !== course.code,
+          (existingCourse) => existingCourse.code !== fullCourse.code,
         );
-        const updatedCourses = [...filteredCourses, course];
+        const updatedCourses = [...filteredCourses, fullCourse];
 
         const response = await apiClient.patch<SemesterPlanResponseModel>(
           `/api/semester-plans/${semesterPlanId}`,
@@ -227,28 +262,37 @@ export default function SemesterPlanGrid({
 
             const newPlans = prevPlans.map((plan) => {
               if (plan._id === semesterPlanId) {
-                console.log("Updating target plan:", plan._id);
-                return {
-                  ...plan,
-                  courses: updatedCourses,
-                };
+                return { ...plan, courses: updatedCourses };
               }
               if (
                 potentiallyAffectedPlans.some(
                   (affected) => affected._id === plan._id,
                 )
               ) {
-                console.log("Force updating affected plan:", plan._id);
                 return { ...plan };
               }
               return plan;
             });
 
+            const sortedPlans = [...newPlans].sort((a, b) => {
+              if (a.year !== b.year) return a.year - b.year;
+              return a.semester - b.semester;
+            });
+            const map = new Map<string, Set<string>>();
+            const takenCourses = new Set<string>();
+            for (const plan of sortedPlans) {
+              map.set(plan._id, new Set(takenCourses));
+              for (const course of plan.courses) {
+                if (course.code) takenCourses.add(course.code);
+              }
+            }
+            setTakenBeforeMap(map);
+
             return newPlans;
           });
 
           if (sourcePlanId !== null) {
-            handleRemoveCourseFromSemsterPlan(course.code, sourcePlanId);
+            handleRemoveCourseFromSemsterPlan(fullCourse.code, sourcePlanId);
           }
         } else {
           throw new Error("Failed to update semester plan");
@@ -258,57 +302,31 @@ export default function SemesterPlanGrid({
         alert("Failed to update semester plan");
       }
     },
-    [detailedSemesterPlans, handleRemoveCourseFromSemsterPlan],
+    [
+      detailedSemesterPlans,
+      handleRemoveCourseFromSemsterPlan,
+      fetchCourseDetails,
+    ],
   );
-
-  const fetchCourseDetails = async (
-    courseCodes: string[],
-  ): Promise<CourseRead[]> => {
-    try {
-      if (!courseCodes || courseCodes.length === 0) {
-        return [];
-      }
-
-      console.log("Fetching details for course codes:", courseCodes);
-      const response = await apiClient.get<CoursesResponseModel>(
-        "/api/courses/",
-        {
-          params: {
-            keywords: courseCodes,
-            strict: true,
-            basic: true,
-          },
-        },
-      );
-      console.log("API Response:", response.data);
-      if (response.status === 200 && response.data.data) {
-        return response.data.data;
-      }
-      return [];
-    } catch (error) {
-      console.error("Error fetching course details:", error);
-      return [];
-    }
-  };
 
   const getCourseWarningType = useCallback(
     (courseId: string, currentPlanId: string): string | undefined => {
       if (detailedSemesterPlans === null) {
         return undefined;
       }
-  
+
       const currentPlan = detailedSemesterPlans.find(
         (plan) => plan._id === currentPlanId,
       );
       if (!currentPlan) return undefined;
-  
+
       const currentCourse = currentPlan.courses.find(
         (course) => course._id === courseId,
       );
       if (!currentCourse) return undefined;
-  
+
       const warnings: string[] = [];
-  
+
       // Check for duplicate warning
       const isDuplicate = detailedSemesterPlans.some((plan) => {
         if (plan._id === currentPlanId) return false;
@@ -317,21 +335,23 @@ export default function SemesterPlanGrid({
       if (isDuplicate) {
         warnings.push("duplicate");
       }
-  
-      // Check for not_for_taken in previous semesters only
+
+      // Check for not_for_taken in previous semesters
       const takenBefore = takenBeforeMap.get(currentPlanId);
       const notForTakenCourses =
-        currentCourse.not_for_taken
-          ?.split(" or ")
-          .map((code) => code.trim()) || [];
-  
+        currentCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
+        [];
       if (takenBefore) {
-        const notForTakenPrevious = notForTakenCourses.filter(code => takenBefore.has(code));
+        const notForTakenPrevious = notForTakenCourses.filter((code) =>
+          takenBefore.has(code),
+        );
         if (notForTakenPrevious.length > 0) {
-          warnings.push(`not_for_taken_previous:${notForTakenPrevious.join('|')}`);
+          warnings.push(
+            `not_for_taken_previous:${notForTakenPrevious.join("|")}`,
+          );
         }
       }
-  
+
       // Check prerequisites
       if (takenBefore && currentCourse.prerequisites) {
         try {
@@ -345,19 +365,19 @@ export default function SemesterPlanGrid({
           warnings.push("prerequisite");
         }
       }
-  
+
       // Check corequisites
       if (currentCourse.corequisites) {
         try {
           const ast = parsePrerequisite(currentCourse.corequisites);
-          const currentCourses = new Set(
+          const currentCoursesSet = new Set(
             currentPlan.courses
               .map((c) => c.code)
               .filter((code) => code !== null),
           );
           const availableCourses = new Set([
             ...(takenBefore || []),
-            ...currentCourses,
+            ...currentCoursesSet,
           ]);
           const isSatisfied = evaluatePrerequisite(ast, availableCourses);
           if (!isSatisfied) {
@@ -368,11 +388,30 @@ export default function SemesterPlanGrid({
           warnings.push("corequisite");
         }
       }
-  
+
+      //check for anti-requisites within the same semester
+      // i think i should actually include the code due to the fact that it can be changed
+      // if we get more information about how cusis work
+      /*
+      const currentCourses = new Set(
+        currentPlan.courses
+          .filter((c) => c._id !== courseId)
+          .map((c) => c.code)
+          .filter((code) => code !== null),
+      );
+      const notForTakenSame = notForTakenCourses.filter((code) =>
+        currentCourses.has(code),
+      );
+      if (notForTakenSame.length > 0) {
+        warnings.push(`not_for_taken_same:${notForTakenSame.join("|")}`);
+      }
+      */
+
       return warnings.length > 0 ? warnings.join(",") : undefined;
     },
     [detailedSemesterPlans, takenBeforeMap],
   );
+
   useEffect(() => {
     const fetchDetailedSemesterPlans = async () => {
       try {
@@ -394,12 +433,11 @@ export default function SemesterPlanGrid({
     };
 
     fetchDetailedSemesterPlans();
-  }, [semesterPlans]);
+  }, [semesterPlans, fetchCourseDetails]);
 
   useEffect(() => {
     if (detailedSemesterPlans === null) return;
 
-    // Compute takenBeforeMap
     const sortedPlans = [...detailedSemesterPlans].sort((a, b) => {
       if (a.year !== b.year) return a.year - b.year;
       return a.semester - b.semester;
@@ -414,7 +452,6 @@ export default function SemesterPlanGrid({
     }
     setTakenBeforeMap(map);
 
-    // Group plans by year
     const plansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] } =
       {};
     detailedSemesterPlans.forEach((plan) => {
