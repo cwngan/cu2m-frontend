@@ -14,7 +14,14 @@ import {
   Edge,
   Node,
 } from "@xyflow/react";
-import { useState, useCallback, useEffect } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  createContext,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import GraphNode from "./GraphNode";
 import { apiClient } from "@/apiClient";
 import { buildEdges, craftGraphEdge, craftGraphNode } from "../utils";
@@ -24,6 +31,14 @@ import "@xyflow/react/dist/style.css";
 import "@/app/globals.css";
 
 const nodeTypes = { defaultNode: GraphNode };
+
+export const FocusedNodesContext = createContext<{
+  nodes: Set<string>;
+  setNodes: Dispatch<SetStateAction<Set<string>>>;
+}>({
+  nodes: new Set<string>(),
+  setNodes: () => {},
+});
 
 interface SemesterPlanGridProps {
   coursePlanId: string;
@@ -35,6 +50,9 @@ export default function GraphView({
 }: SemesterPlanGridProps) {
   const [nodes, setNodes] = useState<Node<CourseExtend>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [focusedNodes, setFocusedNodes] = useState<Set<string>>(
+    new Set<string>(),
+  );
 
   useEffect(() => {
     if (!coursePlanResponse.data) {
@@ -152,18 +170,25 @@ export default function GraphView({
   );
 
   return (
-    <div className="h-full w-full">
-      <ReactFlow
-        nodes={nodes}
-        onNodesChange={onNodesChange}
-        edges={edges}
-        onEdgesChange={onEdgesChange}
-        fitView
-        nodeTypes={nodeTypes}
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
-    </div>
+    <FocusedNodesContext.Provider
+      value={{ nodes: focusedNodes, setNodes: setFocusedNodes }}
+    >
+      <div className="h-full w-full">
+        <ReactFlow
+          nodes={nodes}
+          onNodesChange={onNodesChange}
+          edges={edges}
+          onEdgesChange={onEdgesChange}
+          onPaneClick={() => {
+            setFocusedNodes(new Set<string>());
+          }}
+          fitView
+          nodeTypes={nodeTypes}
+        >
+          <Background />
+          <Controls />
+        </ReactFlow>
+      </div>
+    </FocusedNodesContext.Provider>
   );
 }

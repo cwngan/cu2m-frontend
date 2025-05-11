@@ -1,8 +1,15 @@
-import { Handle, Node, Position, useReactFlow } from "@xyflow/react";
+import {
+  getIncomers,
+  Handle,
+  Node,
+  Position,
+  useReactFlow,
+} from "@xyflow/react";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getCourseColor } from "../../utils";
 import { CourseExtend } from "../types/CourseExtend";
+import { FocusedNodesContext } from "./GraphView";
 
 type GraphNodeData = CourseExtend;
 type GraphNode = Node<GraphNodeData>;
@@ -19,6 +26,7 @@ export default function GraphNode({
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const reactFlowInstance = useReactFlow();
+  const focusedNodes = useContext(FocusedNodesContext);
 
   useEffect(() => {
     if (!course.code) {
@@ -83,13 +91,40 @@ export default function GraphNode({
       .join("\n");
   };
 
+  useEffect(() => {
+    if (course.code === null) {
+      throw new Error("Course code not found");
+    }
+    if (focusedNodes.nodes.has(id)) {
+      const incomers = getIncomers(
+        { id },
+        reactFlowInstance.getNodes(),
+        reactFlowInstance.getEdges(),
+      );
+      const shouldUpdate = incomers.some((node) => {
+        return !focusedNodes.nodes.has(node.id);
+      });
+      if (shouldUpdate) {
+        focusedNodes.setNodes((prev) => {
+          return new Set([...prev, ...incomers.map((node) => node.id)]);
+        });
+      }
+    }
+  }, [focusedNodes, course.code, id, reactFlowInstance]);
+
   return (
     <>
       <div
+        onClick={() => {
+          focusedNodes.setNodes(new Set<string>([id]));
+        }}
         className={clsx(
-          "flex h-16 w-32 flex-col items-center justify-center rounded-xl p-2 ring-gray-800/50 hover:ring-2",
+          "flex h-16 w-32 flex-col items-center justify-center rounded-xl p-2 ring-gray-800/50 transition-opacity duration-150 hover:ring-2",
           color,
           data.warnings && data.warnings.length > 0 && "ring-2 ring-red-500",
+          focusedNodes.nodes.size === 0 || focusedNodes.nodes.has(id)
+            ? "opacity-100"
+            : "opacity-25",
         )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
