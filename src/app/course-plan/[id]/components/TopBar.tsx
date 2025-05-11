@@ -67,15 +67,6 @@ export default function TopBar({ coursePlanId }: TopBarProps) {
             />
           </Link>
           {/* User Icon Placeholder */}
-          <div>
-            <Image
-            src="/cu2m_icon_allBlack.png"
-            width={32}
-            height={32}
-            className="text-neutral-800"
-            alt="Icon"
-            />
-          </div>
         </div>
       </div>
     </div>
