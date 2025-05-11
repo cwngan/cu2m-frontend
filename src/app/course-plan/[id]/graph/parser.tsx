@@ -28,6 +28,9 @@ export function toPostfixExpression(tokens: string[]): string[] {
   };
 
   for (const token of tokens) {
+    if (token === "") {
+      continue;
+    }
     if (token === "or" || token === "and") {
       while (
         operatorStack.length &&
@@ -101,6 +104,9 @@ export function evaluteBooleanExpression(
 
   // Final checking
   if (stack.length !== 1) {
+    console.log("Invalid expression:", expression);
+    console.log("Postfix tokens:", tokens);
+    console.log("Stack state:", stack);
     throw new Error("Invalid boolean expression");
   }
   return {
