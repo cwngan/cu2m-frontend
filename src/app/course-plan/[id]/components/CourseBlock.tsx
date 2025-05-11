@@ -44,7 +44,7 @@ export default function CourseBlock({
 
   const getWarningMessage = () => {
     if (!warningType) return "Warning";
-  
+
     const warnings = warningType.split(",");
     const messages = warnings.map((warning) => {
       if (warning.includes(":")) {
@@ -68,10 +68,10 @@ export default function CourseBlock({
         }
       }
     });
-  
+
     return messages.join("\n");
   };
-  
+
   return (
     <>
       <DraggableBlock
