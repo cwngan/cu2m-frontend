@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import ResetForm from "./components/ResetForm";
+import axios from "axios";
+import { notFound } from "next/navigation";
 
 export default async function Page({
   searchParams,
@@ -8,7 +10,15 @@ export default async function Page({
 }) {
   const token = (await searchParams).token;
 
-  // TO-DO: validate token
+  try {
+    await axios.post(
+      "/api/user/verify-token",
+      { token },
+      { baseURL: process.env.API_URL },
+    );
+  } catch {
+    notFound();
+  }
 
   return (
     <div className="relative z-40 container mx-auto flex h-screen w-screen flex-col items-center justify-center gap-8">
