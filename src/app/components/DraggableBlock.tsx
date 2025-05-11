@@ -36,7 +36,6 @@ export default function DraggableBlock<ItemType>({
   dragConnector(drag);
 
   useEffect(() => {
-    console.log("Monitoring");
     setIsDragging(isDragging);
   }, [isDragging, setIsDragging]);
 
