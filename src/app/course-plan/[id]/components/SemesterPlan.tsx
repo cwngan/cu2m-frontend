@@ -106,9 +106,10 @@ export default function SemesterPlan({
         ref={drop}
         data-semplan-id={plan._id}
         className={clsx(
-          "from-stone-60 relative flex w-44 flex-col items-center justify-center gap-3 rounded-lg border-1 border-neutral-300 bg-gradient-to-br via-neutral-100 to-stone-100 ring-3 inset-ring ring-white inset-ring-white",
-          isOver &&
-            "bg-linear-to-t from-neutral-200 to-neutral-300 transition duration-300",
+          "relative flex w-44 flex-col items-center justify-center rounded-lg border-1 border-neutral-300 ring-3 inset-ring ring-white inset-ring-white",
+          isOver
+            ? "bg-gradient-to-br from-stone-300/75 to-neutral-200/75"
+            : "bg-gradient-to-br from-stone-100/75 via-neutral-100/75 to-stone-100/75",
         )}
       >
         <SemesterPlanTitle
