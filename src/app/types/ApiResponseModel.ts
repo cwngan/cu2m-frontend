@@ -16,7 +16,7 @@ export interface UserResponseModel extends ApiResponseModel {
 }
 
 export interface CoursePlanResponseModel extends ApiResponseModel {
-  data: CoursePlanRead[] | null;
+  data: CoursePlanRead | CoursePlanRead[] | null;
 }
 
 export interface CoursesResponseModel extends ApiResponseModel {
