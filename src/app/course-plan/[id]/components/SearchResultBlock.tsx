@@ -52,6 +52,7 @@ export default function SearchResultBlock({
       throw new Error("Course code is null");
     }
   }, [res.code]);
+
   return (
     <>
       <DraggableBlock
