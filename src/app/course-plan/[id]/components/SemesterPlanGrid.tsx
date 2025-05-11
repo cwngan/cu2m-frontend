@@ -1,257 +1,483 @@
 "use client";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { SemesterPlanData } from "../types/SemesterPlan";
-import { RawSemesterPlanData } from "../types/RawSemesterPlan";
-import SemesterPlanOfYear from "./SemesterPlanOfYear";
 import SearchBlock from "./SearchBlock";
-import { CoursePlanResponseModel } from "@/app/types/ApiResponseModel";
-// import { CoursePlanRead } from "@/app/types/Models";
+import {
+  CoursePlanWithSemestersResponseModel,
+  CoursesResponseModel,
+  SemesterPlanResponseModel,
+} from "@/app/types/ApiResponseModel";
+import { apiClient } from "@/apiClient";
+import SemesterPlanGridContent from "./SemesterPlanGridContent";
+import DeleteZone from "./DeleteZone";
+import {
+  CourseRead,
+  SemesterPlanReadWithCourseDetails,
+} from "@/app/types/Models";
 
-const template: { data: RawSemesterPlanData[] } = {
-  data: [
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG1110",
-          title: "Problem Solving with Programming",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "MATH1510",
-          title: "Calculus for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI1130",
-          title: "Introduction to Computing with Java",
-          units: 3,
-        },
-      ],
-      semester: 1,
-      year: 1,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG1120",
-          title: "Linear Algebra for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG1130",
-          title: "Multivariable Calculus for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI2100",
-          title: "Data Structures",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "ELTU2014",
-          title: "English for Engineering",
-          units: 3,
-        },
-      ],
-      semester: 2,
-      year: 1,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG2440",
-          title: "Discrete Mathematics for Engineers",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG2760",
-          title: "Probability for Engineers",
-          units: 2,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI3130",
-          title: "Formal Languages and Automata Theory",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI3160",
-          title: "Design and Analysis of Algorithms",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "UGCP1001",
-          title: "Understanding China",
-          units: 1,
-        },
-      ],
-      semester: 1,
-      year: 2,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "ENGG2780",
-          title: "Statistics for Engineers",
-          units: 2,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CSCI3180",
-          title: "Principles of Programming Languages",
-          units: 3,
-        },
-        {
-          _id: crypto.randomUUID(),
-          code: "CENG3420",
-          title: "Computer Organization",
-          units: 3,
-        },
-      ],
-      semester: 2,
-      year: 2,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [
-        {
-          _id: crypto.randomUUID(),
-          code: "UGCP1002",
-          title: "Hong Kong under Wider Constitutional Order",
-          units: 1,
-        },
-      ],
-      semester: 3,
-      year: 2,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [],
-      semester: 1,
-      year: 3,
-    },
-    {
-      _id: crypto.randomUUID(),
-      courses: [],
-      semester: 2,
-      year: 3,
-    },
-  ],
-};
+// Define AST node types for prerequisite parsing
+type ASTNode =
+  | { type: "course"; code: string }
+  | { type: "and"; left: ASTNode; right: ASTNode }
+  | { type: "or"; left: ASTNode; right: ASTNode };
+
+// Parse prerequisite string into an AST
+function parsePrerequisite(prereq: string): ASTNode {
+  const tokens = prereq
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token !== "");
+  let index = 0;
+
+  function parseExpression(): ASTNode {
+    let left = parseTerm();
+    while (index < tokens.length && tokens[index] === "or") {
+      index++;
+      const right = parseTerm();
+      left = { type: "or", left, right };
+    }
+    return left;
+  }
+
+  function parseTerm(): ASTNode {
+    let left = parseFactor();
+    while (index < tokens.length && tokens[index] === "and") {
+      index++;
+      const right = parseFactor();
+      left = { type: "and", left, right };
+    }
+    return left;
+  }
+
+  function parseFactor(): ASTNode {
+    if (index >= tokens.length) {
+      throw new Error("Unexpected end of prerequisite string");
+    }
+    const token = tokens[index];
+    if (token === "(") {
+      index++;
+      const expr = parseExpression();
+      if (index >= tokens.length || tokens[index] !== ")") {
+        throw new Error("Mismatched parentheses");
+      }
+      index++;
+      return expr;
+    } else {
+      index++;
+      return { type: "course", code: token };
+    }
+  }
+
+  const result = parseExpression();
+  if (index < tokens.length) {
+    throw new Error("Extra tokens after parsing");
+  }
+  return result;
+}
+
+// Evaluate the AST against taken courses
+function evaluatePrerequisite(
+  node: ASTNode,
+  takenCourses: Set<string>,
+): boolean {
+  switch (node.type) {
+    case "course":
+      return takenCourses.has(node.code);
+    case "and":
+      return (
+        evaluatePrerequisite(node.left, takenCourses) &&
+        evaluatePrerequisite(node.right, takenCourses)
+      );
+    case "or":
+      return (
+        evaluatePrerequisite(node.left, takenCourses) ||
+        evaluatePrerequisite(node.right, takenCourses)
+      );
+    default:
+      return false;
+  }
+}
+
 interface SemesterPlanGridProps {
   coursePlanId: string;
-  coursePlanResponse: CoursePlanResponseModel;
+  coursePlanResponse: CoursePlanWithSemestersResponseModel;
 }
+
 export default function SemesterPlanGrid({
-  // coursePlanId,
+  coursePlanId,
   coursePlanResponse,
 }: SemesterPlanGridProps) {
-  const [semesterPlans, setSemesterPlans] = useState<SemesterPlanData[]>([]);
+  const semesterPlans = coursePlanResponse.data!.semester_plans;
+  const [detailedSemesterPlans, setDetailedSemesterPlans] = useState<
+    SemesterPlanReadWithCourseDetails[] | null
+  >(null);
   const [semesterPlansByYear, setSemesterPlansByYear] = useState<{
-    [year: number]: SemesterPlanData[];
-  }>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
+    [year: number]: SemesterPlanReadWithCourseDetails[];
+  }>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [takenBeforeMap, setTakenBeforeMap] = useState<
+    Map<string, Set<string>>
+  >(new Map());
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
-    (courseId: string, semesterPlanId: string) => {
-      // Simulate removing the course from the semester plan
-      // To be replaced by an API call
-      setSemesterPlans((prevPlans) => {
-        const updatedPlans = prevPlans.map((plan) => {
-          if (plan._id === semesterPlanId) {
-            const updatedCourses = plan.courses.filter(
-              (course) => course._id !== courseId,
-            );
-            return { ...plan, courses: updatedCourses };
+    async (courseCode: string | null, semesterPlanId: string) => {
+      if (detailedSemesterPlans === null) {
+        throw new Error("Detailed semester plans are null");
+      }
+      try {
+        const currentPlan = detailedSemesterPlans.find(
+          (plan) => plan._id === semesterPlanId,
+        );
+        if (!currentPlan) {
+          throw new Error("Semester plan not found: " + semesterPlanId);
+        }
+        const updatedCourses = currentPlan.courses.filter(
+          (course) => course.code !== courseCode,
+        );
+        await apiClient
+          .patch(`/api/semester-plans/${semesterPlanId}`, {
+            courses: updatedCourses.map((course) => course.code),
+          })
+          .then((response) => {
+            if (response.status !== 200) {
+              throw new Error("Failed to update semester plan");
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating semester plan:", error);
+            alert("Failed to update semester plan");
+          });
+        setDetailedSemesterPlans((prevPlans) => {
+          if (prevPlans === null) {
+            throw new Error("Detailed semester plans are null");
           }
-          return plan;
+          return prevPlans.map((plan) => {
+            if (plan._id === semesterPlanId) {
+              return { ...plan, courses: updatedCourses };
+            }
+            return plan;
+          });
         });
-        return updatedPlans;
-      });
+      } catch (error) {
+        console.error("Error removing course from semester plan:", error);
+        alert("Failed to remove course from semester plan");
+      }
     },
-    [],
+    [detailedSemesterPlans],
   );
-  useEffect(() => {
-    const fetchData = async () => {
-      // Simulate an API call
-      const response = await new Promise<{ data: RawSemesterPlanData[] }>(
-        (resolve) => setTimeout(() => resolve(template), 400),
+
+  const fetchCourseDetails = useCallback(
+    async (courseCodes: string[]): Promise<CourseRead[]> => {
+      try {
+        if (!courseCodes || courseCodes.length === 0) {
+          return [];
+        }
+        console.log("Fetching details for course codes:", courseCodes);
+        const response = await apiClient.get<CoursesResponseModel>(
+          "/api/courses/",
+          {
+            params: {
+              keywords: courseCodes,
+              strict: true,
+            },
+          },
+        );
+        console.log("API Response:", response.data);
+        if (response.status === 200 && response.data.data) {
+          return response.data.data;
+        }
+        return [];
+      } catch (error) {
+        console.error("Error fetching course details:", error);
+        return [];
+      }
+    },
+    [], // Removed apiClient from dependencies for fucking lintign since it's a singleton
+  );
+
+  const handleAddCourseToSemesterPlan = useCallback(
+    async (
+      course: CourseRead,
+      semesterPlanId: string,
+      sourcePlanId: string | null,
+    ) => {
+      if (detailedSemesterPlans === null) {
+        throw new Error("Detailed semester plans are null");
+      }
+      if (course.code === null) {
+        console.error("Cannot add course with null code");
+        return;
+      }
+      try {
+        const fullCourseDetails = await fetchCourseDetails([course.code]);
+        if (fullCourseDetails.length === 0) {
+          console.error("Failed to fetch full course details for", course.code);
+          return;
+        }
+        const fullCourse = fullCourseDetails[0];
+
+        const currentPlan = detailedSemesterPlans.find(
+          (plan) => plan._id === semesterPlanId,
+        );
+        if (!currentPlan) {
+          console.error("Semester plan not found:", semesterPlanId);
+          return;
+        }
+
+        const potentiallyAffectedPlans = detailedSemesterPlans.filter(
+          (plan) =>
+            plan._id !== semesterPlanId &&
+            (plan.courses.some((existingCourse) =>
+              existingCourse.not_for_taken
+                ?.split(" or ")
+                .map((code) => code.trim())
+                .includes(fullCourse.code || ""),
+            ) ||
+              plan.courses.some((existingCourse) =>
+                fullCourse.not_for_taken
+                  ?.split(" or ")
+                  .map((code) => code.trim())
+                  .includes(existingCourse.code || ""),
+              )),
+        );
+
+        const filteredCourses = currentPlan.courses.filter(
+          (existingCourse) => existingCourse.code !== fullCourse.code,
+        );
+        const updatedCourses = [...filteredCourses, fullCourse];
+
+        const response = await apiClient.patch<SemesterPlanResponseModel>(
+          `/api/semester-plans/${semesterPlanId}`,
+          {
+            courses: updatedCourses.map((course) => course.code),
+          },
+        );
+
+        if (response.status === 200) {
+          setDetailedSemesterPlans((prevPlans) => {
+            if (prevPlans === null) {
+              throw new Error("Detailed semester plans are null");
+            }
+
+            const newPlans = prevPlans.map((plan) => {
+              if (plan._id === semesterPlanId) {
+                return { ...plan, courses: updatedCourses };
+              }
+              if (
+                potentiallyAffectedPlans.some(
+                  (affected) => affected._id === plan._id,
+                )
+              ) {
+                return { ...plan };
+              }
+              return plan;
+            });
+
+            const sortedPlans = [...newPlans].sort((a, b) => {
+              if (a.year !== b.year) return a.year - b.year;
+              return a.semester - b.semester;
+            });
+            const map = new Map<string, Set<string>>();
+            const takenCourses = new Set<string>();
+            for (const plan of sortedPlans) {
+              map.set(plan._id, new Set(takenCourses));
+              for (const course of plan.courses) {
+                if (course.code) takenCourses.add(course.code);
+              }
+            }
+            setTakenBeforeMap(map);
+
+            return newPlans;
+          });
+
+          if (sourcePlanId !== null) {
+            handleRemoveCourseFromSemsterPlan(fullCourse.code, sourcePlanId);
+          }
+        } else {
+          throw new Error("Failed to update semester plan");
+        }
+      } catch (error) {
+        console.error("Error updating semester plan:", error);
+        alert("Failed to update semester plan");
+      }
+    },
+    [
+      detailedSemesterPlans,
+      handleRemoveCourseFromSemsterPlan,
+      fetchCourseDetails,
+    ],
+  );
+
+  const getCourseWarningType = useCallback(
+    (courseId: string, currentPlanId: string): string | undefined => {
+      if (detailedSemesterPlans === null) {
+        return undefined;
+      }
+
+      const currentPlan = detailedSemesterPlans.find(
+        (plan) => plan._id === currentPlanId,
       );
-      const semesterPlans = response.data.map((plan: RawSemesterPlanData) => {
-        return {
-          _id: plan._id,
-          courses: plan.courses,
-          semester: plan.semester,
-          year: plan.year,
-        };
+      if (!currentPlan) return undefined;
+
+      const currentCourse = currentPlan.courses.find(
+        (course) => course._id === courseId,
+      );
+      if (!currentCourse) return undefined;
+
+      const warnings: string[] = [];
+
+      // Check for duplicate warning
+      const isDuplicate = detailedSemesterPlans.some((plan) => {
+        if (plan._id === currentPlanId) return false;
+        return plan.courses.some((course) => course._id === courseId);
       });
-      setSemesterPlans(semesterPlans);
-      // if (
-      //   coursePlanResponse.data &&
-      //   typeof coursePlanResponse.data === "object"
-      // ) {
-      //   setSemesterPlans(coursePlanResponse.data.semester_plans || []);
-      // }
-    };
-    fetchData();
-  }, [coursePlanResponse]);
+      if (isDuplicate) {
+        warnings.push("duplicate");
+      }
+
+      // Check for not_for_taken in previous semesters
+      const takenBefore = takenBeforeMap.get(currentPlanId);
+      const notForTakenCourses =
+        currentCourse.not_for_taken?.split(" or ").map((code) => code.trim()) ||
+        [];
+      if (takenBefore) {
+        const notForTakenPrevious = notForTakenCourses.filter((code) =>
+          takenBefore.has(code),
+        );
+        if (notForTakenPrevious.length > 0) {
+          warnings.push(
+            `not_for_taken_previous:${notForTakenPrevious.join("|")}`,
+          );
+        }
+      }
+
+      // Check prerequisites
+      if (takenBefore && currentCourse.prerequisites) {
+        try {
+          const ast = parsePrerequisite(currentCourse.prerequisites);
+          const isSatisfied = evaluatePrerequisite(ast, takenBefore);
+          if (!isSatisfied) {
+            warnings.push("prerequisite");
+          }
+        } catch (error) {
+          console.error("Error parsing prerequisite:", error);
+          warnings.push("prerequisite");
+        }
+      }
+
+      // Check corequisites
+      if (currentCourse.corequisites) {
+        try {
+          const ast = parsePrerequisite(currentCourse.corequisites);
+          const currentCoursesSet = new Set(
+            currentPlan.courses
+              .map((c) => c.code)
+              .filter((code) => code !== null),
+          );
+          const availableCourses = new Set([
+            ...(takenBefore || []),
+            ...currentCoursesSet,
+          ]);
+          const isSatisfied = evaluatePrerequisite(ast, availableCourses);
+          if (!isSatisfied) {
+            warnings.push("corequisite");
+          }
+        } catch (error) {
+          console.error("Error parsing corequisite:", error);
+          warnings.push("corequisite");
+        }
+      }
+
+      //check for anti-requisites within the same semester
+      // i think i should actually include the code due to the fact that it can be changed
+      // if we get more information about how cusis work
+      /*
+      const currentCourses = new Set(
+        currentPlan.courses
+          .filter((c) => c._id !== courseId)
+          .map((c) => c.code)
+          .filter((code) => code !== null),
+      );
+      const notForTakenSame = notForTakenCourses.filter((code) =>
+        currentCourses.has(code),
+      );
+      if (notForTakenSame.length > 0) {
+        warnings.push(`not_for_taken_same:${notForTakenSame.join("|")}`);
+      }
+      */
+
+      return warnings.length > 0 ? warnings.join(",") : undefined;
+    },
+    [detailedSemesterPlans, takenBeforeMap],
+  );
+
   useEffect(() => {
-    const plansByYear: { [year: number]: SemesterPlanData[] } = {};
-    semesterPlans.forEach((plan) => {
+    const fetchDetailedSemesterPlans = async () => {
+      try {
+        setIsLoading(true);
+        const detailedPlans = await Promise.all(
+          semesterPlans.map(async (plan) => {
+            const courseDetails = await fetchCourseDetails(plan.courses);
+            return {
+              ...plan,
+              courses: courseDetails,
+            };
+          }),
+        );
+        setDetailedSemesterPlans(detailedPlans);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching detailed semester plans:", error);
+      }
+    };
+
+    fetchDetailedSemesterPlans();
+  }, [semesterPlans, fetchCourseDetails]);
+
+  useEffect(() => {
+    if (detailedSemesterPlans === null) return;
+
+    const sortedPlans = [...detailedSemesterPlans].sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.semester - b.semester;
+    });
+    const map = new Map<string, Set<string>>();
+    const takenCourses = new Set<string>();
+    for (const plan of sortedPlans) {
+      map.set(plan._id, new Set(takenCourses));
+      for (const course of plan.courses) {
+        if (course.code) takenCourses.add(course.code);
+      }
+    }
+    setTakenBeforeMap(map);
+
+    const plansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] } =
+      {};
+    detailedSemesterPlans.forEach((plan) => {
       if (!plansByYear[plan.year]) {
         plansByYear[plan.year] = [];
       }
       plansByYear[plan.year].push(plan);
     });
+    Object.values(plansByYear).forEach((plans) => {
+      plans.sort((a, b) => a.semester - b.semester);
+    });
     setSemesterPlansByYear(plansByYear);
-  }, [semesterPlans]);
+  }, [detailedSemesterPlans]);
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="mt-20 flex w-full items-start justify-center overflow-auto pb-18">
-        <div
-          ref={containerRef}
-          className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-auto pt-8"
-        >
-          {Object.keys(semesterPlansByYear).length > 0 ? (
-            Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => {
-              return (
-                <SemesterPlanOfYear
-                  yearNumber={parseInt(yearNumber)}
-                  plans={plans}
-                  key={yearNumber}
-                  handleRemoveCourseFromSemsterPlan={
-                    handleRemoveCourseFromSemsterPlan
-                  }
-                />
-              );
-            })
-          ) : (
-            <div className="flex h-96 w-full items-center justify-center">
-              <div className="text-2xl">Loading...</div>
-            </div>
-          )}
-          {/* <div className="container-padding-block-px-4 fixed top-0 left-0 h-full bg-gradient-to-l from-transparent to-white to-25%"></div>
-          <div className="container-padding-block-px-4 fixed top-0 right-0 h-full bg-gradient-to-r from-transparent to-white to-25%"></div> */}
-        </div>
-      </div>
+      <SemesterPlanGridContent
+        coursePlanId={coursePlanId}
+        semesterPlans={detailedSemesterPlans}
+        setSemesterPlans={setDetailedSemesterPlans}
+        semesterPlansByYear={semesterPlansByYear}
+        isLoading={isLoading}
+        handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
+        getCourseWarningType={getCourseWarningType}
+      />
+      <DeleteZone onRemove={handleRemoveCourseFromSemsterPlan} />
       <SearchBlock />
     </DndProvider>
   );
