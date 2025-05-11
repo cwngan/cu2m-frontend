@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import {
   Dispatch,
-  HTMLAttributes,
+  MouseEventHandler,
+  ReactNode,
   SetStateAction,
   useEffect,
   useRef,
@@ -13,16 +14,24 @@ import { useDrag } from "react-dnd";
 //   allowedDrop?: boolean;
 // }
 
-export default function DraggableBlock<ItemType>(
-  props: {
-    blockType: string;
-    dragItem: ItemType;
-    setIsDragging: Dispatch<SetStateAction<boolean>> | null;
-  } & HTMLAttributes<HTMLDivElement>,
-) {
-  const { children, blockType, dragItem, className, setIsDragging } = props;
+export default function DraggableBlock<ItemType>({
+  children,
+  blockType,
+  dragItem,
+  className,
+  setIsDragging,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  children: ReactNode;
+  className?: string;
+  blockType: string;
+  dragItem: ItemType;
+  setIsDragging: Dispatch<SetStateAction<boolean>> | null;
+  onMouseEnter?: MouseEventHandler<HTMLDivElement>;
+  onMouseLeave?: MouseEventHandler<HTMLDivElement>;
+}) {
   const drag = useRef<HTMLDivElement>(null);
-  const allowedAttributes = document.createElement("div").getAttributeNames();
   // const [didBounce, setDidBounce] = useState(false);
 
   const [{ isDragging }, dragConnector] = useDrag(() => ({
@@ -50,12 +59,8 @@ export default function DraggableBlock<ItemType>(
   return (
     <div
       ref={drag}
-      {...Object.keys(props)
-        .filter((key) => allowedAttributes.includes(key))
-        .reduce<{ [key: string]: string }>((acc, key) => {
-          acc[key] = props[key as keyof HTMLAttributes<HTMLDivElement>];
-          return acc;
-        }, {})}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       className={clsx(
         "transform rounded-lg transition-transform duration-200 hover:scale-105 hover:transition active:scale-100",
         isDragging ? "scale-105 opacity-50" : "",
