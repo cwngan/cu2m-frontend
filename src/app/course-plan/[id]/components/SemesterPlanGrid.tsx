@@ -193,7 +193,7 @@ export default function SemesterPlanGrid({
         return [];
       }
     },
-    [apiClient],
+    [], // Removed apiClient from dependencies for fucking lintign since it's a singleton
   );
 
   const handleAddCourseToSemesterPlan = useCallback(
