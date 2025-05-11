@@ -137,6 +137,7 @@ export default function InputForm({
             <span className="w-22 font-medium text-gray-700">Name:</span>
             <input
               type="text"
+              name="name"
               placeholder="Plan name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -175,6 +176,7 @@ export default function InputForm({
           <label className="flex flex-col">
             <span className="font-medium text-gray-700">Description:</span>
             <textarea
+              name="description"
               rows={4}
               placeholder=""
               value={description}

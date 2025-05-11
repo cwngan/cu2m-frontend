@@ -55,6 +55,7 @@ export default function CoursePlanBlock({
     <>
       {/* course plan block */}
       <div
+        data-cy="course-plan-block"
         className={clsx(
           "group duration 400 relative transition delay-20 ease-in-out transform-3d hover:flex hover:scale-110",
           isUpdating

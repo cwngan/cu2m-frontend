@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "681b930b8fa99980c9116d9f",
+    "description": "test plan 1 description",
+    "favourite": false,
+    "name": "test plan 1",
+    "updated_at": "2025-05-08T03:57:25.575Z",
+    "user_id": "681b8eed4d07d9d029277901"
+  },
+  {
+    "_id": "681e2a90d600bc71363b99ee",
+    "description": "test plan 2 description",
+    "favourite": true,
+    "name": "test plan 2",
+    "updated_at": "2025-05-10T07:51:25.482Z",
+    "user_id": "67f55104313822cc8f6a57ee"
+  }
+]
