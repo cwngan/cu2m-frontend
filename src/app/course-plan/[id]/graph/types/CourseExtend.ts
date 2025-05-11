@@ -1,6 +1,8 @@
 import { CourseRead } from "@/app/types/Models";
 
-export interface CourseExtend extends CourseRead, Record<string, unknown> {
+export type CourseExtend = CourseRead & {
   year: number;
   semester: number;
-}
+  warnings?: string[];
+  [key: string]: unknown;  // Add index signature to satisfy Record<string, unknown>
+};
