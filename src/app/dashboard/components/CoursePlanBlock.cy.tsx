@@ -76,7 +76,8 @@ describe("<CoursePlanBlock />", () => {
     cy.get("[data-cy='course-plan-block']")
       .realHover()
       .then(() => {
-        cy.contains<HTMLElement>(this.coursePlans[0].description).click(); // using click here as a workaround to check if the description is covered
+        // using click here as a workaround to check if the description is covered
+        cy.contains<HTMLElement>(this.coursePlans[0].description).click();
       });
   });
 });
