@@ -24,7 +24,6 @@ export default function GraphNode({
   const [color, setColor] = useState<string>("bg-neutral-200");
   const [course, setCourse] = useState<GraphNodeData>(data);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const reactFlowInstance = useReactFlow();
   const focusedNodes = useContext(FocusedNodesContext);
   const incomers = useRef<Node[]>([]);
@@ -50,25 +49,6 @@ export default function GraphNode({
     if (data.warnings && data.warnings.length > 0) {
       const node = reactFlowInstance.getNode(id);
       if (node) {
-        // Convert flow coordinates to screen coordinates
-        const { x, y } = reactFlowInstance.flowToScreenPosition({
-          x: node.position.x + (node.width || 128) / 2, // Default width if not set
-          y: node.position.y + (node.height || 64) / 2, // Default height if not set
-        });
-        const scrollX = window.scrollX || window.pageXOffset;
-        const scrollY = window.scrollY || window.pageYOffset;
-
-        // Position tooltip to the right of the node with an offset
-        const tooltipWidth = 200; // Approximate tooltip width (adjust as needed)
-        let left = x + scrollX + 8; // 8px offset from node's right edge
-        const top = y + scrollY; // Center vertically relative to node
-
-        // Ensure tooltip stays within viewport
-        if (left + tooltipWidth > window.innerWidth + scrollX) {
-          left = x + scrollX - tooltipWidth - 8; // Move to left side if it overflows
-        }
-
-        setTooltipPosition({ top, left });
         setShowTooltip(true);
       }
     }
@@ -145,11 +125,11 @@ export default function GraphNode({
       </div>
       {showTooltip && data.warnings && data.warnings.length > 0 && (
         <div
-          className="fixed z-50 rounded bg-gray-800 px-2 py-1 text-sm whitespace-pre-line text-white shadow-lg"
+          className="absolute z-50 rounded bg-gray-800 px-2 py-1 text-sm whitespace-nowrap text-white shadow-lg"
           style={{
-            top: tooltipPosition.top,
-            left: tooltipPosition.left,
-            transform: "translate(0, -50%)", // Center vertically
+            top: 0,
+            left: "50%",
+            transform: "translate(-50%, -100%)", // Center vertically
           }}
         >
           {getWarningMessage()}
