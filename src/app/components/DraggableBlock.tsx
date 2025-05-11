@@ -29,6 +29,11 @@ export default function DraggableBlock<ItemType>({
     //     setTimeout(() => setDidBounce(false), 300); // Reset after animation
     //   }
     // },
+    end: (_, monitor) => {
+      if (!monitor.didDrop()) {
+        setIsDragging(false);
+      }
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
