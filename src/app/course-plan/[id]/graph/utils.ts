@@ -1,5 +1,5 @@
 import { CourseRead, SemesterPlanRead } from "@/app/types/Models";
-import { Node } from "@xyflow/react";
+import { Edge, MarkerType, Node } from "@xyflow/react";
 import { CourseExtend } from "./types/CourseExtend";
 import { CourseEdgeInfo } from "./types/CourseEdgeInfo";
 import { YearSemesterPair } from "./types/YearSemesterPair";
@@ -32,6 +32,26 @@ export function craftGraphNode(
     type: "defaultNode",
     position: { x: 0, y: 0 },
   };
+}
+
+export function craftGraphEdge(edgeInfo: CourseEdgeInfo): Edge {
+  const { source, target, fulfilled, conflict } = edgeInfo;
+  const color = conflict ? "#e11d48" : fulfilled ? "#16a34a" : "#a1a1aa";
+  const edge: Edge = {
+    id: `${source}-${target}`,
+    source,
+    target,
+    type: "default",
+    animated: conflict,
+    data: { fulfilled, conflict },
+    markerEnd: { type: MarkerType.Arrow, strokeWidth: 2, color },
+    style: {
+      stroke: color,
+      strokeWidth: conflict ? 4 : 2,
+      fill: "none",
+    },
+  };
+  return edge;
 }
 
 export function buildEdges(courses: CourseExtend[]): CourseEdgeInfo[] {

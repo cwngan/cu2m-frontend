@@ -18,7 +18,7 @@ import {
 import { useState, useCallback, useEffect } from "react";
 import GraphNode from "./GraphNode";
 import { apiClient } from "@/apiClient";
-import { buildEdges, craftGraphNode } from "../utils";
+import { buildEdges, craftGraphEdge, craftGraphNode } from "../utils";
 import { CourseExtend } from "../types/CourseExtend";
 import { CourseRead } from "@/app/types/Models";
 import "@xyflow/react/dist/style.css";
@@ -132,29 +132,9 @@ export default function GraphView({
           newNodes.map((node) => node.data as CourseExtend),
         );
 
-        const newEdges = newEdgeInfo.map((edgeInfo) => {
-          const { source, target, fulfilled, conflict } = edgeInfo;
-          const color = conflict
-            ? "#e11d48"
-            : fulfilled
-              ? "#16a34a"
-              : "#a1a1aa";
-          const edge: Edge = {
-            id: `${source}-${target}`,
-            source,
-            target,
-            type: "default",
-            animated: conflict,
-            data: { fulfilled, conflict },
-            markerEnd: { type: MarkerType.Arrow, strokeWidth: 2, color },
-            style: {
-              stroke: color,
-              strokeWidth: conflict ? 4 : 2,
-              fill: "none",
-            },
-          };
-          return edge;
-        });
+        const newEdges = newEdgeInfo.map((edgeInfo) =>
+          craftGraphEdge(edgeInfo),
+        );
         setEdges(newEdges);
       })
       .catch((err) => {
