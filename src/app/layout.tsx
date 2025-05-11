@@ -11,7 +11,7 @@ const abel = Abel({
 
 export const metadata: Metadata = {
   title: "(CU)^2M",
-  description: "Your course ultimate managements are powered (CU)^2M",
+  description: "Your course ultimate management is powered (CU)^2M",
 };
 
 export default function RootLayout({
