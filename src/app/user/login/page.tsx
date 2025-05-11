@@ -4,8 +4,12 @@ import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
 import "@/app/background.css";
 import { apiClient } from "@/apiClient";
+import { useState } from "react";
+import AlertBanner from "@/app/components/AlertBanner";
 
 export default function Page() {
+  const [showAlert, setShowAlert] = useState(false);
+
   return (
     <div className="relative z-40 container mx-auto flex h-screen w-screen flex-col items-center justify-center gap-8">
       <h2 className="z-40 text-4xl">Login</h2>
@@ -25,12 +29,12 @@ export default function Page() {
               if (res.status === 200) {
                 window.location.href = "/dashboard";
               } else {
-                alert("Login failed");
+                setShowAlert(true);
               }
             })
             .catch((err) => {
               console.error(err);
-              alert("Login failed");
+              setShowAlert(true);
             });
         }}
       >
@@ -64,6 +68,12 @@ export default function Page() {
             <Button text="Login" />
           </div>
         </div>
+        <AlertBanner
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          message="Login failed, please try again."
+          type="error"
+        />
       </form>
     </div>
   );
