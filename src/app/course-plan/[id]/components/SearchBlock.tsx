@@ -89,7 +89,7 @@ export default function SearchBlock() {
           alert("Course fetch failed");
         });
     }
-  }, []);
+  }, [queryRef, setSearchResults, setIsOpen, setIsUpdating, setHasUpdated]);
 
   return (
     // the whole search block
@@ -110,9 +110,7 @@ export default function SearchBlock() {
               className="h-8 w-32 border p-2 duration-150 hover:bg-neutral-100 hover:transition"
               required
               ref={queryRef}
-              onChange={(e) => {
-                fetchCourses();
-              }}
+              onChange={fetchCourses}
             />
             <button type="submit" className="cursor-pointer">
               Go
