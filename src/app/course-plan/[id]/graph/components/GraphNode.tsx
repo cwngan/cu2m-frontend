@@ -25,7 +25,7 @@ export default function GraphNode({ data }: { data: GraphNodeData }) {
   return (
     <div
       className={clsx(
-        "flex h-16 w-32 flex-col items-center justify-center rounded-xl p-2",
+        "flex h-16 w-32 flex-col items-center justify-center rounded-xl p-2 ring-gray-800/50 hover:ring-2",
         color,
       )}
     >
