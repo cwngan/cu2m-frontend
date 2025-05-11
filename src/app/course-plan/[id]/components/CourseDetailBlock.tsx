@@ -18,7 +18,7 @@ export default function CourseDetailBlock({
       <div
         className={clsx(
           "fixed top-0 right-0 z-50 flex h-full w-full items-center justify-center bg-black/50 transition-opacity duration-300 ease-in-out",
-          isOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          isOpen ? "opacity-100" : "!pointer-events-none opacity-0",
         )}
         onClick={onClose} // Close the form when clicking outside
       ></div>
