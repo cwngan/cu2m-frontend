@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlan from "./SemesterPlan";
-import { useCallback } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
 import { apiClient } from "@/apiClient";
 import {
   CourseRead,
@@ -20,7 +20,11 @@ interface SemesterPlanOfYearProps {
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
-  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
+  getCourseWarningType: (
+    courseId: string,
+    currentPlanId: string,
+  ) => string | undefined;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function SemesterPlanOfYear({
@@ -32,6 +36,7 @@ export default function SemesterPlanOfYear({
   onPlanDeleted,
   handleAddCourseToSemesterPlan,
   getCourseWarningType,
+  setIsDragging,
 }: SemesterPlanOfYearProps) {
   const handleAddSemesterPlan = useCallback(
     async (semester: number) => {
@@ -167,6 +172,7 @@ export default function SemesterPlanOfYear({
               showAddButton={getAddButtonConfig(plan)}
               handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
               getCourseWarningType={getCourseWarningType}
+              setIsDragging={setIsDragging}
             />
           ))}
         </div>

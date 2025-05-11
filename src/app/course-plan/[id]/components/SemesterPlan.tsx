@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Dispatch, SetStateAction, useRef, useState } from "react";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
@@ -27,6 +27,7 @@ interface SemesterPlanProps {
     courseId: string,
     currentPlanId: string,
   ) => string | undefined;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function SemesterPlan({
@@ -38,6 +39,7 @@ export default function SemesterPlan({
   showAddButton,
   handleAddCourseToSemesterPlan,
   getCourseWarningType,
+  setIsDragging,
 }: SemesterPlanProps) {
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(false);
@@ -49,14 +51,11 @@ export default function SemesterPlan({
       drop: async (item: {
         course: CourseRead;
         semesterPlanId: string | null;
-        setIsDragging: React.Dispatch<React.SetStateAction<boolean>> | null;
       }) => {
         if (item.semesterPlanId === plan._id) {
           return undefined;
         }
-        if (item.setIsDragging !== null) {
-          item.setIsDragging(false);
-        }
+        setIsDragging(false);
         try {
           await handleAddCourseToSemesterPlan(
             item.course,
@@ -125,6 +124,7 @@ export default function SemesterPlan({
                 course={course}
                 semesterPlanId={plan._id}
                 warningType={getCourseWarningType(course._id, plan._id)}
+                setIsDragging={setIsDragging}
               />
             ))
           ) : (

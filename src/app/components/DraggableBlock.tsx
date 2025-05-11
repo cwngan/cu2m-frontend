@@ -1,17 +1,6 @@
 import clsx from "clsx";
-import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useRef,
-  // useState,
-} from "react";
+import { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
 import { useDrag } from "react-dnd";
-
-// interface DropResultType {
-//   allowedDrop?: boolean;
-// }
 
 export default function DraggableBlock<ItemType>({
   children,
@@ -24,7 +13,7 @@ export default function DraggableBlock<ItemType>({
   blockType: string;
   dragItem: ItemType;
   className?: string;
-  setIsDragging: Dispatch<SetStateAction<boolean>> | null;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }) {
   const drag = useRef<HTMLDivElement>(null);
   // const [didBounce, setDidBounce] = useState(false);
@@ -47,7 +36,7 @@ export default function DraggableBlock<ItemType>({
   dragConnector(drag);
 
   useEffect(() => {
-    if (setIsDragging === null) return;
+    console.log("Monitoring");
     setIsDragging(isDragging);
   }, [isDragging, setIsDragging]);
 
