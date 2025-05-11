@@ -84,19 +84,17 @@ export default function CourseBlock({
         className={clsx(
           "group flex flex-col items-center justify-center p-2",
           color,
-          warningType && "ring-2 ring-red-500",
+          warningType && "cursor-help ring-2 ring-red-500",
         )}
         setIsDragging={null}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <div className="flex items-center gap-1">
           <span>{course.code}</span>
           {warningType && (
-            <div
-              className="group relative"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              <span className="cursor-help font-bold text-red-500">!</span>
+            <div className="group relative">
+              <span className="font-bold text-red-500">!</span>
             </div>
           )}
         </div>
