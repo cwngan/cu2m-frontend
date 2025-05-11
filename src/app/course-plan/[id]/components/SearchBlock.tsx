@@ -1,6 +1,8 @@
 "use client";
 import {
   createContext,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -24,7 +26,13 @@ export const SearchBlockContext = createContext<{
   setIsOpen?: (open: boolean) => void;
 }>({});
 
-export default function SearchBlock() {
+export default function SearchBlock({
+  isDragging,
+  setIsDragging,
+}: {
+  isDragging: boolean;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
+}) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const queryRef = useRef<HTMLInputElement>(null);
@@ -36,6 +44,7 @@ export default function SearchBlock() {
   const isOpen =
     context.isOpen !== undefined ? context.isOpen : resultBlockOpen;
   const setIsOpen = context.setIsOpen || setResultBlockOpen;
+
   // ---
   // NOTE FOR FUTURE MERGE CONFLICTS:
   // This block allows both local and context-based control of open/close state.
@@ -53,17 +62,21 @@ export default function SearchBlock() {
   const [popupDetail, setPopupDetail] = useState<Course | null>(null);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [hasUpdated, setHasUpdated] = useState<boolean>(false);
-  const [isDragging, setIsDragging] = useState<boolean>(true);
-
-  useEffect(() => {
-    console.log("Current state: ", isDragging);
-    if (isDragging) setResultBlockOpen(false);
-    else setResultBlockOpen(true);
-  }, [isDragging]);
+  const [revertChanges, setRevertChanges] = useState<boolean>(false);
 
   const onClose = () => {
     setShowPopupDetail(false);
   };
+
+  useEffect(() => {
+    if (resultBlockOpen && isDragging) {
+      setRevertChanges(true);
+      setResultBlockOpen(!isDragging);
+    } else if (revertChanges && !isDragging) {
+      setRevertChanges(false);
+      setResultBlockOpen(true);
+    }
+  }, [resultBlockOpen, revertChanges, isDragging]);
 
   const fetchCourses = useCallback(() => {
     setIsUpdating(true);
@@ -179,7 +192,6 @@ export default function SearchBlock() {
           </div>
         )}
 
-        {/* TODO: Put CourseDetailBlock here */}
         <CourseDetailBlock
           course={popupDetail}
           isOpen={showPopupDetail}

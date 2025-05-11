@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import DraggableBlock from "@/app/components/DraggableBlock";
 import { getCourseColor } from "../utils";
@@ -9,12 +9,14 @@ interface CourseBlockProps {
   semesterPlanId: string;
   course: CourseRead;
   warningType?: string;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function CourseBlock({
   semesterPlanId,
   course,
   warningType,
+  setIsDragging,
 }: CourseBlockProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -86,7 +88,7 @@ export default function CourseBlock({
           color,
           warningType && "cursor-help ring-2 ring-red-500",
         )}
-        setIsDragging={null}
+        setIsDragging={setIsDragging}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >

@@ -1,5 +1,5 @@
 import { apiClient } from "@/apiClient";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, Dispatch, SetStateAction } from "react";
 import { SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
 import {
@@ -14,11 +14,12 @@ export default function SemesterPlanGridContent({
   isLoading,
   handleAddCourseToSemesterPlan,
   getCourseWarningType,
+  setIsDragging,
 }: {
   coursePlanId: string;
   semesterPlans: SemesterPlanReadWithCourseDetails[] | null;
-  setSemesterPlans: React.Dispatch<
-    React.SetStateAction<SemesterPlanReadWithCourseDetails[] | null>
+  setSemesterPlans: Dispatch<
+    SetStateAction<SemesterPlanReadWithCourseDetails[] | null>
   >;
   semesterPlansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] };
   isLoading: boolean;
@@ -31,6 +32,7 @@ export default function SemesterPlanGridContent({
     courseId: string,
     currentPlanId: string,
   ) => string | undefined;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -110,6 +112,7 @@ export default function SemesterPlanGridContent({
                 onPlanDeleted={handlePlanDeleted}
                 handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
                 getCourseWarningType={getCourseWarningType}
+                setIsDragging={setIsDragging}
               />
             ))}
           </>

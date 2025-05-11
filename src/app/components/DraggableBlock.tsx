@@ -6,13 +6,8 @@ import {
   SetStateAction,
   useEffect,
   useRef,
-  // useState,
 } from "react";
 import { useDrag } from "react-dnd";
-
-// interface DropResultType {
-//   allowedDrop?: boolean;
-// }
 
 export default function DraggableBlock<ItemType>({
   children,
@@ -27,7 +22,7 @@ export default function DraggableBlock<ItemType>({
   className?: string;
   blockType: string;
   dragItem: ItemType;
-  setIsDragging: Dispatch<SetStateAction<boolean>> | null;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
   onMouseEnter?: MouseEventHandler<HTMLDivElement>;
   onMouseLeave?: MouseEventHandler<HTMLDivElement>;
 }) {
@@ -45,6 +40,11 @@ export default function DraggableBlock<ItemType>({
     //     setTimeout(() => setDidBounce(false), 300); // Reset after animation
     //   }
     // },
+    end: (_, monitor) => {
+      if (!monitor.didDrop()) {
+        setIsDragging(false);
+      }
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -52,7 +52,6 @@ export default function DraggableBlock<ItemType>({
   dragConnector(drag);
 
   useEffect(() => {
-    if (setIsDragging === null) return;
     setIsDragging(isDragging);
   }, [isDragging, setIsDragging]);
 

@@ -119,6 +119,7 @@ export default function SemesterPlanGrid({
   const [takenBeforeMap, setTakenBeforeMap] = useState<
     Map<string, Set<string>>
   >(new Map());
+  const [isDragging, setIsDragging] = useState<boolean>(true);
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
     async (courseCode: string | null, semesterPlanId: string | null) => {
@@ -481,9 +482,13 @@ export default function SemesterPlanGrid({
         isLoading={isLoading}
         handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
         getCourseWarningType={getCourseWarningType}
+        setIsDragging={setIsDragging}
       />
-      <DeleteZone onRemove={handleRemoveCourseFromSemsterPlan} />
-      <SearchBlock />
+      <DeleteZone
+        setIsDragging={setIsDragging}
+        onRemove={handleRemoveCourseFromSemsterPlan}
+      />
+      <SearchBlock isDragging={isDragging} setIsDragging={setIsDragging} />
     </DndProvider>
   );
 }
