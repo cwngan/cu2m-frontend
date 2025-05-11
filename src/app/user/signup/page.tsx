@@ -26,7 +26,6 @@ export default function Page() {
           />
           <form
             className="z-40"
-            action="/dashboard"
             onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
