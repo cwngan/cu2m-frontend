@@ -121,7 +121,12 @@ export default function SemesterPlanGrid({
   >(new Map());
 
   const handleRemoveCourseFromSemsterPlan = useCallback(
-    async (courseCode: string | null, semesterPlanId: string) => {
+    async (courseCode: string | null, semesterPlanId: string | null) => {
+      if (semesterPlanId === null) {
+        // skip removing course from semester plan because they do not belong to any semester plans
+        return;
+      }
+
       if (detailedSemesterPlans === null) {
         throw new Error("Detailed semester plans are null");
       }
