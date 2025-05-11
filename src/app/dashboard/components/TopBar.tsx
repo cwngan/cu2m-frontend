@@ -4,6 +4,7 @@ import { apiClient } from "@/apiClient";
 import { UserResponseModel } from "@/app/types/ApiResponseModel";
 import { UserRead } from "@/app/types/Models";
 import { MouseEventHandler, useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function TopBar() {
   const [user, setUser] = useState<UserRead | null>(null);
@@ -30,12 +31,20 @@ export default function TopBar() {
       });
   }, []);
   return (
-    <div className="from-neutral-60 via0-neutral-300 fixed top-0 left-0 h-12 w-full border-b border-white bg-gradient-to-br to-neutral-300 shadow-md inset-ring inset-ring-neutral-500">
+    <div className="from-neutral-60 via0-neutral-300 fixed top-0 left-0 z-30 h-12 w-full border-white bg-gradient-to-br from-white to-neutral-300 shadow-md">
       <div className="container mx-auto flex h-full items-center justify-end px-4">
+        <div className="">
+          <Image
+            src="/cu2m_icon_allBlack.png"
+            width={32}
+            height={32}
+            className="text-neutral-800"
+            alt="Icon"
+          />
+        </div>
         <div className="ml-auto flex items-center gap-2">
           {user && <div>Welcome, {user.first_name}</div>}
           {/* User Icon Placeholder */}
-          <div>Icon</div>
           <div
             className="cursor-pointer hover:underline"
             onClick={logoutHandler}

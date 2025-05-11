@@ -35,7 +35,7 @@ export default function TopBar({ coursePlanId }: TopBarProps) {
   }, [coursePlanId]);
 
   return (
-    <div className="from-neutral-60 via0-neutral-300 fixed top-0 left-0 z-30 h-12 w-full border-b border-white bg-gradient-to-br to-neutral-300 shadow-md inset-ring inset-ring-neutral-300">
+    <div className="from-neutral-60 via0-neutral-300 fixed top-0 left-0 z-30 h-12 w-full border-white bg-gradient-to-br from-white to-neutral-300 shadow-md">
       <div className="container mx-auto flex h-full items-center justify-between gap-4 px-4">
         <Link href={"/dashboard"}>Back</Link>
         <div className="flex items-center gap-4">
@@ -55,7 +55,7 @@ export default function TopBar({ coursePlanId }: TopBarProps) {
                 ? `/course-plan/${coursePlanId}`
                 : `/course-plan/${coursePlanId}/graph`
             }
-            className="rounded p-2 transition-colors hover:bg-neutral-200"
+            className="rounded p-2 transition-colors hover:bg-black/10"
             title={isGraphMode ? "Switch to Grid View" : "Switch to Graph View"}
           >
             <Image
@@ -67,7 +67,6 @@ export default function TopBar({ coursePlanId }: TopBarProps) {
             />
           </Link>
           {/* User Icon Placeholder */}
-          <div>Icon</div>
         </div>
       </div>
     </div>
