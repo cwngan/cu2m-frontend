@@ -14,7 +14,7 @@ export default function Page() {
 
   return (
     <div className="fixed inset-0 overflow-y-auto">
-      <div className="min-h-full w-full py-8">
+      <div className="flex min-h-full w-full flex-col justify-center py-8">
         <div className="container mx-auto flex flex-col items-center justify-center gap-8">
           <h2 className="z-40 text-4xl">Sign up</h2>
           <AlertBanner
