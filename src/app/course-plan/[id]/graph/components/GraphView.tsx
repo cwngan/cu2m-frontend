@@ -112,18 +112,18 @@ export default function GraphView({
 
         // Assign positions
         const verticalSpacing = 100; // Adjust as needed
-        const horizontalSpacing = 150; // Adjust as needed
-        let currentY = 0;
+        const horizontalSpacing = 200; // Adjust as needed
+        let currentX = 0;
 
         sortedKeys.forEach((key) => {
           const nodesInSemester = semesterGroups.get(key)!;
           nodesInSemester.forEach((node, index) => {
             node.position = {
-              x: index * horizontalSpacing,
-              y: currentY,
+              x: currentX,
+              y: index * verticalSpacing,
             };
           });
-          currentY += verticalSpacing;
+          currentX += horizontalSpacing;
         });
 
         setNodes(newNodes);
@@ -143,7 +143,7 @@ export default function GraphView({
             id: `${source}-${target}`,
             source,
             target,
-            type: "defaultEdge",
+            type: "default",
             animated: conflict,
             data: { fulfilled, conflict },
             markerEnd: { type: MarkerType.Arrow, strokeWidth: 2, color },
