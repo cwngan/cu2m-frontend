@@ -11,9 +11,13 @@ export default function ResetForm({ token }: { token: string }) {
       onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
+        if (formData.get("password") !== formData.get("confirm_password")) {
+          alert("Passwords do not match");
+          return;
+        }
         const data = Object.fromEntries(formData.entries());
         apiClient
-          .post("/api/user/reset-password", data)
+          .put("/api/user/reset-password", data)
           .then((res) => {
             if (res.status === 200) {
               window.location.href = "/dashboard";
@@ -35,7 +39,7 @@ export default function ResetForm({ token }: { token: string }) {
           <InputBox
             type="password"
             placeholder="Enter new password"
-            name="newPassword"
+            name="password"
             required
           />
         </div>
@@ -44,8 +48,8 @@ export default function ResetForm({ token }: { token: string }) {
           <InputBox
             type="password"
             placeholder="Confirm new password"
-            name="confirmPassword"
             required
+            name="confirm_password"
           />
         </div>
         <div className="flex w-full justify-center">
