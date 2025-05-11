@@ -22,6 +22,7 @@ export default function DraggableBlock<ItemType>(
 ) {
   const { children, blockType, dragItem, className, setIsDragging } = props;
   const drag = useRef<HTMLDivElement>(null);
+  const allowedAttributes = document.createElement("div").getAttributeNames();
   // const [didBounce, setDidBounce] = useState(false);
 
   const [{ isDragging }, dragConnector] = useDrag(() => ({
@@ -49,7 +50,12 @@ export default function DraggableBlock<ItemType>(
   return (
     <div
       ref={drag}
-      {...props}
+      {...Object.keys(props)
+        .filter((key) => allowedAttributes.includes(key))
+        .reduce<{ [key: string]: string }>((acc, key) => {
+          acc[key] = props[key as keyof HTMLAttributes<HTMLDivElement>];
+          return acc;
+        }, {})}
       className={clsx(
         "transform rounded-lg transition-transform duration-200 hover:scale-105 hover:transition active:scale-100",
         isDragging ? "scale-105 opacity-50" : "",
