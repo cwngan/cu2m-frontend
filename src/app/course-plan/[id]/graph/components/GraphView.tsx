@@ -13,6 +13,7 @@ import {
   OnEdgesChange,
   Edge,
   Node,
+  MarkerType,
 } from "@xyflow/react";
 import { useState, useCallback, useEffect } from "react";
 import GraphNode from "./GraphNode";
@@ -20,12 +21,11 @@ import { apiClient } from "@/apiClient";
 import { buildEdges, craftGraphNode } from "../utils";
 import { CourseExtend } from "../types/CourseExtend";
 import { CourseRead } from "@/app/types/Models";
-import GraphEdge from "./GraphEdge";
 import "@xyflow/react/dist/style.css";
 import "@/app/globals.css";
 
 const nodeTypes = { defaultNode: GraphNode };
-const edgeTypes = { defaultEdge: GraphEdge };
+// const edgeTypes = { defaultEdge: GraphEdge };
 
 interface SemesterPlanGridProps {
   coursePlanId: string;
@@ -41,12 +41,12 @@ export default function GraphView({
     if (coursePlanResponse.data === null) {
       throw new Error("Course plan data not found");
     }
-  
+
     const semesterPlans = coursePlanResponse.data.semester_plans;
     const courses = semesterPlans
       .map((semesterPlan) => semesterPlan.courses)
       .flat();
-  
+
     apiClient
       .get<CoursesResponseModel>("/api/courses", {
         params: {
@@ -68,11 +68,11 @@ export default function GraphView({
         if (detailedCourses === null) {
           throw new Error("Course fetch failed");
         }
-  
+
         const courseMap = new Map<string, CourseRead>(
           detailedCourses.map((course) => [course.code!, course]),
         );
-  
+
         const cacheIndex = new Map<string, number>();
         const newNodes = courses
           .filter((courseCode) => courseMap.get(courseCode) !== undefined)
@@ -92,7 +92,7 @@ export default function GraphView({
             }
             return craftGraphNode(course, semesterPlan);
           });
-  
+
         // Group nodes by semester
         const semesterGroups = new Map<string, Node[]>();
         newNodes.forEach((node) => {
@@ -101,20 +101,20 @@ export default function GraphView({
           group.push(node);
           semesterGroups.set(key, group);
         });
-  
+
         // Sort semester keys
         const sortedKeys = Array.from(semesterGroups.keys()).sort((a, b) => {
-          const [yearA, semA] = a.split('-').map(Number);
-          const [yearB, semB] = b.split('-').map(Number);
+          const [yearA, semA] = a.split("-").map(Number);
+          const [yearB, semB] = b.split("-").map(Number);
           if (yearA !== yearB) return yearA - yearB;
           return semA - semB;
         });
-  
+
         // Assign positions
         const verticalSpacing = 100; // Adjust as needed
         const horizontalSpacing = 150; // Adjust as needed
         let currentY = 0;
-  
+
         sortedKeys.forEach((key) => {
           const nodesInSemester = semesterGroups.get(key)!;
           nodesInSemester.forEach((node, index) => {
@@ -125,15 +125,20 @@ export default function GraphView({
           });
           currentY += verticalSpacing;
         });
-  
+
         setNodes(newNodes);
-  
+
         const newEdgeInfo = buildEdges(
           newNodes.map((node) => node.data as CourseExtend),
         );
-  
+
         const newEdges = newEdgeInfo.map((edgeInfo) => {
           const { source, target, fulfilled, conflict } = edgeInfo;
+          const color = conflict
+            ? "#e11d48"
+            : fulfilled
+              ? "#16a34a"
+              : "#a1a1aa";
           const edge: Edge = {
             id: `${source}-${target}`,
             source,
@@ -141,6 +146,12 @@ export default function GraphView({
             type: "defaultEdge",
             animated: conflict,
             data: { fulfilled, conflict },
+            markerEnd: { type: MarkerType.Arrow, strokeWidth: 2, color },
+            style: {
+              stroke: color,
+              strokeWidth: conflict ? 4 : 2,
+              fill: "none",
+            },
           };
           return edge;
         });
@@ -171,7 +182,6 @@ export default function GraphView({
         onEdgesChange={onEdgesChange}
         fitView
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
       >
         <Background />
         <Controls />
