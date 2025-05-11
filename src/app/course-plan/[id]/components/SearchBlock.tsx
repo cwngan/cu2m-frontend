@@ -79,9 +79,9 @@ export default function SearchBlock({
   }, [resultBlockOpen, revertChanges, isDragging]);
 
   const fetchCourses = useCallback(() => {
-    setIsUpdating(true);
     const query = queryRef.current?.value;
     if (query) {
+      setIsUpdating(true);
       console.log(`Searching for ${query}`);
       apiClient
         .get(`/api/courses?keywords[]=${query}&basic=true`)
@@ -91,15 +91,18 @@ export default function SearchBlock({
             throw new Error(response.error);
           }
 
+          setIsUpdating(false);
           setSearchResults(response.data);
           setIsOpen(true);
-          setIsUpdating(false);
           setHasUpdated(true);
         })
         .catch((err) => {
           console.error(err);
           alert("Course fetch failed");
         });
+    } else {
+      setSearchResults([]);
+      setHasUpdated(false);
     }
   }, [queryRef, setSearchResults, setIsOpen, setIsUpdating, setHasUpdated]);
 
