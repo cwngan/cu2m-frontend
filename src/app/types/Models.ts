@@ -79,6 +79,7 @@ export interface SemesterPlan {
   courses: string[];
   semester: number;
   year: number;
+  created_at: Moment;
 }
 
 export interface SemesterPlanRead {
