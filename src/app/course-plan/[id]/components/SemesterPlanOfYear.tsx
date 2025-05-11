@@ -11,32 +11,27 @@ import {
 interface SemesterPlanOfYearProps {
   yearNumber: number;
   plans: SemesterPlanReadWithCourseDetails[];
-  // handleRemoveCourseFromSemsterPlan: (
-  //   courseId: string,
-  //   semesterPlanId: string,
-  // ) => void;
   coursePlanId: string;
   isLastYear?: boolean;
   onYearAdded?: (newPlans: SemesterPlanReadWithCourseDetails[]) => void;
   onPlanDeleted?: (planId: string) => void;
-  isCourseDuplicate: (courseId: string, currentPlanId: string) => boolean;
   handleAddCourseToSemesterPlan: (
     course: CourseRead,
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
+  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
 }
 
 export default function SemesterPlanOfYear({
   yearNumber,
   plans,
-  // handleRemoveCourseFromSemsterPlan,
   coursePlanId,
   isLastYear = false,
   onYearAdded,
   onPlanDeleted,
-  isCourseDuplicate,
   handleAddCourseToSemesterPlan,
+  getCourseWarningType,
 }: SemesterPlanOfYearProps) {
   const handleAddSemesterPlan = useCallback(
     async (semester: number) => {
@@ -81,14 +76,12 @@ export default function SemesterPlanOfYear({
 
   const handleAddNextYear = useCallback(async () => {
     try {
-      // Create Autumn semester
       const autumnResponse = await apiClient.post("/api/semester-plans/", {
         course_plan_id: coursePlanId,
         year: yearNumber + 1,
         semester: SemesterTypes.AUTUMN,
       });
 
-      // Create Spring semester
       const springResponse = await apiClient.post("/api/semester-plans/", {
         course_plan_id: coursePlanId,
         year: yearNumber + 1,
@@ -114,80 +107,40 @@ export default function SemesterPlanOfYear({
     [onPlanDeleted],
   );
 
-  // Always use the plans prop directly instead of local state
-  // const hasSpring = plans.some(
-  //   (plan) => plan.semester === SemesterTypes.SPRING,
-  // );
-  // const hasAutumn = plans.some(
-  //   (plan) => plan.semester === SemesterTypes.AUTUMN,
-  // );
-
-  /**
-   * Determines where to show the "+" button for adding new semesters in a year.
-   * The function handles different scenarios of semester combinations and returns
-   * the appropriate configuration for the add button.
-   *
-   * Rules for adding semesters:
-   * 1. A year should have at most 3 semesters (Autumn, Spring, Summer)
-   * 2. Autumn and Spring are the main semesters, Summer is optional
-   * 3. When adding a new semester, we need to maintain the correct order:
-   *    - Autumn should come before Spring
-   *    - Summer should be added after Spring
-   *
-   * @param plan The current semester plan being rendered
-   * @returns Configuration for the add button, or undefined if no button should be shown
-   */
   const getAddButtonConfig = (plan: SemesterPlanReadWithCourseDetails) => {
-    // Get all semesters that currently exist in this year
     const present = new Set(plans.map((p) => p.semester));
     const isAutumn = present.has(SemesterTypes.AUTUMN);
     const isSpring = present.has(SemesterTypes.SPRING);
     const isSummer = present.has(SemesterTypes.SUMMER);
 
-    // Case 1: Only one semester exists in the year
     if (plans.length === 1) {
       if (plan.semester === SemesterTypes.AUTUMN) {
-        // If only Autumn exists, we can add Spring after it
         return { semester: SemesterTypes.SPRING, position: "after" as const };
       }
       if (plan.semester === SemesterTypes.SPRING) {
-        // If only Spring exists, we can add Autumn before it
         return { semester: SemesterTypes.AUTUMN, position: "before" as const };
       }
       if (plan.semester === SemesterTypes.SUMMER) {
-        // If only Summer exists, we can add Spring before it
         return { semester: SemesterTypes.SPRING, position: "before" as const };
       }
     }
 
-    // Case 2: Two semesters exist in the year
     if (plans.length === 2) {
-      // If we have both Autumn and Spring, no add button needed
-      // (Summer should be added via the special summer session button)
-      if (isAutumn && isSpring) return undefined;
-
-      // If we have Autumn and Summer, we can add Spring between them
       if (isAutumn && isSummer && plan.semester === SemesterTypes.AUTUMN) {
         return { semester: SemesterTypes.SPRING, position: "after" as const };
       }
-
-      // If we have Spring and Summer, we can add Autumn before Spring
       if (isSpring && isSummer && plan.semester === SemesterTypes.SPRING) {
         return { semester: SemesterTypes.AUTUMN, position: "before" as const };
       }
     }
 
-    // Case 3: Handle edge cases for maintaining semester order
-    // If we have Spring but no Autumn, show add button before Spring
     if (!isAutumn && plan.semester === SemesterTypes.SPRING) {
       return { semester: SemesterTypes.AUTUMN, position: "before" as const };
     }
-    // If we have Autumn but no Spring, show add button after Autumn
     if (!isSpring && plan.semester === SemesterTypes.AUTUMN) {
       return { semester: SemesterTypes.SPRING, position: "after" as const };
     }
 
-    // No add button needed in other cases
     return undefined;
   };
 
@@ -209,18 +162,14 @@ export default function SemesterPlanOfYear({
                 plan.semester === SemesterTypes.SPRING
               }
               handleAddSummerSession={handleAddSummerSession}
-              // handleRemoveCourseFromSemsterPlan={
-              //   handleRemoveCourseFromSemsterPlan
-              // }
               onSemesterPlanDeleted={handleSemesterPlanDeleted}
               handleAddSemesterPlan={handleAddSemesterPlan}
               showAddButton={getAddButtonConfig(plan)}
-              isCourseDuplicate={isCourseDuplicate}
               handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
+              getCourseWarningType={getCourseWarningType}
             />
           ))}
         </div>
-        {/* Add Year Button - only show if this is the last year */}
         {isLastYear && (
           <div className="absolute -right-12 flex h-full items-center justify-center">
             <div
