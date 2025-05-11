@@ -1,6 +1,7 @@
 "use client";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -65,6 +66,31 @@ export default function SearchBlock() {
     setShowPopupDetail(false);
   };
 
+  const fetchCourses = useCallback(() => {
+    setIsUpdating(true);
+    const query = queryRef.current?.value;
+    if (query) {
+      console.log(`Searching for ${query}`);
+      apiClient
+        .get(`/api/courses?keywords[]=${query}&basic=true`)
+        .then((res) => {
+          const response = res.data;
+          if (response.status === "ERROR" || response.data === null) {
+            throw new Error(response.error);
+          }
+
+          setSearchResults(response.data);
+          setIsOpen(true);
+          setIsUpdating(false);
+          setHasUpdated(true);
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Course fetch failed");
+        });
+    }
+  }, []);
+
   return (
     // the whole search block
     <div className="fixed bottom-0 left-0 z-50 w-full">
@@ -73,29 +99,7 @@ export default function SearchBlock() {
           ref={formRef}
           onSubmit={(e) => {
             e.preventDefault();
-
-            setIsUpdating(true);
-            const query = queryRef.current?.value;
-            if (query) {
-              console.log(`Searching for ${query}`);
-              apiClient
-                .get(`/api/courses?keywords[]=${query}&basic=true`)
-                .then((res) => {
-                  const response = res.data;
-                  if (response.status === "ERROR" || response.data === null) {
-                    throw new Error(response.error);
-                  }
-
-                  setSearchResults(response.data);
-                  setIsOpen(true);
-                  setIsUpdating(false);
-                  setHasUpdated(true);
-                })
-                .catch((err) => {
-                  console.error(err);
-                  alert("Course fetch failed");
-                });
-            }
+            fetchCourses();
           }}
         >
           {/* searchbox before opening up */}
@@ -106,6 +110,9 @@ export default function SearchBlock() {
               className="h-8 w-32 border p-2 duration-150 hover:bg-neutral-100 hover:transition"
               required
               ref={queryRef}
+              onChange={(e) => {
+                fetchCourses();
+              }}
             />
             <button type="submit" className="cursor-pointer">
               Go
