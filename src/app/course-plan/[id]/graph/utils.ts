@@ -98,7 +98,7 @@ function buildSubEdges(
   currentConditions: Map<string, boolean>,
   codeToNodeIdentifiers: Map<string, string[]>,
 ): CourseEdgeInfo[] {
-  console.log(course, preconditions, currentConditions);
+  // console.log(course, preconditions, currentConditions);
   if (!course.parsed) {
     // no parsed information, return empty edges
     return [];
@@ -121,7 +121,7 @@ function buildSubEdges(
   );
   const corequisiteResult = evaluteBooleanExpression(
     course.corequisites,
-    currentConditions,
+    new Map<string, boolean>([...currentConditions, ...preconditions]),
     EvaluateMode.Co,
   );
   const antirequisiteResult = evaluteBooleanExpression(
@@ -130,8 +130,9 @@ function buildSubEdges(
     EvaluateMode.Anti,
   );
 
-  console.log(course.code, " prerequisite: ", prerequisiteResult);
-  console.log(course.code, " antirequisite: ", antirequisiteResult);
+  // console.log(course.code, " prerequisite: ", prerequisiteResult);
+  // console.log(course.code, " corequisite: ", corequisiteResult);
+  // console.log(course.code, " antirequisite: ", antirequisiteResult);
 
   const fulfilled =
     (prerequisiteResult.verdict || corequisiteResult.verdict) &&
