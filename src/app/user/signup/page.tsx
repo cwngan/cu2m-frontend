@@ -1,29 +1,20 @@
+// signup/page.tsx
 "use client";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
 import { useRouter } from "next/navigation";
 import "@/app/background.css";
 import { apiClient } from "@/apiClient";
-import { useState } from "react";
-import AlertBanner from "@/app/components/AlertBanner";
+import { showErrorToast, UserException } from "../../utils/toast";
 
 export default function Page() {
   const router = useRouter();
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
 
   return (
     <div className="fixed inset-0 overflow-y-auto">
       <div className="flex min-h-full w-full flex-col justify-center py-8">
         <div className="container mx-auto flex flex-col items-center justify-center gap-8">
           <h2 className="z-40 text-4xl">Sign up</h2>
-          <AlertBanner
-            show={showAlert}
-            onClose={() => setShowAlert(false)}
-            message={alertMessage}
-            type="error"
-            autoHideDuration={5000}
-          />
           <form
             className="z-40"
             onSubmit={(e) => {
@@ -38,18 +29,16 @@ export default function Page() {
                   if (res.status >= 200 && res.status < 300) {
                     router.push("/dashboard");
                   } else {
-                    setAlertMessage(
-                      "Signup failed. Please check your information and try again.",
-                    );
-                    setShowAlert(true);
+                    const exception: UserException =
+                      res.data?.error?.kind || "BadRequest";
+                    showErrorToast(exception);
                   }
                 })
                 .catch((err) => {
                   console.error(err);
-                  setAlertMessage(
-                    "Signup failed. Please check your information and try again.",
-                  );
-                  setShowAlert(true);
+                  const exception: UserException =
+                    err.response?.data?.error?.kind || "InternalError";
+                  showErrorToast(exception);
                 });
             }}
           >
