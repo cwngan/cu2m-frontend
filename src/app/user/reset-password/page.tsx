@@ -25,17 +25,13 @@ function ResetPasswordContent() {
         showErrorToast('InvalidResetToken');
         router.push('/user/login/forgot-password');
       });
-  }, [token, router]); // Dependencies ensure effect re-runs if token or router changes
-
-  if (!token) {
-    return null; // Prevent rendering if no token
-  }
+  }, [token, router]);
 
   return (
     <div className="relative z-40 container mx-auto flex h-screen w-screen flex-col items-center justify-center gap-8">
       <h2 className="z-40 text-4xl">Reset Password</h2>
       <Suspense>
-        <ResetForm token={token} />
+        <ResetForm token={token||""} />
       </Suspense>
     </div>
   );
