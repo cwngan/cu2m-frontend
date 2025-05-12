@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import "@/app/background.css";
 import { apiClient } from "@/apiClient";
 import { showErrorToast, UserException } from "../../utils/toast";
+import { validateUsername, validatePassword } from "../../utils/validation";
+import toast from "react-hot-toast";
 
 export default function Page() {
   const router = useRouter();
@@ -20,6 +22,23 @@ export default function Page() {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               const data = Object.fromEntries(formData.entries());
+
+              // Validate username
+              if (!validateUsername(data.username as string)) {
+                toast.error(
+                  "Username must be 5-20 characters long and can only contain letters, numbers, and underscores",
+                );
+                return;
+              }
+
+              // Validate password
+              if (!validatePassword(data.password as string)) {
+                toast.error(
+                  "Password must be at least 12 characters long and include both uppercase and lowercase letters",
+                );
+                return;
+              }
+
               apiClient
                 .post("/api/user/signup", data)
                 .then((res) => {
@@ -99,6 +118,9 @@ export default function Page() {
                   name="username"
                   required
                 />
+                <div className="mt-1 text-sm text-gray-500">
+                  5-20 characters, letters, numbers and underscores only
+                </div>
               </div>
               <div>
                 <div className="mb-2 text-xl">Password</div>
@@ -108,6 +130,10 @@ export default function Page() {
                   className="rounded-md border-neutral-400 ring-slate-400 hover:ring-2"
                   required
                 />
+                <div className="mt-1 text-sm text-gray-500">
+                  Minimum 12 characters, must include both uppercase and
+                  lowercase letters
+                </div>
               </div>
               <div className="mt-2 flex w-full justify-center">
                 <Button text="Signup" />
