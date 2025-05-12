@@ -3,7 +3,7 @@ import { Abel } from "next/font/google";
 import "./globals.css";
 import "./background.css";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Toaster } from 'react-hot-toast';
+import ToastProvider from "./ToastProvider";
 
 const abel = Abel({
   weight: "400",
@@ -27,7 +27,7 @@ export default function RootLayout({
         <div className="h-screen w-screen bg-radial-[at_50%_50%] from-white via-zinc-100 to-zinc-200">
           {children}
         </div>
-        <Toaster />
+        <ToastProvider />
       </body>
     </html>
   );
