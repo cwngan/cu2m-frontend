@@ -3,7 +3,7 @@ import Link from "next/link";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
 import "@/app/background.css";
-import axios from "axios";
+import { apiClient } from "@/apiClient";
 import { showErrorToast, UserException } from "../../utils/toast";
 
 export default function Page() {
@@ -17,21 +17,21 @@ export default function Page() {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
           const data = Object.fromEntries(formData.entries());
-          axios
-            .post("/api/user/login", data, {
-              baseURL: process.env.NEXT_PUBLIC_API_URL,
-            })
+          apiClient
+            .post("/api/user/login", data)
             .then((res) => {
               if (res.status === 200) {
                 window.location.href = "/dashboard";
               } else {
-                const exception: UserException = res.data?.error?.kind || 'BadRequest';
+                const exception: UserException =
+                  res.data?.error?.kind || "BadRequest";
                 showErrorToast(exception);
               }
             })
             .catch((err) => {
               console.error(err);
-              const exception: UserException = err.response?.data?.error?.kind || 'InternalError';
+              const exception: UserException =
+                err.response?.data?.error?.kind || "InternalError";
               showErrorToast(exception);
             });
         }}

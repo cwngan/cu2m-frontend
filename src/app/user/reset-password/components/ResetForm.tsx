@@ -3,7 +3,8 @@ import InputBox from "../../components/InputBox";
 import Button from "../../components/SubmitButton";
 import { showErrorToast, UserException } from "@/app/utils/toast";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+// import axios from "axios";
+import { apiClient } from "@/apiClient";
 
 export default function ResetForm({ token }: { token: string }) {
   const router = useRouter();
@@ -20,10 +21,8 @@ export default function ResetForm({ token }: { token: string }) {
           return;
         }
         const data = Object.fromEntries(formData.entries());
-        axios
-          .put("/api/user/reset-password", data, {
-            baseURL: process.env.NEXT_PUBLIC_API_URL
-          })
+        apiClient
+          .put("/api/user/reset-password", data)
           .then((res) => {
             if (res.status === 200) {
               window.location.href = "/dashboard";
