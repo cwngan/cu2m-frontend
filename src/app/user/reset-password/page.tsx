@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ResetForm from "./components/ResetForm";
-import axios from "axios";
+import { apiClient } from "@/apiClient";
 import { notFound } from "next/navigation";
 
 export default async function Page({
@@ -11,11 +11,7 @@ export default async function Page({
   const token = (await searchParams).token;
 
   try {
-    await axios.post(
-      "/api/user/verify-token",
-      { token },
-      { baseURL: process.env.API_URL },
-    );
+    await apiClient.post("/api/user/verify-token", { token });
   } catch {
     notFound();
   }

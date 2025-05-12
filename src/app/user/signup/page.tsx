@@ -31,9 +31,7 @@ export default function Page() {
               const formData = new FormData(e.currentTarget);
               const data = Object.fromEntries(formData.entries());
               apiClient
-                .post("/api/user/signup", data, {
-                  baseURL: process.env.NEXT_PUBLIC_API_URL,
-                })
+                .post("/api/user/signup", data)
                 .then((res) => {
                   if (res.status >= 200 && res.status < 300) {
                     router.push("/dashboard");

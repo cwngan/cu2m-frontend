@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import axios from "axios";
 import TopBar from "../components/TopBar";
 import { headers } from "next/headers";
@@ -17,6 +20,7 @@ export default async function Page({
     data = await axios.get(`${process.env.API_URL}/api/course-plans/${id}`, {
       headers: {
         Cookie: headersList.get("cookie") || "",
+        "Cache-Control": "no-store",
       },
     });
   } catch {

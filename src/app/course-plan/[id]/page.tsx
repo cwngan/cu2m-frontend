@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import axios from "axios";
 import SemesterPlanGrid from "./components/SemesterPlanGrid";
 import TopBar from "./components/TopBar";
@@ -20,6 +23,7 @@ export default async function Page({
       {
         headers: {
           Cookie: headersList.get("cookie") || "",
+          "Cache-Control": "no-store",
         },
       },
     );

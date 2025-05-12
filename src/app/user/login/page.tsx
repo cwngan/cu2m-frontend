@@ -22,9 +22,7 @@ export default function Page() {
           const formData = new FormData(e.currentTarget);
           const data = Object.fromEntries(formData.entries());
           apiClient
-            .post("/api/user/login", data, {
-              baseURL: process.env.NEXT_PUBLIC_API_URL,
-            })
+            .post("/api/user/login", data)
             .then((res) => {
               if (res.status === 200) {
                 window.location.href = "/dashboard";
@@ -38,7 +36,6 @@ export default function Page() {
             });
         }}
       >
-        {/* input block */}
         <div className="flex flex-col items-start gap-3 rounded-4xl bg-white p-8 shadow-lg">
           <div>
             <div className="mb-2 text-xl">Username</div>
