@@ -3,12 +3,13 @@ import InputBox from "../../components/InputBox";
 import Button from "../../components/SubmitButton";
 import { showErrorToast, UserException } from "@/app/utils/toast";
 import { useRouter } from "next/navigation";
-// import axios from "axios";
 import { apiClient } from "@/apiClient";
+import toast from "react-hot-toast";
+// import { useState } from "react";
 
 export default function ResetForm({ token }: { token: string }) {
   const router = useRouter();
-  
+
   return (
     <form
       className="z-40"
@@ -17,7 +18,7 @@ export default function ResetForm({ token }: { token: string }) {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         if (formData.get("password") !== formData.get("confirm_password")) {
-          showErrorToast('BadRequest');
+          showErrorToast("BadRequest");
           return;
         }
         const data = Object.fromEntries(formData.entries());
@@ -25,15 +26,25 @@ export default function ResetForm({ token }: { token: string }) {
           .put("/api/user/reset-password", data)
           .then((res) => {
             if (res.status === 200) {
-              window.location.href = "/dashboard";
+              toast.success(
+                "Password reset successful! Redirecting to dashboard...",
+                {
+                  duration: 2000,
+                  position: "top-center",
+                },
+              );
+              setTimeout(() => {
+                window.location.href = "/dashboard";
+              }, 2000);
             }
           })
           .catch((err) => {
             console.error(err);
-            const exception: UserException = err.response?.data?.exception || 'InvalidResetToken';
+            const exception: UserException =
+              err.response?.data?.exception || "InvalidResetToken";
             showErrorToast(exception);
-            if (exception === 'InvalidResetToken') {
-              router.push('/user/login/forgot-password');
+            if (exception === "InvalidResetToken") {
+              router.push("/user/login/forgot-password");
             }
           });
       }}
