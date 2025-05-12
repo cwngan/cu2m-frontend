@@ -1,10 +1,9 @@
-// login/page.tsx
 "use client";
 import Link from "next/link";
 import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
 import "@/app/background.css";
-import { apiClient } from "@/apiClient";
+import axios from "axios";
 import { showErrorToast, UserException } from "../../utils/toast";
 
 export default function Page() {
@@ -18,7 +17,7 @@ export default function Page() {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
           const data = Object.fromEntries(formData.entries());
-          apiClient
+          axios
             .post("/api/user/login", data, {
               baseURL: process.env.NEXT_PUBLIC_API_URL,
             })
