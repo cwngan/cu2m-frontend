@@ -31,16 +31,16 @@ export async function middleware(request: NextRequest) {
       headers: { Cookie: `session=${session?.value}` },
     });
     // Token valid, redirect to dashboard if accessing login page
-    if (request.nextUrl.pathname.startsWith("/user")) {
+    if (request.nextUrl.pathname.startsWith("/user/")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   } catch {
-    if (request.nextUrl.pathname.startsWith("/user"))
+    if (request.nextUrl.pathname.startsWith("/user/"))
       return NextResponse.next();
     // Token invalid, redirect to login page if not accessing login page
     else return NextResponse.redirect(new URL("/user/login", request.url));
   }
-  if (request.nextUrl.pathname.startsWith("/course-plan")) {
+  if (request.nextUrl.pathname.startsWith("/course-plan/")) {
     // Validate course plan ID
     const id = request.nextUrl.pathname.split("/")[2]; // Extract the ID from the URL (IDK HOW TO DO THIS BETTER)
     try {
