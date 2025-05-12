@@ -33,7 +33,7 @@ export default function SemesterPlanGrid({
   >(null);
   const [semesterPlansByYear, setSemesterPlansByYear] = useState<{
     [year: number]: SemesterPlanReadWithCourseDetails[];
-  }>({});
+  } | null>(null);
   const [takenBeforeMap, setTakenBeforeMap] = useState<
     Map<string, Set<string>>
   >(new Map());
@@ -130,7 +130,6 @@ export default function SemesterPlanGrid({
         semesterPlans={detailedSemesterPlans}
         setSemesterPlans={setDetailedSemesterPlans}
         semesterPlansByYear={semesterPlansByYear}
-        isLoading={detailedSemesterPlans === null}
         handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
         getCourseWarningType={getCourseWarningType}
         setIsDragging={setIsDragging}
