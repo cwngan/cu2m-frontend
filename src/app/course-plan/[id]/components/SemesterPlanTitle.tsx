@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { SemesterTypes } from "../types/SemesterPlan";
 import { apiClient } from "@/apiClient";
 import { SemesterPlanReadWithCourseDetails } from "@/app/types/Models";
-// import clsx from "clsx";
 
 interface SemesterPlanTitleProps {
   plan: SemesterPlanReadWithCourseDetails;
