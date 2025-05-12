@@ -1,4 +1,4 @@
-import { apiClient } from "@/apiClient";
+import axios from "axios";
 
 export default async function Page({
   searchParams,
@@ -9,7 +9,13 @@ export default async function Page({
 
   if (email) {
     try {
-      await apiClient.post("/api/user/forgot-password", { email });
+      await axios.post(
+        "/api/user/forgot-password",
+        { email },
+        {
+          baseURL: process.env.API_URL,
+        },
+      );
     } catch {}
   }
   return (

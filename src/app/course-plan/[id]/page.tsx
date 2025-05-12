@@ -19,8 +19,9 @@ export default async function Page({
   let data;
   try {
     data = await axios.get<CoursePlanWithSemestersResponseModel>(
-      `${process.env.API_URL}/api/course-plans/${id}`,
+      `/api/course-plans/${id}`,
       {
+        baseURL: process.env.API_URL,
         headers: {
           Cookie: headersList.get("cookie") || "",
           "Cache-Control": "no-store",
