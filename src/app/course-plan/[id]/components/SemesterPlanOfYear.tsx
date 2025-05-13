@@ -112,42 +112,54 @@ export default function SemesterPlanOfYear({
     [onPlanDeleted],
   );
 
-  const getAddButtonConfig = (plan: SemesterPlanReadWithCourseDetails) => {
-    const present = new Set(plans.map((p) => p.semester));
-    const isAutumn = present.has(SemesterTypes.AUTUMN);
-    const isSpring = present.has(SemesterTypes.SPRING);
-    const isSummer = present.has(SemesterTypes.SUMMER);
+  const getAddButtonConfig = useCallback(
+    (plan: SemesterPlanReadWithCourseDetails) => {
+      const present = new Set(plans.map((p) => p.semester));
+      const isAutumn = present.has(SemesterTypes.AUTUMN);
+      const isSpring = present.has(SemesterTypes.SPRING);
+      const isSummer = present.has(SemesterTypes.SUMMER);
 
-    if (plans.length === 1) {
-      if (plan.semester === SemesterTypes.AUTUMN) {
-        return { semester: SemesterTypes.SPRING, position: "after" as const };
+      if (plans.length === 1) {
+        if (plan.semester === SemesterTypes.AUTUMN) {
+          return { semester: SemesterTypes.SPRING, position: "after" as const };
+        }
+        if (plan.semester === SemesterTypes.SPRING) {
+          return {
+            semester: SemesterTypes.AUTUMN,
+            position: "before" as const,
+          };
+        }
+        if (plan.semester === SemesterTypes.SUMMER) {
+          return {
+            semester: SemesterTypes.SPRING,
+            position: "before" as const,
+          };
+        }
       }
-      if (plan.semester === SemesterTypes.SPRING) {
+
+      if (plans.length === 2) {
+        if (isAutumn && isSummer && plan.semester === SemesterTypes.AUTUMN) {
+          return { semester: SemesterTypes.SPRING, position: "after" as const };
+        }
+        if (isSpring && isSummer && plan.semester === SemesterTypes.SPRING) {
+          return {
+            semester: SemesterTypes.AUTUMN,
+            position: "before" as const,
+          };
+        }
+      }
+
+      if (!isAutumn && plan.semester === SemesterTypes.SPRING) {
         return { semester: SemesterTypes.AUTUMN, position: "before" as const };
       }
-      if (plan.semester === SemesterTypes.SUMMER) {
-        return { semester: SemesterTypes.SPRING, position: "before" as const };
-      }
-    }
-
-    if (plans.length === 2) {
-      if (isAutumn && isSummer && plan.semester === SemesterTypes.AUTUMN) {
+      if (!isSpring && plan.semester === SemesterTypes.AUTUMN) {
         return { semester: SemesterTypes.SPRING, position: "after" as const };
       }
-      if (isSpring && isSummer && plan.semester === SemesterTypes.SPRING) {
-        return { semester: SemesterTypes.AUTUMN, position: "before" as const };
-      }
-    }
 
-    if (!isAutumn && plan.semester === SemesterTypes.SPRING) {
-      return { semester: SemesterTypes.AUTUMN, position: "before" as const };
-    }
-    if (!isSpring && plan.semester === SemesterTypes.AUTUMN) {
-      return { semester: SemesterTypes.SPRING, position: "after" as const };
-    }
-
-    return undefined;
-  };
+      return undefined;
+    },
+    [plans],
+  );
 
   return (
     <div className="flex h-auto flex-col items-center">
