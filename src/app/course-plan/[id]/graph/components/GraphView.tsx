@@ -67,7 +67,7 @@ export default function GraphView({
       .flat();
 
     apiClient
-      .get<CoursesResponseModel>("/api/courses", {
+      .get<CoursesResponseModel>("/api/courses/", {
         params: {
           keywords: courseCodes,
           includes: [
