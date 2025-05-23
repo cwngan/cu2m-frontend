@@ -2,7 +2,7 @@ import moment from "moment";
 import ConfirmDeleteBlock from "./ConfirmDeleteBlock";
 
 describe("<ConfirmDeleteBlock />", () => {
-  it("renders correctly", () => {
+  it("renders", () => {
     cy.mount(
       <ConfirmDeleteBlock
         plan={null}
@@ -14,7 +14,30 @@ describe("<ConfirmDeleteBlock />", () => {
     cy.get("div").should("exist");
   });
 
-  it("closes when clicking delete button", () => {
+  it("cancel button handling", () => {
+    const onClose = cy.stub();
+    const plan = {
+      _id: "123",
+      name: "Test Plan",
+      description: "Test Description",
+      updated_at: moment(),
+      semesters: [],
+      favourite: false,
+      user_id: "456",
+    };
+    cy.mount(
+      <ConfirmDeleteBlock
+        plan={plan}
+        isOpen={true}
+        onClose={onClose}
+        handleDeleteChange={() => {}}
+      />,
+    );
+    cy.contains("Cancel").click();
+    cy.wrap(onClose).should("have.been.called");
+  });
+
+  it("delete button handling", () => {
     const onClose = cy.stub();
     const plan = {
       _id: "123",
