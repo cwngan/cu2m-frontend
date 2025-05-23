@@ -1,5 +1,5 @@
 import { apiClient } from "@/apiClient";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, Dispatch, SetStateAction } from "react";
 import { SemesterTypes } from "../types/SemesterPlan";
 import SemesterPlanOfYear from "./SemesterPlanOfYear";
 import {
@@ -11,23 +11,28 @@ export default function SemesterPlanGridContent({
   coursePlanId,
   setSemesterPlans,
   semesterPlansByYear,
-  isLoading,
   handleAddCourseToSemesterPlan,
   getCourseWarningType,
+  setIsDragging,
 }: {
   coursePlanId: string;
   semesterPlans: SemesterPlanReadWithCourseDetails[] | null;
-  setSemesterPlans: React.Dispatch<
-    React.SetStateAction<SemesterPlanReadWithCourseDetails[] | null>
+  setSemesterPlans: Dispatch<
+    SetStateAction<SemesterPlanReadWithCourseDetails[] | null>
   >;
-  semesterPlansByYear: { [year: number]: SemesterPlanReadWithCourseDetails[] };
-  isLoading: boolean;
+  semesterPlansByYear: {
+    [year: number]: SemesterPlanReadWithCourseDetails[];
+  } | null;
   handleAddCourseToSemesterPlan: (
     course: CourseRead,
     semesterPlanId: string,
     sourcePlanId: string | null,
   ) => Promise<void>;
-  getCourseWarningType: (courseId: string, currentPlanId: string) => string | undefined;
+  getCourseWarningType: (
+    courseId: string,
+    currentPlanId: string,
+  ) => string | undefined;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -81,34 +86,36 @@ export default function SemesterPlanGridContent({
     [setSemesterPlans],
   );
 
-  const years = Object.keys(semesterPlansByYear).map(Number);
-  const maxYear = years.length > 0 ? Math.max(...years) : 0;
-
   return (
     <div className="mt-20 flex w-full items-start justify-center overflow-visible pb-18">
       <div
         ref={containerRef}
         className="semester-plan-grid-horizontal-scrollbar container-px-4 relative flex items-start justify-start gap-3 overflow-x-auto overflow-y-visible pt-8"
       >
-        {isLoading ? (
+        {semesterPlansByYear === null ? (
           <div className="flex h-96 w-full items-center justify-center">
             <div className="text-2xl">Loading...</div>
           </div>
         ) : Object.keys(semesterPlansByYear).length > 0 ? (
           <>
-            {Object.entries(semesterPlansByYear).map(([yearNumber, plans]) => (
-              <SemesterPlanOfYear
-                yearNumber={parseInt(yearNumber)}
-                plans={plans}
-                key={yearNumber}
-                coursePlanId={coursePlanId}
-                isLastYear={parseInt(yearNumber) === maxYear}
-                onYearAdded={handleNewYearAdded}
-                onPlanDeleted={handlePlanDeleted}
-                handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
-                getCourseWarningType={getCourseWarningType}
-              />
-            ))}
+            {Object.entries(semesterPlansByYear).map(
+              ([yearNumber, plans], idx) => (
+                <SemesterPlanOfYear
+                  yearNumber={parseInt(yearNumber)}
+                  plans={plans}
+                  key={yearNumber}
+                  coursePlanId={coursePlanId}
+                  isLastYear={
+                    idx === Object.keys(semesterPlansByYear).length - 1
+                  }
+                  onYearAdded={handleNewYearAdded}
+                  onPlanDeleted={handlePlanDeleted}
+                  handleAddCourseToSemesterPlan={handleAddCourseToSemesterPlan}
+                  getCourseWarningType={getCourseWarningType}
+                  setIsDragging={setIsDragging}
+                />
+              ),
+            )}
           </>
         ) : (
           <div className="flex h-96 w-full flex-col items-center justify-center gap-4">

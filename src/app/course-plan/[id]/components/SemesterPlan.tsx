@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Dispatch, SetStateAction, useRef, useState } from "react";
 import CourseBlock from "./CourseBlock";
 import SemesterPlanTitle from "./SemesterPlanTitle";
 import { useDrop } from "react-dnd";
@@ -27,6 +27,7 @@ interface SemesterPlanProps {
     courseId: string,
     currentPlanId: string,
   ) => string | undefined;
+  setIsDragging: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function SemesterPlan({
@@ -38,6 +39,7 @@ export default function SemesterPlan({
   showAddButton,
   handleAddCourseToSemesterPlan,
   getCourseWarningType,
+  setIsDragging,
 }: SemesterPlanProps) {
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(false);
@@ -49,14 +51,11 @@ export default function SemesterPlan({
       drop: async (item: {
         course: CourseRead;
         semesterPlanId: string | null;
-        setIsDragging: React.Dispatch<React.SetStateAction<boolean>> | null;
       }) => {
         if (item.semesterPlanId === plan._id) {
           return undefined;
         }
-        if (item.setIsDragging !== null) {
-          item.setIsDragging(false);
-        }
+        setIsDragging(false);
         try {
           await handleAddCourseToSemesterPlan(
             item.course,
@@ -106,9 +105,10 @@ export default function SemesterPlan({
         ref={drop}
         data-semplan-id={plan._id}
         className={clsx(
-          "from-stone-60 relative flex w-44 flex-col items-center justify-center gap-3 rounded-lg border-1 border-neutral-300 bg-gradient-to-br via-neutral-100 to-stone-100 ring-3 inset-ring ring-white inset-ring-white",
-          isOver &&
-            "bg-linear-to-t from-neutral-200 to-neutral-300 transition duration-300",
+          "relative flex w-44 flex-col items-center justify-center rounded-lg border-1 border-neutral-300 ring-3 inset-ring ring-white inset-ring-white",
+          isOver
+            ? "bg-gradient-to-br from-stone-300/75 to-neutral-200/75"
+            : "bg-gradient-to-br from-stone-100/75 via-neutral-100/75 to-stone-100/75",
         )}
       >
         <SemesterPlanTitle
@@ -125,6 +125,7 @@ export default function SemesterPlan({
                 course={course}
                 semesterPlanId={plan._id}
                 warningType={getCourseWarningType(course._id, plan._id)}
+                setIsDragging={setIsDragging}
               />
             ))
           ) : (

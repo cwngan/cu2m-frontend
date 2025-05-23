@@ -4,12 +4,12 @@ import InputBox from "../components/InputBox";
 import Button from "../components/SubmitButton";
 import "@/app/background.css";
 import { apiClient } from "@/apiClient";
+import { showErrorToast, UserException } from "../../utils/toast";
 
 export default function Page() {
   return (
     <div className="relative z-40 container mx-auto flex h-screen w-screen flex-col items-center justify-center gap-8">
       <h2 className="z-40 text-4xl">Login</h2>
-      {/* Directly redirect to dashboard for development use */}
       <form
         className="z-40"
         action="#"
@@ -18,23 +18,24 @@ export default function Page() {
           const formData = new FormData(e.currentTarget);
           const data = Object.fromEntries(formData.entries());
           apiClient
-            .post("/api/user/login", data, {
-              baseURL: process.env.NEXT_PUBLIC_API_URL,
-            })
+            .post("/api/user/login", data)
             .then((res) => {
               if (res.status === 200) {
                 window.location.href = "/dashboard";
               } else {
-                alert("Login failed");
+                const exception: UserException =
+                  res.data?.error?.kind || "BadRequest";
+                showErrorToast(exception);
               }
             })
             .catch((err) => {
               console.error(err);
-              alert("Login failed");
+              const exception: UserException =
+                err.response?.data?.error?.kind || "InternalError";
+              showErrorToast(exception);
             });
         }}
       >
-        {/* input block */}
         <div className="flex flex-col items-start gap-3 rounded-4xl bg-white p-8 shadow-lg">
           <div>
             <div className="mb-2 text-xl">Username</div>
