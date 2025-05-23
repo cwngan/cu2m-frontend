@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cypress:open": "cypress open"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -31,6 +32,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cypress": "14.4.0",
+    "cypress-real-events": "^1.14.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
     "prettier": "^3.5.3",
